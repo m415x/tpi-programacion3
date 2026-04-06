@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración</title>
+  </head>
+
+  <body>
+    <header>
+      <h1>Panel de Administración</h1>
+      <nav>
+        <ul>
+          <li><a href="index.html">Volver a la Tienda</a></li>
+          <li><a href="#">Cerrar Sesión</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <h2>Gestión de Productos</h2>
+      <button>Agregar Producto</button>
+      <table border="1">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Imagen</th>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Descripción</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><img
+                src="https://media.istockphoto.com/id/2159972380/photo/smash-burger-with-lettuce-cheddar-cheese-and-sauce.jpg?s=612x612&w=is&k=20&c=Jxwt6gBJxgvdAYb9zVw_DXveEoUV6vkDdIpb6sQiBOk="
+                width="150px" height="auto" alt="Hamburguesa Triple"></td>
+            <td>Hamburguesa Triple</td>
+            <td>Hamburguesas</td>
+            <td>Hamburguesa triple smash con mucho cheddar.</td>
+            <td>$25000.00</td>
+            <td>10</td>
+            <td>
+              <p>
+                <a href="#">Editar</a> |
+                <a href="#">Eliminar</a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><img
+                src="https://media.istockphoto.com/id/184970966/es/foto/pizza-margarita.jpg?s=612x612&w=is&k=20&c=QCcC74Kn-UxFLuqVdQyyQbrnY_E7xQKPQKQCADWF_PI="
+                width="150px" height="auto" alt="Pizza Muzzarella"></td>
+            <td>Pizza Muzzarella</td>
+            <td>Pizzas</td>
+            <td>Salsa de tomate, mozzarella, albahaca.</td>
+            <td>$18000.00</td>
+            <td>5</td>
+            <td>
+              <p>
+                <a href="#">Editar</a> |
+                <a href="#">Eliminar</a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><img
+                src="https://media.istockphoto.com/id/1301802151/es/foto/queso-cheddar-vertido-o-tirado-de-las-papas-fritas-fritas-en-la-parte-superior.jpg?s=612x612&w=is&k=20&c=NpetAs5n6pJS1F451UjDLsov0tK2pJZ093jsb3Zgar8="
+                width="150px" height="auto" alt="Papas con Cheddar"></td>
+            <td>Papas con Cheddar</td>
+            <td>Papas Fritas</td>
+            <td>Papas fritas con cheddar derretido.</td>
+            <td>$8000.00</td>
+            <td>15</td>
+            <td>
+              <p>
+                <a href="#">Editar</a> |
+                <a href="#">Eliminar</a>
+              </p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <h2>Agregar Producto Rápido</h2>
+      <form action="" method="post">
+        <label for="nombre">Nombre del Producto</label>
+        <input type="text" name="nombre" id="nombre">
+        <label for="categoria">Categoría</label>
+        <select name="categoria" id="categoria">
+          <option value="">Selecciona una categoría</option>
+          <option value="hamburguesas">Hamburguesas</option>
+          <option value="pizzas">Pizzas</option>
+          <option value="papas_fritas">Papas Fritas</option>
+          <option value="bebidas">Bebidas</option>
+        </select>
+        <label for="precio">Precio</label>
+        <input type="number" name="precio" id="precio">
+        <label for="stock">Stock Inicial</label>
+        <input type="number" name="stock" id="stock">
+        <label for="descripcion">Descripción</label>
+        <textarea name="descripcion" id="descripcion"></textarea>
+        <label for="imagen">Imagen del Producto</label>
+        <input type="file" accept="image/*" name="imagen" id="imagen">
+        <button type="submit">Agregar Producto</button>
+      </form>
+    </main>
+    <footer>
+      <p>Panel de Administración - Food Store v1.0</p>
+    </footer>
+  </body>
+
+</html>
