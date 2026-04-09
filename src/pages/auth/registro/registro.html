@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Store - Register</title>
+
+    <link rel="stylesheet" href="../../../style.css">
+  </head>
+
+  <body>
+    <main class="container-login">
+      <section class="login-card">
+        <h1 class="login-card__title">Food Store</h1>
+        <h2 class="login-card__subtitle">Registrarse</h2>
+
+        <form id="form" class="login-card__form">
+          <label for="email">Email</label>
+          <input type="email" name="email" id="email" autocomplete="off" placeholder="tucorreo@email.com" required>
+
+          <label for="pass">Contraseña</label>
+          <input type="password" name="pass" id="pass" minlength="8" autocomplete="off"
+            placeholder="Mínimo 8 caracteres" required>
+
+          <button class="btn btn__primary" type="submit">Registrarse</button>
+        </form>
+
+        <p class="login-card__signup-signin">¿Ya tienes una cuenta? <a href="#">Ingresa acá</a></p>
+      </section>
+    </main>
+    <script type="module" src="./registro.ts"></script>
+  </body>
+
+</html>

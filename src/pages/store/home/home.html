@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Store - Shop</title>
+
+    <link rel="stylesheet" href="../../../style.css">
+  </head>
+
+  <body class="layout-app">
+    <header>
+      <h1>Food Store</h1>
+      <nav class="menu">
+        <ul class="menu__list">
+          <li class="menu__item"><a href="#">Inicio</a></li>
+          <li class="menu__item"><a href="#">Mis Pedidos</a></li>
+          <li class="menu__item"><a href="#">Carrito</a></li>
+          <li class="menu__item"><a href="#">Panel Admin</a></li>
+        </ul>
+        <button id="logoutButton" class="btn btn__secondary">Logout</button>
+      </nav>
+    </header>
+
+    <aside>
+      <h2>Categorías</h2>
+      <ul id="lista-categorias">
+        <!-- Inyección dinámica de categorías -->
+      </ul>
+    </aside>
+
+    <main class="container-app">
+      <section class="search-bar">
+        <form action="" method="post">
+          <input type="text" name="search" id="input-search" autocomplete="off" placeholder="Buscar productos...">
+          <select name="order" id="select-order">
+            <option value="default">Ordenar por</option>
+            <option value="price-asc">Precio: Menor a Mayor</option>
+            <option value="price-desc">Precio: Mayor a Menor</option>
+            <option value="name-asc">Nombre: A-Z</option>
+            <option value="name-desc">Nombre: Z-A</option>
+          </select>
+          <select name="categories" id="select-categories">
+            <option value="all">Todas</option>
+            <!-- Inyección dinámica de categorías -->
+          </select>
+        </form>
+      </section>
+      <h2>Todos los Productos</h2>
+      <section id="contenedor-productos">
+        <!-- Inyección dinámica de productos -->
+      </section>
+    </main>
+
+    <footer>
+      <p>© 2026 Food Store. Todos los derechos reservados.</p>
+      <p>Contacto: <a href="mailto:info@foodstore.com" target="_blank">info@foodstore.com</a></p>
+    </footer>
+
+    <script type="module" src="./home.ts"></script>
+  </body>
+
+</html>

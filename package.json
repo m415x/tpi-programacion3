@@ -1,0 +1,23 @@
+{
+    "name": "final-prog3",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "preview": "vite preview"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "packageManager": "pnpm@10.33.0",
+    "dependencies": {
+        "typescript": "^6.0.2"
+    },
+    "devDependencies": {
+        "@types/node": "^20.19.39",
+        "vite": "^5.4.21"
+    }
+}

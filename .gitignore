@@ -1,16 +1,30 @@
-# Compiled class file
+# Dependencias
+node_modules/
+pnpm-lock.yaml
+package-lock.json
+
+# Compilación y Salida
+dist/
+target/
 *.class
 
-# Log file
+# IDEs
+.vscode/
+.idea/
+*.iml
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Variables de entorno
+.env
+.env.local
+
+# Archivos de log
 *.log
 
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
+# Archivos de empaquetado
 *.jar
 *.war
 *.nar
@@ -18,7 +32,3 @@
 *.zip
 *.tar.gz
 *.rar
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
