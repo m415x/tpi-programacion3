@@ -6,20 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Store - Panel de Administración</title>
 
-    <link rel="stylesheet" href="../../../style.css">
+    <link rel="stylesheet" href="/src/style.css">
+    <script type="module" src="/src/main.ts"></script>
   </head>
 
-  <body>
-    <header>
-      <h1>Panel de Administración</h1>
-      <nav>
-        <ul>
-          <li><a href="index.html">Volver a la Tienda</a></li>
-          <li><a href="#">Cerrar Sesión</a></li>
-        </ul>
-      </nav>
-    </header>
-    <main>
+  <body class="layout layout-admin">
+    <header id="main-header"></header>
+
+    <aside id="main-sidebar"></aside>
+
+    <main class="admin-container">
+      <!-- <h1>Panel de Administración</h1> -->
       <h2>Gestión de Productos</h2>
       <button>Agregar Producto</button>
       <table border="1">
@@ -112,9 +109,11 @@
         <button type="submit">Agregar Producto</button>
       </form>
     </main>
-    <footer>
-      <p>Panel de Administración - Food Store v1.0</p>
-    </footer>
+
+    <!-- <footer><p>Panel de Administración - Food Store v1.0</p></footer> -->
+    <footer id="main-footer"></footer>
+
+    <script type="module" src="/src/pages/admin/home/home.ts"></script>
   </body>
 
 </html>

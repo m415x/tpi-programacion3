@@ -1,5 +1,7 @@
+// Interfaz que define la estructura de un usuario en la aplicación
 export interface IUser {
-  email: string;
-  password: string;
-  role: "client" | "admin";
+    name: string;
+    email: string;
+    password: string;
+    role: "client" | "admin";
 }

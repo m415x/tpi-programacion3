@@ -1,19 +1,9 @@
-import { checkAuhtUser, logout } from "../../../utils/auth";
+import { renderHeader, renderAside, renderFooter } from "@utils/components";
 
-const buttonLogout = document.getElementById(
-  "logoutButton",
-) as HTMLButtonElement;
-
-buttonLogout?.addEventListener("click", (): void => {
-  logout();
-});
-
-const initPage = (): void => {
-  checkAuhtUser(
-    "/src/pages/auth/login/login.html",
-    "/src/pages/admin/home/home.html",
-    "client",
-  );
+const initClient = (): void => {
+    renderHeader("main-header");
+    renderAside("main-sidebar");
+    renderFooter("main-footer");
 };
 
-initPage();
+document.addEventListener("DOMContentLoaded", initClient);

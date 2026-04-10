@@ -1,78 +1,67 @@
-/**
- * Datos de productos y categorías para la aplicación
- */
-
-export interface Producto {
-  id: number;
-  nombre: string;
-  descripcion: string;
-  precio: number;
-  imagen: string;
-  categoria: string;
-}
+import type { IProduct } from "@interfaces/IProduct";
 
 export const categorias: string[] = [
-  "Hamburguesas",
-  "Pizzas",
-  "Papas Fritas",
-  "Bebidas",
+    "Hamburguesas",
+    "Pizzas",
+    "Papas Fritas",
+    "Bebidas",
 ];
 
-export const productos: Producto[] = [
-  {
-    id: 1,
-    nombre: "Hamburguesa Triple",
-    descripcion: "Triple carne, cheddar y bacon",
-    precio: 25000.5,
-    imagen: "/src/assets/hamburguesa.webp",
-    categoria: "Hamburguesas",
-  },
-  {
-    id: 2,
-    nombre: "Pizza Muzzarella",
-    descripcion: "Salsa casera y orégano",
-    precio: 18000.0,
-    imagen: "/src/assets/pizza.jpeg",
-    categoria: "Pizzas",
-  },
-  {
-    id: 3,
-    nombre: "Papas con Cheddar",
-    descripcion: "Papas fritas con salsa cheddar y verdeo",
-    precio: 12000.0,
-    imagen: "/src/assets/papas-fritas.jpg",
-    categoria: "Papas Fritas",
-  },
-  {
-    id: 4,
-    nombre: "Gaseosa 500ml",
-    descripcion: "Línea Coca-Cola",
-    precio: 5000.0,
-    imagen: "/src/assets/coca-cola.jpg",
-    categoria: "Bebidas",
-  },
-  {
-    id: 5,
-    nombre: "Hamburguesa Veggie",
-    descripcion: "Medallón de lentejas, lechuga y tomate",
-    precio: 22000.0,
-    imagen: "/src/assets/hamburguesa-veggie.jpg",
-    categoria: "Hamburguesas",
-  },
-  {
-    id: 6,
-    nombre: "Pizza Especial",
-    descripcion: "Jamón, morrones y aceitunas",
-    precio: 21000.0,
-    imagen: "/src/assets/pizza-especial.jpg",
-    categoria: "Pizzas",
-  },
-  {
-    id: 7,
-    nombre: "Cerveza Artesanal",
-    descripcion: "Pinta de 500ml",
-    precio: 7000.0,
-    imagen: "/src/assets/pinta.jpg",
-    categoria: "Bebidas",
-  },
+export const productos: IProduct[] = [
+    {
+        id: 1,
+        name: "Hamburguesa Triple",
+        description: "Triple carne, cheddar y bacon",
+        price: 25000.5,
+        image: "/src/assets/hamburguesa.webp",
+        category: "Hamburguesas",
+    },
+    {
+        id: 2,
+        name: "Pizza Muzzarella",
+        description: "Salsa casera y orégano",
+        price: 18000.0,
+        image: "/src/assets/pizza.jpeg",
+        category: "Pizzas",
+    },
+    {
+        id: 3,
+        name: "Papas con Cheddar",
+        description: "Papas fritas con salsa cheddar y verdeo",
+        price: 12000.0,
+        image: "/src/assets/papas-fritas.jpg",
+        category: "Papas Fritas",
+    },
+    {
+        id: 4,
+        name: "Gaseosa 500ml",
+        description: "Línea Coca-Cola",
+        price: 5000.0,
+        image: "/src/assets/coca-cola.jpg",
+        category: "Bebidas",
+    },
+    {
+        id: 5,
+        name: "Hamburguesa Veggie",
+        description: "Medallón de lentejas, lechuga y tomate",
+        price: 22000.0,
+        image: "/src/assets/hamburguesa-veggie.jpg",
+        category: "Hamburguesas",
+    },
+    {
+        id: 6,
+        name: "Pizza Especial",
+        description: "Jamón, morrones y aceitunas",
+        price: 21000.0,
+        image: "/src/assets/pizza-especial.jpg",
+        category: "Pizzas",
+    },
+    {
+        id: 7,
+        name: "Cerveza Artesanal",
+        description: "Pinta de 500ml",
+        price: 7000.0,
+        image: "/src/assets/pinta.jpg",
+        category: "Bebidas",
+    },
 ];

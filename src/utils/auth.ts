@@ -1,32 +1,50 @@
-import type { IUser } from "../types/IUser";
-import type { Role } from "../types/Role";
-import { getSession, removeSession } from "./localStorage";
-import { navigate } from "./navigate";
+import { sessionStore } from "@utils/sessionStore";
+import { navigate } from "@utils/navigate";
 
-// Función para verificar la autenticación y el rol del usuario
-export const checkAuhtUser = (
-  redirect1: string,
-  redirect2: string,
-  roleRequired: Role,
-): void => {
-  const user: IUser | null = getSession();
+// Función para verificar autenticación y autorización en cada carga de página
+export const checkAuth = (): void => {
+    // Ruta actual del navegador
+    const path: string = window.location.pathname;
 
-  // Si no hay sesión iniciada en "userData" regirige al login
-  if (!user) {
-    navigate(redirect1);
-    return;
-  }
+    // Definir qué rutas son públicas (sin necesidad de estar autenticado)
+    const isAuthPage: boolean = path.includes("/auth/");
+    const isLandingPage: boolean = path === "/" || path.endsWith("index.html");
 
-  // Si el rol del usuario logueado no coincide con el requerido para la página
-  if (user.role !== roleRequired) {
-    // Redirige al login o a una zona permitida
-    navigate(redirect2);
-    return;
-  }
+    // Obtener el rol desde el store centralizado
+    const role: string | null = sessionStore.getRole();
+
+    // 1. Si no hay sesión y no está en una página pública -> al login
+    if (!sessionStore.isAuthenticated() && !isAuthPage && !isLandingPage) {
+        navigate("/src/pages/auth/login/login.html");
+        return;
+    }
+
+    // 2. Si hay sesión pero intenta ir al login/register -> a su home
+    if (sessionStore.isAuthenticated() && isAuthPage) {
+        const destination: string =
+            role === "admin"
+                ? "/src/pages/admin/home/home.html"
+                : "/src/pages/client/home/home.html";
+        navigate(destination);
+        return;
+    }
+
+    // 3. Autorización por Roles: Prevenir accesos cruzados
+    if (path.includes("/admin/") && role !== "admin") {
+        // Si un cliente intenta entrar a /admin/ -> a su zona
+        navigate("/src/pages/client/home/home.html");
+        return;
+    }
+
+    if (path.includes("/client/") && role !== "client") {
+        // Si un admin intenta entrar a /client/ -> a su zona
+        navigate("/src/pages/admin/home/home.html");
+        return;
+    }
 };
 
 // Función para cerrar sesión y redirigir al login
 export const logout = (): void => {
-  removeSession();
-  navigate("/src/pages/auth/login/login.html");
+    sessionStore.clear();
+    navigate("/src/pages/auth/login/login.html");
 };

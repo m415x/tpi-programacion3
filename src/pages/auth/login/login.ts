@@ -1,45 +1,47 @@
-import { getUsers, setSession } from "../../../utils/localStorage";
-import { navigate } from "../../../utils/navigate";
-import type { IUser } from "../../../types/IUser";
+import { renderAuthCard } from "@utils/components";
+import { sessionStore } from "@utils/sessionStore";
+import { navigate } from "@utils/navigate";
+import type { IUser } from "@interfaces/IUser";
+
+// Renderizamos la tarjeta de login
+renderAuthCard("auth-container", false); // false = modo login
 
 const form = document.getElementById("form") as HTMLFormElement;
 const inputEmail = document.getElementById("email") as HTMLInputElement;
 const inputPassword = document.getElementById("pass") as HTMLInputElement;
 
 form.addEventListener("submit", (e: SubmitEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const valueEmail: string = inputEmail.value;
-  const valuePassword: string = inputPassword.value;
+    const valueEmail: string = inputEmail.value;
+    const valuePassword: string = inputPassword.value;
 
-  // Obtenemos los usuarios registrados y buscamos una coincidencia con el email y contraseña
-  const users: IUser[] = getUsers();
+    // Obtenemos los usuarios registrados y buscamos una coincidencia con el email y contraseña
+    const users: IUser[] = sessionStore.getUsers();
 
-  const userFound: IUser | undefined = users.find(
-    (u: IUser) => u.email === valueEmail && u.password === valuePassword,
-  );
+    const userFound: IUser | undefined = users.find(
+        (u: IUser) => u.email === valueEmail && u.password === valuePassword,
+    );
 
-  if (userFound) {
-    // Creamos la sesión en "userData"
-    setSession(userFound);
+    if (userFound) {
+        // Creamos la sesión en "userData"
+        sessionStore.setUser(userFound);
 
-    // Redirección basado en el rol
-    const path: string =
-      userFound.role === "admin"
-        ? "/src/pages/admin/home/home.html"
-        : "/src/pages/store/home/home.html";
-    navigate(path);
-  } else {
-    alert("Usuario o contraseña incorrectos");
-  }
+        // Redirección basado en el rol
+        const path: string =
+            userFound.role === "admin"
+                ? "/src/pages/admin/home/home.html"
+                : "/src/pages/store/home/home.html";
+        navigate(path);
+    } else {
+        alert("Usuario o contraseña incorrectos");
+    }
 });
 
-const anchorRegister = document.querySelector(
-  ".login-card__signup-signin a",
-) as HTMLAnchorElement;
-const URLRegister: string = "/src/pages/auth/registro/registro.html";
-
-anchorRegister.addEventListener("click", (e: MouseEvent) => {
-  e.preventDefault();
-  navigate(URLRegister);
-});
+// Listener para cambiar entre login y registro
+document
+    .getElementById("auth-switch-link")
+    ?.addEventListener("click", (e: MouseEvent) => {
+        e.preventDefault();
+        navigate("/src/pages/auth/login/login.html");
+    });

@@ -116,93 +116,11 @@ select {
 }
 
 /* ---------------------------
-    LOGIN / REGISTER
-   --------------------------- */
-
-.container-login {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: var(--color-primary);
-}
-
-.login-card {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--color-white);
-  padding: var(--separation);
-  border-radius: 10px;
-  box-shadow: var(--box-shadow);
-  border: var(--border-box);
-  margin: 1.25rem;
-}
-
-.login-card__title {
-  text-align: center;
-  margin-bottom: 0.625rem;
-}
-
-.login-card__subtitle {
-  text-align: center;
-  margin-bottom: 1.25rem;
-}
-
-.login-card__form {
-  display: flex;
-  flex-direction: column;
-}
-
-.login-card__form label {
-  font-weight: bold;
-  margin-bottom: 0.625rem;
-}
-
-.login-card__form input,
-.login-card__form select {
-  border: var(--border-input);
-  border-radius: var(--border-radius);
-  margin-bottom: 1.25rem;
-  width: 100%;
-}
-
-.login-card__form input:focus,
-.login-card__form select:focus {
-  outline: none;
-  border-color: var(--color-primary-accent);
-}
-
-.login-card__form button {
-  text-transform: uppercase;
-  margin-top: 0.625rem;
-}
-
-.login-card__signup-signin {
-  display: flex;
-  justify-content: center;
-  padding: 0 1.25rem;
-  margin-top: 1.25rem;
-  font-size: 0.875rem;
-}
-
-.login-card__signup-signin a {
-  text-decoration: none;
-  color: var(--color-primary);
-  font-weight: bold;
-  margin-left: 5px;
-  font-size: var(--font-size-sm);
-}
-
-.login-card__signup-signin a:hover {
-  text-decoration: underline;
-}
-
-/* ---------------------------
-    SHOP
+    MAIN LAYOUT
    --------------------------- */
 
 /* BODY */
-.layout-app {
+.layout {
   display: grid;
   grid-template-columns: 12rem 1fr;
   grid-template-rows: auto 1fr auto;
@@ -212,8 +130,8 @@ select {
     "footer footer";
 }
 
-/* HEADER */
-header {
+/* MAIN HEADER */
+#main-header {
   grid-area: header;
   background-color: var(--color-white);
   padding: 1rem;
@@ -248,8 +166,8 @@ header {
   text-decoration: underline;
 }
 
-/* SIDEBAR */
-aside {
+/* MAIN SIDEBAR */
+#main-sidebar {
   grid-area: sidebar;
   background-color: var(--color-white);
   padding: var(--separation);
@@ -260,10 +178,120 @@ aside {
   overflow-y: auto;
 }
 
-aside h2 {
+#main-sidebar h2 {
   color: var(--color-primary);
 }
 
+/* FOOTER */
+#main-footer {
+  grid-area: footer;
+  background-color: var(--color-white);
+  padding: 1rem;
+  text-align: center;
+  border-top: var(--border-box);
+}
+
+#main-footer p {
+  font-size: var(--font-size-xs);
+}
+
+#main-footer a {
+  text-decoration: none;
+  color: var(--color-text);
+  transition: color var(--transition-duration);
+}
+
+#main-footer a:hover {
+  color: var(--color-primary);
+}
+
+/* ---------------------------
+    LOGIN / REGISTER
+   --------------------------- */
+
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--color-primary);
+}
+
+.auth-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-white);
+  padding: var(--separation);
+  border-radius: 10px;
+  box-shadow: var(--box-shadow);
+  border: var(--border-box);
+  margin: 1.25rem;
+}
+
+.auth-card__title {
+  text-align: center;
+  margin-bottom: 0.625rem;
+}
+
+.auth-card__subtitle {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.auth-card__form {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-card__form label {
+  font-weight: bold;
+  margin-bottom: 0.625rem;
+}
+
+.auth-card__form input,
+.auth-card__form select {
+  border: var(--border-input);
+  border-radius: var(--border-radius);
+  margin-bottom: 1.25rem;
+  width: 100%;
+}
+
+.auth-card__form input:focus,
+.auth-card__form select:focus {
+  outline: none;
+  border-color: var(--color-primary-accent);
+}
+
+.auth-card__form button {
+  text-transform: uppercase;
+  margin-top: 0.625rem;
+}
+
+.auth-card__switch-link {
+  display: flex;
+  justify-content: center;
+  padding: 0 1.25rem;
+  margin-top: 1.25rem;
+  font-size: 0.875rem;
+}
+
+.auth-card__switch-link a {
+  text-decoration: none;
+  color: var(--color-primary);
+  font-weight: bold;
+  margin-left: 5px;
+  font-size: var(--font-size-sm);
+}
+
+.auth-card__switch-link a:hover {
+  text-decoration: underline;
+}
+
+/* ---------------------------
+    SHOP
+   --------------------------- */
+
+/* ASIDE */
 #lista-categorias li {
   list-style: none;
   margin-bottom: 0.5rem;
@@ -279,8 +307,8 @@ aside h2 {
   color: var(--color-primary);
 }
 
-/* MAIN */
-.container-app {
+/* CONTAINER */
+.shop-container {
   grid-area: main;
   padding: var(--separation);
   display: flex;
@@ -399,25 +427,32 @@ aside h2 {
   border-radius: 3rem;
 }
 
-/* FOOTER */
-footer {
-  grid-area: footer;
-  background-color: var(--color-white);
-  padding: 1rem;
-  text-align: center;
-  border-top: var(--border-box);
+/* ---------------------------
+    PANEL ADMIN
+   --------------------------- */
+
+.admin-container {
+  grid-area: main;
+  padding: var(--separation);
+  display: flex;
+  flex-direction: column;
+  gap: var(--separation);
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
 }
 
-footer p {
-  font-size: var(--font-size-xs);
-}
+/* ---------------------------
+    PANEL CLIENT
+   --------------------------- */
 
-footer a {
-  text-decoration: none;
-  color: var(--color-text);
-  transition: color var(--transition-duration);
-}
-
-footer a:hover {
-  color: var(--color-primary);
+.client-container {
+  grid-area: main;
+  padding: var(--separation);
+  display: flex;
+  flex-direction: column;
+  gap: var(--separation);
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
 }
