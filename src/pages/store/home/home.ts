@@ -19,4 +19,4 @@ const initStore = (): void => {
     cargarSearchBar(productos, categorias);
 };
 
-document.addEventListener("DOMContentLoaded", initStore);
+initStore();

@@ -30,7 +30,7 @@ export const renderAuthCard = (
           ${
               isRegister
                   ? `
-          <label for="name">Email</label>
+          <label for="name">Nombre</label>
           <input type="text" name="name" id="name" autocomplete="off" placeholder="Ingrese su nombre completo" required>
         `
                   : ""
@@ -62,6 +62,7 @@ export const renderHeader = (containerId: string): void => {
     if (!container) return;
 
     const role = sessionStore.getRole();
+    const name = sessionStore.getUser()?.name;
     const path = window.location.pathname;
 
     // Determinamos en qué sección estamos
@@ -77,13 +78,13 @@ export const renderHeader = (containerId: string): void => {
         <li class="menu__item"><a href="#">Carrito</a></li>
         ${
             role === "admin" && !isAdminArea
-                ? '<li class="menu__item menu__item--admin"><a href="/src/pages/admin/home/home.html">Panel Admin</a></li>'
+                ? `<li class="menu__item menu__item--admin"><a href="/src/pages/admin/home/home.html">${name}</a></li>`
                 : ""
         }
           
           ${
               role === "client" && !isClientArea
-                  ? '<li class="menu__item menu__item--client"><a href="/src/pages/client/home/home.html">Panel Cliente</a></li>'
+                  ? `<li class="menu__item menu__item--client"><a href="/src/pages/client/home/home.html">${name}</a></li>`
                   : ""
           }
           

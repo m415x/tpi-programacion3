@@ -17,10 +17,22 @@ export const cargarCategorias = (categorias: string[]): void => {
 
 //
 export const cargarProductos = (productos: IProduct[]): void => {
-    const contenedorProductos = document.querySelector<HTMLElement>(
-        "#contenedor-productos",
-    );
+    const contenedorProductos =
+        document.querySelector<HTMLElement>("#product-container");
 
+    const cantidadProductos =
+        document.querySelector<HTMLParagraphElement>("#product-quantity");
+
+    if (cantidadProductos) {
+        if (productos.length === 0) {
+            cantidadProductos.textContent = "";
+        } else if (productos.length === 1) {
+            cantidadProductos.textContent = `${productos.length} producto`;
+        } else if (cantidadProductos) {
+            cantidadProductos.textContent = `${productos.length} productos`;
+        }
+    }
+    // Limpiar el contenedor de productos
     contenedorProductos ? (contenedorProductos.innerHTML = "") : null;
 
     if (productos.length > 0) {
@@ -95,7 +107,7 @@ export const cargarSearchBar = (
     });
 
     const selectCategoria =
-        document.querySelector<HTMLSelectElement>("#select-categoria");
+        document.querySelector<HTMLSelectElement>("#select-categories");
 
     selectCategoria?.addEventListener("change", (e: Event) => {
         const target = e.target as HTMLOptionElement;

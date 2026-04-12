@@ -15,7 +15,7 @@
 
     <aside id="main-sidebar"></aside>
 
-    <main class="shop-container">
+    <main class="store-container">
       <section class="search-bar">
         <form action="" method="post">
           <input type="text" name="search" id="input-search" autocomplete="off" placeholder="Buscar productos...">
@@ -32,8 +32,13 @@
           </select>
         </form>
       </section>
-      <h2>Todos los Productos</h2>
-      <section id="contenedor-productos">
+      <section class="product-header">
+        <h2>Todos los Productos</h2>
+        <p id="product-quantity">
+          <!-- Inyección de cantidad de productos -->
+        </p>
+      </section>
+      <section id="product-container">
         <!-- Inyección dinámica de productos -->
       </section>
     </main>

@@ -130,6 +130,15 @@ select {
     "footer footer";
 }
 
+/* Para páginas sin Sidebar */
+.layout--no-sidebar {
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "header"
+    "main"
+    "footer";
+}
+
 /* MAIN HEADER */
 #main-header {
   grid-area: header;
@@ -308,7 +317,7 @@ select {
 }
 
 /* CONTAINER */
-.shop-container {
+.store-container {
   grid-area: main;
   padding: var(--separation);
   display: flex;
@@ -341,7 +350,13 @@ select {
   border-color: var(--color-primary-accent);
 }
 
-#contenedor-productos {
+.product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#product-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1.5rem;
