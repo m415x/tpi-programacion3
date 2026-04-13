@@ -1,10 +1,15 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+// Simular __dirname en ES Modules para evitar errores de TypeScript
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default defineConfig({
     resolve: {
         alias: {
-            // Definimos que "@" siempre apunte a la carpeta "/src"
             "@": resolve(__dirname, "./src"),
             "@pages": resolve(__dirname, "./src/pages"),
             "@interfaces": resolve(__dirname, "./src/types"),
@@ -14,7 +19,6 @@ export default defineConfig({
     build: {
         rollupOptions: {
             input: {
-                //d:aplicaion/dist/
                 index: resolve(__dirname, "index.html"),
                 login: resolve(__dirname, "src/pages/auth/login/login.html"),
                 register: resolve(

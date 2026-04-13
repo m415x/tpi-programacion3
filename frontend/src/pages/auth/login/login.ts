@@ -50,5 +50,4 @@ const initLogin = () => {
     });
 };
 
-// Ejecutar la inicialización
 initLogin();

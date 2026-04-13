@@ -26,6 +26,7 @@
   --border-input: 2px solid var(--color-border);
   --border-radius: 5px;
   --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --box-shadow-hover: 0 4px 6px rgba(0, 0, 0, 0.3);
   --separation: 2rem;
   --transition-duration: .3s ease-in-out;
 }
@@ -139,6 +140,15 @@ select {
     "footer";
 }
 
+/* Para páginas sin Footer */
+.layout--no-footer {
+  grid-template-columns: 12rem 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "header header"
+    "sidebar main";
+}
+
 /* MAIN HEADER */
 #main-header {
   grid-area: header;
@@ -235,6 +245,7 @@ select {
   box-shadow: var(--box-shadow);
   border: var(--border-box);
   margin: 1.25rem;
+  min-width: 22rem;
 }
 
 .auth-card__title {
@@ -278,8 +289,10 @@ select {
 
 .auth-card__switch-link {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  padding: 0 1.25rem;
+  align-items: center;
+  padding: 0 1rem;
   margin-top: 1.25rem;
   font-size: 0.875rem;
 }
@@ -326,12 +339,16 @@ select {
   overflow-y: auto;
   overflow-x: hidden;
   height: 100%;
+  position: relative;
 }
 
 .search-bar {
   background-color: var(--color-white);
   padding: 1rem;
   box-shadow: var(--box-shadow);
+  position: sticky;
+  top: calc(var(--separation)*-1);
+  z-index: 1;
 }
 
 .search-bar form {
@@ -368,12 +385,12 @@ select {
   background-color: var(--color-white);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
-  transition: transform var(--transition-duration);
+  transition: var(--transition-duration);
 }
 
 .producto__card:hover {
-  border: var(--border-box);
-  transform: translateY(-0.5rem);
+  transform: translateY(-0.3rem);
+  box-shadow: var(--box-shadow-hover);
 }
 
 .producto__imagen {

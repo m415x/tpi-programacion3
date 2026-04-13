@@ -40,8 +40,8 @@ export const renderAuthCard = (
           <input type="email" name="email" id="email" autocomplete="off" placeholder="tucorreo@email.com" required>
 
           <label for="pass">Contraseña</label>
-          <input type="password" name="pass" id="pass" minlength="8" autocomplete="off"
-            placeholder="Mínimo 8 caracteres" required>
+          <input type="password" name="pass" id="pass" minlength="6" autocomplete="off"
+            placeholder="Mínimo 6 caracteres" required>
 
           <button class="btn btn__primary" type="submit">${btnText}</button>
         </form>
@@ -94,7 +94,7 @@ export const renderHeader = (containerId: string): void => {
                   : ""
           }
       </ul>
-      <button id="logoutButton" class="btn btn__secondary">Logout</button>
+      <button id="logoutButton" class="btn btn__secondary">Cerrar Sesión</button>
     </nav>
     `;
 
