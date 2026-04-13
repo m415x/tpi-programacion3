@@ -22,7 +22,7 @@ export const renderAuthCard = (
         : "Registrate acá";
 
     container.innerHTML = `
-      <section class="auth-card">
+      <section class="card auth-card">
         <h1 class="auth-card__title">Food Store</h1>
         <h2 class="auth-card__subtitle">${title}</h2>
 
@@ -43,7 +43,7 @@ export const renderAuthCard = (
           <input type="password" name="pass" id="pass" minlength="6" autocomplete="off"
             placeholder="Mínimo 6 caracteres" required>
 
-          <button class="btn btn__primary" type="submit">${btnText}</button>
+          <button class="btn btn--primary" type="submit">${btnText}</button>
         </form>
 
         <p class="auth-card__switch-link">
@@ -70,32 +70,34 @@ export const renderHeader = (containerId: string): void => {
     const isClientArea = path.includes("/client/");
 
     container.innerHTML = `
-    <h1>Food Store</h1>
-    <nav class="menu">
-      <ul class="menu__list">
-        <li class="menu__item"><a href="/src/pages/store/home/home.html">Inicio</a></li>
-        <li class="menu__item"><a href="#">Mis Pedidos</a></li>
-        <li class="menu__item"><a href="#">Carrito</a></li>
-        ${
-            role === "admin" && !isAdminArea
-                ? `<li class="menu__item menu__item--admin"><a href="/src/pages/admin/home/home.html">${name}</a></li>`
-                : ""
-        }
-          
-          ${
-              role === "client" && !isClientArea
-                  ? `<li class="menu__item menu__item--client"><a href="/src/pages/client/home/home.html">${name}</a></li>`
-                  : ""
-          }
-          
-          ${
-              isAdminArea || isClientArea
-                  ? '<li class="menu__item menu__item--return-to-store"><a href="/src/pages/store/home/home.html">Volver a la tienda</a></li>'
-                  : ""
-          }
-      </ul>
-      <button id="logoutButton" class="btn btn__secondary">Cerrar Sesión</button>
-    </nav>
+    <div class="header__content">
+        <h1>Food Store</h1>
+        <nav class="menu">
+        <ul class="menu__list">
+            <li class="menu__item"><a href="/src/pages/store/home/home.html">Inicio</a></li>
+            <li class="menu__item"><a href="#">Mis Pedidos</a></li>
+            <li class="menu__item"><a href="/src/pages/store/cart/cart.html">Carrito</a></li>
+            ${
+                role === "admin" && !isAdminArea
+                    ? `<li class="menu__item menu__item--admin"><a href="/src/pages/admin/home/home.html">${name}</a></li>`
+                    : ""
+            }
+            
+            ${
+                role === "client" && !isClientArea
+                    ? `<li class="menu__item menu__item--client"><a href="/src/pages/client/home/home.html">${name}</a></li>`
+                    : ""
+            }
+            
+            ${
+                isAdminArea || isClientArea
+                    ? '<li class="menu__item menu__item--return-to-store"><a href="/src/pages/store/home/home.html">Volver a la tienda</a></li>'
+                    : ""
+            }
+        </ul>
+        <button id="logoutButton" class="btn btn--secondary">Cerrar Sesión</button>
+        </nav>
+    </div>
     `;
 
     // Asignamos el evento de logout una vez inyectado el HTML
@@ -130,8 +132,27 @@ export const renderFooter = (containerId: string): void => {
 
     if (!container) return;
 
+    const role = sessionStore.getRole();
+    const name = sessionStore.getUser()?.name;
+    const path = window.location.pathname;
+
+    const clientInfo = `
+        <div class="footer__content">
+            <p>&copy; 2026 Food Store. Todos los derechos reservados.</p>
+            <p>Contacto: <a href="mailto:info@foodstore.com" target="_blank">info@foodstore.com</a></p>
+            <p>Powered by <a href="https://github.com/m415x" target="_blank">Cristian Lahoz</a></p>
+        </div>
+    `;
+
+    const adminInfo = `
+        <div class="footer__content footer__content--admin">
+            <p>Panel de Control v1.0</p>
+            <p>Sesión iniciada como: <strong>${role}</strong></p>
+            <p>Powered by <a href="https://github.com/m415x" target="_blank">Cristian Lahoz</a></p>
+        </div>
+    `;
+
     container.innerHTML = `
-    <p>© 2026 Food Store. Todos los derechos reservados.</p>
-    <p>Contacto: <a href="mailto:info@foodstore.com" target="_blank">info@foodstore.com</a></p>
+        ${path.includes("/admin/") ? adminInfo : clientInfo}
     `;
 };

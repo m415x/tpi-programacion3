@@ -4,14 +4,14 @@ import {
     cargarProductos,
     cargarSearchBar,
 } from "@pages/store/home/logicaTienda";
-import { productos, categorias } from "@/js/data";
+import { productos, categorias } from "@/data/data";
 
 // Función principal para inicializar la página de la tienda
 const initStore = (): void => {
     // Renderizar componentes base
-    renderHeader("main-header");
-    renderAside("main-sidebar");
-    renderFooter("main-footer");
+    renderHeader("header");
+    renderAside("sidebar");
+    renderFooter("footer");
 
     // Invocar funciones que inyectan los datos de productos y categorías
     cargarCategorias(categorias);

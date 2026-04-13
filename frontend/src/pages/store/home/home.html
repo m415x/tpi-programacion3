@@ -11,12 +11,12 @@
   </head>
 
   <body class="layout layout-shop">
-    <header id="main-header"></header>
+    <header id="header"></header>
 
-    <aside id="main-sidebar"></aside>
+    <aside id="sidebar"></aside>
 
-    <main class="store-container">
-      <section class="search-bar">
+    <main class="main main--store">
+      <section class="card search-bar">
         <form action="" method="post">
           <input type="text" name="search" id="input-search" autocomplete="off" placeholder="Buscar productos...">
           <select name="order" id="select-order">
@@ -32,7 +32,7 @@
           </select>
         </form>
       </section>
-      <section class="product-header">
+      <section class="main__header">
         <h2>Todos los Productos</h2>
         <p id="product-quantity">
           <!-- Inyección de cantidad de productos -->
@@ -43,7 +43,7 @@
       </section>
     </main>
 
-    <footer id="main-footer"></footer>
+    <footer id="footer"></footer>
 
     <script type="module" src="/src/pages/store/home/home.ts"></script>
   </body>

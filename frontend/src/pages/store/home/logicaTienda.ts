@@ -38,7 +38,7 @@ export const cargarProductos = (productos: IProduct[]): void => {
     if (productos.length > 0) {
         productos.forEach((producto) => {
             const article: HTMLElement = document.createElement("article");
-            article.classList.add("producto__card");
+            article.classList.add("card", "producto__card");
 
             const precioFormateado: string = producto.price.toLocaleString(
                 "es-AR",
@@ -61,7 +61,7 @@ export const cargarProductos = (productos: IProduct[]): void => {
                 </div>
                 <div class="producto__pie">
                     <p class="producto__precio">${precioEntero}<span>${precioDecimal}</span></p>
-                    <button class="btn btn__tertiary btn__tertiary--add-product" onclick="alert('Has agregado: ${producto.name}')">
+                    <button class="btn btn--tertiary btn--tertiary--add-product" onclick="alert('Has agregado: ${producto.name}')">
                         Agregar al carrito
                     </button>
                 </div>
