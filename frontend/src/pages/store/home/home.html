@@ -20,7 +20,7 @@
         <form action="" method="post">
           <input type="text" name="search" id="input-search" autocomplete="off" placeholder="Buscar productos...">
           <select name="order" id="select-order">
-            <option value="default">Ordenar por</option>
+            <option value="default" selected disabled>Ordenar por</option>
             <option value="name-asc">Nombre: A-Z</option>
             <option value="name-desc">Nombre: Z-A</option>
             <option value="price-asc">Precio: Menor a Mayor</option>
@@ -34,7 +34,7 @@
       </section>
       <section class="main__header">
         <h2>Todos los Productos</h2>
-        <p id="product-quantity">
+        <p id="product-qty">
           <!-- Inyección de cantidad de productos -->
         </p>
       </section>

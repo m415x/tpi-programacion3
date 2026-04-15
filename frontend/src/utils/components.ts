@@ -109,19 +109,23 @@ export const renderHeader = (containerId: string): void => {
 };
 
 // Función para renderizar el Aside con la estructura base
-export const renderAside = (containerId: string): void => {
+export const renderAside = (
+    containerId: string,
+    callback?: () => void,
+): void => {
     const container = document.getElementById(
         containerId,
     ) as HTMLElement | null;
 
     if (!container) return;
 
-    container.innerHTML = `
-    <h2>Categorías</h2>
-    <ul id="lista-categorias">
-      <!-- Inyección dinámica de categorías -->
-    </ul>
-    `;
+    // Limpiamos el contenedor
+    container.innerHTML = "";
+
+    // Ejecutamos la función inyectada para renderizar el contenido específico
+    if (callback) {
+        callback();
+    }
 };
 
 // Función para renderizar el Footer estándar
@@ -133,7 +137,6 @@ export const renderFooter = (containerId: string): void => {
     if (!container) return;
 
     const role = sessionStore.getRole();
-    const name = sessionStore.getUser()?.name;
     const path = window.location.pathname;
 
     const clientInfo = `

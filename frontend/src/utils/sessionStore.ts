@@ -1,4 +1,7 @@
 import type { IUser } from "@interfaces/IUser";
+import type { ICartItem } from "@/types/ICartItem";
+import { PRODUCTS } from "@/data/data";
+import type { Product } from "@/types/Product";
 
 // Store centralizado para gestionar el estado de la sesión
 export const sessionStore = {
@@ -10,20 +13,21 @@ export const sessionStore = {
         return users ? JSON.parse(users) : [];
     },
 
-    // Guardar un nuevo usuario (registro)
-    saveUser(user: IUser): void {
+    // Guardar un nuevo usuario
+    setUsers(user: IUser): boolean {
         const users: IUser[] = this.getUsers();
         const existingUser: IUser | undefined = users.find(
             (u: IUser) => u.email === user.email,
         );
 
         if (existingUser) {
-            alert(`El usuario ${user.email} ya existe`);
-            return;
+            return false;
         }
 
         users.push(user);
         localStorage.setItem("users", JSON.stringify(users));
+
+        return true;
     },
 
     // --- Funciones para gestionar la sesión actual ---
@@ -53,5 +57,76 @@ export const sessionStore = {
     getRole(): string | null {
         const user: IUser | null = this.getUser();
         return user ? user.role : null;
+    },
+
+    // --- Funciones para gestionar carrito ---
+
+    // Obtener items
+    getCartItems(): ICartItem[] {
+        const cartItems: string | null = localStorage.getItem("cartItems");
+        return cartItems ? JSON.parse(cartItems) : [];
+    },
+
+    // Guardar items
+    updateCartItem(id: number): boolean {
+        const cartItems: ICartItem[] = this.getCartItems();
+
+        // Buscar producto y validar existencia
+        const product: Product | undefined = PRODUCTS.find(
+            (p: Product): boolean => p.id === id,
+        );
+        if (!product) return false;
+
+        const existingItem: ICartItem | undefined = cartItems.find(
+            (i: ICartItem): boolean => i.id === id,
+        );
+
+        const currentQty: number = existingItem ? existingItem.qty : 0;
+
+        // Cláusula de guarda para el Stock
+        if (currentQty >= product.stock) {
+            return false;
+        }
+
+        // Lógica de actualización
+        if (existingItem) {
+            existingItem.qty++;
+        } else {
+            cartItems.push({ id, qty: 1 });
+        }
+
+        localStorage.setItem("cartItems", JSON.stringify(cartItems));
+        return true;
+    },
+
+    // Disminuir cantidad de un item en el carrito
+    decreaseCartItem(id: number): void {
+        const cartItems: ICartItem[] = this.getCartItems();
+
+        const item: ICartItem | undefined = cartItems.find(
+            (i: ICartItem): boolean => i.id === id,
+        );
+
+        // Cláusula de guarda: si no existe el item, no hacemos nada
+        if (!item) return;
+
+        if (item.qty > 1) {
+            item.qty--;
+            localStorage.setItem("cartItems", JSON.stringify(cartItems));
+        }
+    },
+
+    // Eliminar un item del carrito
+    removeCartItem(id: number): void {
+        const cartItems: ICartItem[] = this.getCartItems();
+        // Creamos un nuevo array sin el producto a eliminar
+        const updatedCart = cartItems.filter((i) => i.id !== id);
+
+        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+    },
+
+    // Limpiar carrito
+    clearCart(): void {
+        localStorage.removeItem("cartItems");
     },
 };

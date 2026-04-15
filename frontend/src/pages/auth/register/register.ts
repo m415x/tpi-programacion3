@@ -31,8 +31,9 @@ const initRegister = () => {
         };
 
         // Guardamos el nuevo usuario en el "sessionStore"
-        sessionStore.saveUser(user);
-        alert(`Usuario ${valueEmail} registrado exitosamente`);
+        sessionStore.setUsers(user)
+            ? alert(`Usuario ${valueName} registrado exitosamente`)
+            : alert(`El usuario ${valueName} ya existe`);
 
         navigate("/src/pages/auth/login/login.html");
     });

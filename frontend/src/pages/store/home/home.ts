@@ -1,22 +1,27 @@
 import { renderHeader, renderAside, renderFooter } from "@utils/components";
 import {
-    cargarCategorias,
-    cargarProductos,
-    cargarSearchBar,
-} from "@pages/store/home/logicaTienda";
-import { productos, categorias } from "@/data/data";
+    showCategoriesInSidebar,
+    showProducts,
+    showSearchBar,
+} from "@pages/store/home/storeLogic";
+import { PRODUCTS, getCategories } from "@/data/data";
+import type { ICategory } from "@interfaces/ICategory";
 
 // Función principal para inicializar la página de la tienda
 const initStore = (): void => {
+    // Obtener las categorías activas primero para inyectarlas al aside
+    const activeCategories: ICategory[] = getCategories();
+
     // Renderizar componentes base
     renderHeader("header");
-    renderAside("sidebar");
+    renderAside("sidebar", () =>
+        showCategoriesInSidebar("sidebar", activeCategories, PRODUCTS),
+    );
     renderFooter("footer");
 
     // Invocar funciones que inyectan los datos de productos y categorías
-    cargarCategorias(categorias);
-    cargarProductos(productos);
-    cargarSearchBar(productos, categorias);
+    showProducts(PRODUCTS);
+    showSearchBar(PRODUCTS, activeCategories);
 };
 
 initStore();
