@@ -4,7 +4,7 @@ import { PRODUCTS } from "@/data/data";
 import type { Product } from "@/types/Product";
 
 // Store centralizado para gestionar el estado de la sesión
-export const sessionStore = {
+export const storage = {
     // --- Funciones para gestionar usuarios ---
 
     // Obtener usuarios
@@ -13,21 +13,9 @@ export const sessionStore = {
         return users ? JSON.parse(users) : [];
     },
 
-    // Guardar un nuevo usuario
-    setUsers(user: IUser): boolean {
-        const users: IUser[] = this.getUsers();
-        const existingUser: IUser | undefined = users.find(
-            (u: IUser) => u.email === user.email,
-        );
-
-        if (existingUser) {
-            return false;
-        }
-
-        users.push(user);
+    // Guardar la lista completa
+    saveUsers(users: IUser[]): void {
         localStorage.setItem("users", JSON.stringify(users));
-
-        return true;
     },
 
     // --- Funciones para gestionar la sesión actual ---

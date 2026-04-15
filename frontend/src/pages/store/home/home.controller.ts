@@ -1,6 +1,7 @@
 import type { Product } from "@interfaces/Product";
 import type { ICategory } from "@interfaces/ICategory";
-import { sessionStore } from "@utils/sessionStore";
+import { storage } from "@utils/storage";
+import { productService as ps } from "@/services/productService";
 
 // Función para cargar el título en el menú lateral
 export const showHeadingInSidebar = (title: string): void => {
@@ -44,7 +45,7 @@ export const showCategoriesInSidebar = (
         a.textContent = c.nombre;
         a.addEventListener("click", (e: Event): void => {
             e.preventDefault();
-            const filteredProducts: Product[] = filterProductsByCategory(
+            const filteredProducts: Product[] = ps.filterByCategory(
                 products,
                 c.id,
             );
@@ -55,21 +56,6 @@ export const showCategoriesInSidebar = (
     });
 };
 
-// Función reutilizable para filtrar productos por ID de categoría
-const filterProductsByCategory = (
-    products: Product[],
-    categoryId: number | string,
-): Product[] => {
-    // Convertimos ambos a string para asegurar una comparación segura
-    const categoryIdStr = categoryId.toString();
-    return products.filter((p: Product): boolean =>
-        p.categorias.some(
-            (cat: ICategory | undefined): boolean =>
-                cat?.id.toString() === categoryIdStr,
-        ),
-    );
-};
-
 // Función para cargar los productos en el contenedor principal
 export const showProducts = (products: Product[]): void => {
     const productContainer =
@@ -78,9 +64,7 @@ export const showProducts = (products: Product[]): void => {
     const productQty =
         document.querySelector<HTMLParagraphElement>("#product-qty");
 
-    const activeProducts: Product[] = products.filter(
-        (p: Product): boolean => !p.eliminado,
-    );
+    const activeProducts: Product[] = ps.getActiveProducts(products);
 
     if (productQty) {
         if (activeProducts.length === 0) {
@@ -95,11 +79,11 @@ export const showProducts = (products: Product[]): void => {
     productContainer ? (productContainer.innerHTML = "") : null;
 
     if (activeProducts.length > 0) {
-        activeProducts.forEach((p: Product): void => {
+        activeProducts.forEach((prod: Product): void => {
             const article: HTMLElement = document.createElement("article");
             article.classList.add("card", "product__card");
 
-            const formattedPrice: string = p.precio.toLocaleString("es-AR", {
+            const formattedPrice: string = prod.precio.toLocaleString("es-AR", {
                 style: "currency",
                 currency: "ARS",
             });
@@ -107,38 +91,47 @@ export const showProducts = (products: Product[]): void => {
             const [wholePrice, decimalPrice]: string[] =
                 formattedPrice.split(",");
 
+            const categoryName =
+                prod.categorias.length > 0 && prod.categorias[0]
+                    ? prod.categorias[0].nombre
+                    : "Sin categoría";
+
+            const btnAvailable: string = prod.disponible
+                ? `<button class="btn btn--primary btn--add-product">
+                        Agregar al carrito
+                    </button>`
+                : `<button class="btn btn--secondary btn--add-product btn--disabled" disabled >No disponible</button>`;
+
             article.innerHTML = `
-            <img class="product__img" src="https://via.placeholder.com/400x300?text=Cargando..." id="img-product-${p.id}" alt="${p.nombre}">
-            <p class="product__stock ${p.stock > 0 ? "product__stock--available" : ""}">${p.stock > 0 ? `Stock ${p.stock}` : "Agotado"}</p>
+            <img class="product__img" src="https://via.placeholder.com/400x300?text=Cargando..." id="img-product-${prod.id}" alt="${prod.nombre}">
+            <p class="product__stock ${prod.disponible ? "product__stock--available" : ""}">${prod.disponible ? "Disponible" : "Agotado"}</p>
             <div class="product__content">
-                <div class="producto__cuerpo">
-                    <p class="producto__categoria">${p.categorias[0]?.nombre || "Sin categoría"}</p>
-                    <h3 class="producto__nombre">${p.nombre}</h3>
-                    <p class="producto__descripcion">${p.descripcion}</p>
+                <div class="product__body">
+                    <p class="product__category">${categoryName}</p>
+                    <h3 class="product__name">${prod.nombre}</h3>
+                    <p class="product__description">${prod.descripcion}</p>
                 </div>
-                <div class="producto__pie">
-                    <p class="producto__precio">${wholePrice}<span>${decimalPrice}</span></p>
-                    ${
-                        p.disponible
-                            ? `<button class="btn btn--primary btn--add-product">
-                                    Agregar al carrito
-                                </button>`
-                            : `<button class="btn btn--secondary btn--add-product btn--disabled" disabled >No disponible</button>`
-                    }
+                <div class="product__foot">
+                    <p class="product__price">${wholePrice}<span>${decimalPrice}</span></p>
+                    ${btnAvailable}
                 </div>
             </div>
             `;
             productContainer?.appendChild(article);
 
             // Iniciamos la carga asíncrona de la imagen
-            fetchAndAssignProductImage(p.id, p.nombre);
+            fetchAndAssignProductImage(prod.id, prod.nombre);
 
             const btnAdd = article.querySelector(
                 ".btn--add-product",
             ) as HTMLButtonElement;
             btnAdd?.addEventListener("click", (): void => {
-                alert(`Has agregado: ${p.nombre}`);
-                sessionStore.updateCartItem(p.id);
+                if (storage.updateCartItem(prod.id)) {
+                    alert(`Has agregado: ${prod.nombre}`);
+                    storage.updateCartItem(prod.id);
+                } else {
+                    alert("Stock insuficiente");
+                }
             });
         });
     } else {
@@ -162,8 +155,8 @@ export const showSearchBar = (
         const target = e.target as HTMLInputElement;
 
         const filteredProducts: Product[] = product.filter(
-            (p: Product): boolean =>
-                p.nombre.toLowerCase().includes(target.value.toLowerCase()),
+            (prod: Product): boolean =>
+                prod.nombre.toLowerCase().includes(target.value.toLowerCase()),
         );
         showProducts(filteredProducts);
     });
@@ -188,7 +181,7 @@ export const showSearchBar = (
         if (value === "all") {
             showProducts(product);
         } else {
-            const filteredProducts: Product[] = filterProductsByCategory(
+            const filteredProducts: Product[] = ps.filterByCategory(
                 product,
                 value,
             );
@@ -197,59 +190,20 @@ export const showSearchBar = (
     });
 };
 
-// Promesa global para evitar que se disparen múltiples peticiones a la API al mismo tiempo
-let fastFoodApiPromise: Promise<any> | null = null;
-
 // Función asíncrona para obtener y asignar la imagen al producto dinámicamente
 const fetchAndAssignProductImage = async (
     productId: number,
     productName: string,
 ): Promise<void> => {
-    try {
-        // Si no hay una petición en curso, la iniciamos y almacenamos la promesa
-        if (!fastFoodApiPromise) {
-            fastFoodApiPromise = fetch("https://devsapihub.com/api-fast-food")
-                .then((res: Response) => res.json())
-                .catch((err: Error) => {
-                    console.error("Error consumiendo la API de imágenes:", err);
-                    return []; // Fallback a un array vacío en caso de error de red
-                });
-        }
+    // Delegamos la obtención del dato al servicio
+    const imageUrl: string = await ps.getProductImageUrl(productName);
 
-        const data = await fastFoodApiPromise;
+    // Solo interactuamos con el DOM en esta capa
+    const imgElement = document.getElementById(
+        `img-product-${productId}`,
+    ) as HTMLImageElement;
 
-        // NOTA: Ajusta esta lectura según la estructura real del JSON de tu API.
-        // Aquí asumimos que los datos vienen en un array directo o dentro de 'data'/'results'
-        const dataArray = Array.isArray(data)
-            ? data
-            : data.results || data.data || [];
-
-        // Intentamos buscar una comida que coincida parcialmente con el nombre del producto
-        const match = dataArray.find((item: any) => {
-            const apiName = (item.name || item.title || "").toLowerCase();
-            return (
-                apiName &&
-                (productName.toLowerCase().includes(apiName) ||
-                    apiName.includes(productName.toLowerCase()))
-            );
-        });
-
-        const placeholderImg =
-            "https://via.placeholder.com/400x300?text=Food+Store";
-        const randomImg =
-            dataArray.length > 0
-                ? dataArray[Math.floor(Math.random() * dataArray.length)]?.image
-                : null;
-        const imageUrl =
-            match?.image || match?.url || randomImg || placeholderImg;
-
-        const imgElement = document.getElementById(
-            `img-product-${productId}`,
-        ) as HTMLImageElement;
-        if (imgElement) {
-            imgElement.src = imageUrl;
-        }
-    } catch (error) {
-        console.error(`Error asignando imagen a ${productName}:`, error);
+    if (imgElement) {
+        imgElement.src = imageUrl;
     }
 };

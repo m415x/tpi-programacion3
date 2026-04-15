@@ -1,4 +1,4 @@
-import { sessionStore } from "@utils/sessionStore";
+import { storage } from "@utils/storage";
 import { navigate } from "@utils/navigate";
 
 // Función para verificar autenticación y autorización en cada carga de página
@@ -11,16 +11,16 @@ export const checkAuth = (): void => {
     const isLandingPage: boolean = path === "/" || path.endsWith("index.html");
 
     // Obtener el rol desde el store centralizado
-    const role: string | null = sessionStore.getRole();
+    const role: string | null = storage.getRole();
 
     // 1. Si no hay sesión y no está en una página pública -> al login
-    if (!sessionStore.isAuthenticated() && !isAuthPage && !isLandingPage) {
+    if (!storage.isAuthenticated() && !isAuthPage && !isLandingPage) {
         navigate("/src/pages/auth/login/login.html");
         return;
     }
 
     // 2. Si hay sesión pero intenta ir al login/register -> a su home
-    if (sessionStore.isAuthenticated() && isAuthPage) {
+    if (storage.isAuthenticated() && isAuthPage) {
         const destination: string =
             role === "admin"
                 ? "/src/pages/admin/home/home.html"
@@ -45,6 +45,6 @@ export const checkAuth = (): void => {
 
 // Función para cerrar sesión y redirigir al login
 export const logout = (): void => {
-    sessionStore.clear();
+    storage.clear();
     navigate("/src/pages/auth/login/login.html");
 };

@@ -3,7 +3,7 @@ import {
     showCategoriesInSidebar,
     showProducts,
     showSearchBar,
-} from "@pages/store/home/storeLogic";
+} from "@pages/store/home/home.controller";
 import { PRODUCTS, getCategories } from "@/data/data";
 import type { ICategory } from "@interfaces/ICategory";
 

@@ -1,4 +1,4 @@
-import { sessionStore } from "@utils/sessionStore";
+import { storage } from "@utils/storage";
 import { logout } from "@utils/auth";
 
 // Función para renderizar la tarjeta de autenticación (Login/Registro)
@@ -40,8 +40,8 @@ export const renderAuthCard = (
           <input type="email" name="email" id="email" autocomplete="off" placeholder="tucorreo@email.com" required>
 
           <label for="pass">Contraseña</label>
-          <input type="password" name="pass" id="pass" minlength="6" autocomplete="off"
-            placeholder="Mínimo 6 caracteres" required>
+          <input type="password" name="pass" id="pass" autocomplete="off"
+            placeholder="Mínimo 8 caracteres" required>
 
           <button class="btn btn--primary" type="submit">${btnText}</button>
         </form>
@@ -61,8 +61,8 @@ export const renderHeader = (containerId: string): void => {
 
     if (!container) return;
 
-    const role = sessionStore.getRole();
-    const name = sessionStore.getUser()?.name;
+    const role = storage.getRole();
+    const name = storage.getUser()?.name;
     const path = window.location.pathname;
 
     // Determinamos en qué sección estamos
@@ -136,7 +136,7 @@ export const renderFooter = (containerId: string): void => {
 
     if (!container) return;
 
-    const role = sessionStore.getRole();
+    const role = storage.getRole();
     const path = window.location.pathname;
 
     const clientInfo = `
