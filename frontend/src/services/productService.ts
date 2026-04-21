@@ -1,8 +1,19 @@
 import type { Product } from "@interfaces/Product";
 import type { ICategory } from "@interfaces/ICategory";
+import { PRODUCTS } from "@/data/data";
 
-// Promesa global para evitar que se disparen múltiples peticiones a la API
-let fastFoodApiPromise: Promise<any> | null = null;
+const IMAGE_STORAGE_KEY: string = "product_images_map";
+
+// Diccionario traductor para términos de búsqueda precisos
+const CATEGORY_TRANSLATIONS: Record<string, string> = {
+    Pizzas: "pizza",
+    Hamburguesas: "burger",
+    Bebidas: "soda,drink",
+    Postres: "dessert,cake,pie",
+    Empanadas: "pasty,dumpling",
+    Ensaladas: "salad",
+    "Papas Fritas": "french-fries",
+};
 
 export const productService = {
     // Filtra productos por ID de categoría
@@ -25,52 +36,36 @@ export const productService = {
         return products.filter((p: Product): boolean => !p.eliminado);
     },
 
-    // Obtiene la URL de la imagen de un producto consultando a la API
-    async getProductImageUrl(productName: string): Promise<string> {
-        const placeholderImg: string =
-            "https://via.placeholder.com/400x300?text=Food+Store";
+    // Obtiene una imagen persistente para un producto.
+    // Si no existe en el storage, la genera y la guarda.
+    getPersistentImage(productId: number): string {
+        // 1. Obtener el mapa de imágenes del localStorage
+        const storedMap: string | null =
+            localStorage.getItem(IMAGE_STORAGE_KEY);
+        const imageMap: Record<number, string> = storedMap
+            ? JSON.parse(storedMap)
+            : {};
 
-        try {
-            // Singleton para la petición: Solo una vez para todos los productos
-            if (!fastFoodApiPromise) {
-                fastFoodApiPromise = fetch(
-                    "https://devsapihub.com/api-fast-food",
-                )
-                    .then((res: Response) => res.json() as Promise<any[]>)
-                    .catch((err: Error) => {
-                        console.error(
-                            "Error consumiendo la API de imágenes:",
-                            err,
-                        );
-                        return [];
-                    });
-            }
-
-            const dataArray = await fastFoodApiPromise;
-
-            const match = dataArray.find((item: any): boolean => {
-                const apiName = (item.name || "").toLowerCase();
-                const searchName = productName.toLowerCase();
-                return (
-                    apiName &&
-                    (searchName.includes(apiName) ||
-                        apiName.includes(searchName))
-                );
-            });
-
-            // Fallback: imagen encontrada -> imagen aleatoria -> placeholder
-            if (match?.image) return match.image;
-
-            const randomImg =
-                dataArray.length > 0
-                    ? dataArray[Math.floor(Math.random() * dataArray.length)]
-                          .image
-                    : placeholderImg;
-
-            return randomImg;
-        } catch (error) {
-            console.error(`Error asignando imagen a ${productName}:`, error);
-            return placeholderImg;
+        // 2. Si ya existe la imagen para este ID, devolverla
+        if (imageMap[productId]) {
+            return imageMap[productId];
         }
+
+        // 3. Buscamos el producto para obtener su categoría
+        const product = PRODUCTS.find((p) => p.id === productId);
+        const categoryName = product?.categorias[0]?.nombre || "food";
+
+        // 4. Traducimos el nombre de la categoría al inglés para la API
+        const keyword = CATEGORY_TRANSLATIONS[categoryName] || "food";
+
+        // 5. Usamos el endpoint "featured" con keywords y una semilla (sig)
+        // Esto garantiza que para el ID 1 siempre devuelva la misma imagen, pero distinta a la del ID 2.
+        const newImageUrl = `https://loremflickr.com/500/500/${keyword}/all?lock=${productId}`;
+
+        // 6. Guardar en el mapa y actualizar localStorage
+        imageMap[productId] = newImageUrl;
+        localStorage.setItem(IMAGE_STORAGE_KEY, JSON.stringify(imageMap));
+
+        return newImageUrl;
     },
 };

@@ -41,14 +41,14 @@ export const showCart = (products: Product[]): void => {
                 <button class="btn btn--product-cart btn--minus">-</button>
                 <input type="number" class="product-qty" value="" min="1">
                 <button class="btn btn--product-cart btn--plus">+</button>
-                <p class="price cart__product-price cart__product-price-subtotal"></p>
+                <p class="price cart__product-price cart__product-price--subtotal"></p>
                 <button class="btn btn--product-cart btn--trash">🗑</button>
               </div>
             `;
             cartProductContainer?.appendChild(article);
 
             // Iniciamos la carga asíncrona de la imagen
-            updateProductImageUI(prod.id, prod.nombre);
+            updateProductImageUI(prod.id);
 
             // Obtener la cantidad actual desde el storage para este producto
             const currentQty: number =
@@ -75,7 +75,7 @@ export const showCart = (products: Product[]): void => {
             const subtotalValue: number = prod.precio * currentQty;
             const subtotalPrice: string = formattedPriceHTML(subtotalValue);
             const subtotalElement = article.querySelector(
-                ".cart__product-price-subtotal",
+                ".cart__product-price--subtotal",
             ) as HTMLParagraphElement;
             subtotalElement.innerHTML = subtotalPrice;
 
@@ -181,5 +181,18 @@ const updateCartSummary = (items: Product[]) => {
     if (totalElement) {
         const totalPrice: string = formattedPriceHTML(total);
         totalElement.innerHTML = totalPrice;
+    }
+
+    const btnClearCart = document.querySelector(
+        "#btn-clear-cart",
+    ) as HTMLButtonElement;
+
+    if (btnClearCart) {
+        btnClearCart.addEventListener("click", (): void => {
+            if (confirm("¿Desea vaciar el carrito?")) {
+                storage.clearCart();
+                showCart(items);
+            }
+        });
     }
 };

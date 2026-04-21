@@ -131,7 +131,7 @@ export const showProducts = (products: Product[]): void => {
             productContainer?.appendChild(article);
 
             // Iniciamos la carga asíncrona de la imagen
-            updateProductImageUI(prod.id, prod.nombre);
+            updateProductImageUI(prod.id);
 
             const btnAdd = article.querySelector(
                 ".btn--add-product",

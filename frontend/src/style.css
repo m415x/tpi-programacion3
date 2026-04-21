@@ -664,6 +664,11 @@ select {
   font-size: var(--font-size-md);
 }
 
+.cart__product-price--subtotal {
+  min-width: 105px;
+  text-align: right;
+}
+
 .cart__product-btns {
   display: flex;
   align-items: center;
@@ -692,7 +697,7 @@ select {
 }
 
 .cart__product-btns .cart__product-price {
-  margin: 0 var(--space-double);
+  margin: 0 var(--space-base);
 }
 
 .cart__empty {

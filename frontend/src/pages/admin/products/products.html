@@ -8,15 +8,6 @@
 
     <link rel="stylesheet" href="/src/style.css">
     <script type="module" src="/src/main.ts"></script>
-    <script type="module">
-      import { storage } from "/src/utils/storage.ts";
-      import { PATHS } from "/src/utils/paths.ts";
-
-      // Bloqueo inmediato antes de renderizar el body
-      if (!storage.getUser()) {
-        window.location.replace(PATHS.AUTH.LOGIN);
-      }
-    </script>
   </head>
 
   <body class="layout layout--no-footer">

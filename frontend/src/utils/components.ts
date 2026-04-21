@@ -65,37 +65,26 @@ export const renderHeader = (containerId: string): void => {
 
     const role = storage.getRole();
     const name = storage.getUser()?.name;
-    const path = window.location.pathname;
 
-    // Determinamos en qué sección estamos
-    const isAdminArea = path.includes("/admin/");
-    const isClientArea = path.includes("/client/");
+    const adminMenu =
+        role === "admin"
+            ? `<li class="menu__item menu__item--admin"><a href="${PATHS.ADMIN.HOME}">Admin</a></li>`
+            : "";
+    const userAreaMenu =
+        role === "client"
+            ? `<li class="menu__item menu__item--client"><a href="${PATHS.CLIENT.HOME}">${name}</a></li>`
+            : `<li class="menu__item menu__item--client"><a href="${PATHS.ADMIN.HOME}">${name}</a></li>`;
 
     container.innerHTML = `
     <div class="header__content">
         <h1>Food Store</h1>
         <nav class="menu">
         <ul class="menu__list">
-            <li class="menu__item"><a href="${PATHS.STORE.HOME}">Inicio</a></li>
+            <li class="menu__item"><a href="${PATHS.STORE.HOME}">Tienda</a></li>
             <li class="menu__item"><a href="#">Mis Pedidos</a></li>
+            ${adminMenu}
             <li class="menu__item menu__item--cart"><a href="${PATHS.STORE.CART}">Carrito</a></li>
-            ${
-                role === "admin" && !isAdminArea
-                    ? `<li class="menu__item menu__item--admin"><a href="${PATHS.ADMIN.HOME}">${name}</a></li>`
-                    : ""
-            }
-            
-            ${
-                role === "client" && !isClientArea
-                    ? `<li class="menu__item menu__item--client"><a href="${PATHS.CLIENT.HOME}">${name}</a></li>`
-                    : ""
-            }
-            
-            ${
-                isAdminArea || isClientArea
-                    ? `<li class="menu__item menu__item--return-to-store"><a href="${PATHS.STORE.HOME}">Volver a la tienda</a></li>`
-                    : ""
-            }
+            ${userAreaMenu}
         </ul>
         <button id="logoutButton" class="btn btn--secondary">Cerrar Sesión</button>
         </nav>

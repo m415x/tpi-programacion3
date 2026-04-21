@@ -1,16 +1,13 @@
 import { productService as ps } from "@/services/productService";
 
 /**
- * Busca la imagen de un producto en la API y la asigna al elemento <img> correspondiente.
+ * Busca la imagen de un producto aleatorio en la API y la asigna al elemento
+ * <img> correspondiente.
  * @param id ID del producto para localizar el elemento en el DOM.
- * @param name Nombre del producto para realizar la búsqueda en la API.
  */
-export const updateProductImageUI = async (
-    id: number,
-    name: string,
-): Promise<void> => {
+export const updateProductImageUI = (id: number): void => {
     // 1. Obtenemos la URL desde el servicio (Lógica de datos)
-    const url: string = await ps.getProductImageUrl(name);
+    const url: string = ps.getPersistentImage(id);
 
     // 2. Localizamos el elemento en el DOM (Lógica de interfaz)
     const imgElement = document.getElementById(
