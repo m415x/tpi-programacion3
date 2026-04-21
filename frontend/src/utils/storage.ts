@@ -55,8 +55,8 @@ export const storage = {
         return cartItems ? JSON.parse(cartItems) : [];
     },
 
-    // Guardar items
-    updateCartItem(id: number): boolean {
+    // Actualizar cantidad de un item en el carrito (incrementar o fijar)
+    updateCartItem(id: number, fixedQty?: number): boolean {
         const cartItems: ICartItem[] = this.getCartItems();
 
         // Buscar producto y validar existencia
@@ -69,18 +69,25 @@ export const storage = {
             (i: ICartItem): boolean => i.id === id,
         );
 
-        const currentQty: number = existingItem ? existingItem.qty : 0;
+        // Determinamos la cantidad que se quiere setear
+        // Si viene fixedQty, usamos esa. Si no, incrementamos la actual + 1.
+        const newQty =
+            fixedQty !== undefined
+                ? fixedQty
+                : existingItem
+                  ? existingItem.qty + 1
+                  : 1;
 
-        // Cláusula de guarda para el Stock
-        if (currentQty >= product.stock) {
+        // Validamos contra el stock
+        if (newQty > product.stock) {
             return false;
         }
 
         // Lógica de actualización
         if (existingItem) {
-            existingItem.qty++;
+            existingItem.qty = newQty;
         } else {
-            cartItems.push({ id, qty: 1 });
+            cartItems.push({ id, qty: newQty });
         }
 
         localStorage.setItem("cartItems", JSON.stringify(cartItems));

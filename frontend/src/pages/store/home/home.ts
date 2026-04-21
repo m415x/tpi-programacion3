@@ -3,6 +3,7 @@ import {
     showCategoriesInSidebar,
     showProducts,
     showSearchBar,
+    initStickySearch,
 } from "@pages/store/home/home.controller";
 import { PRODUCTS, getCategories } from "@/data/data";
 import type { ICategory } from "@interfaces/ICategory";
@@ -22,6 +23,9 @@ const initStore = (): void => {
     // Invocar funciones que inyectan los datos de productos y categorías
     showProducts(PRODUCTS);
     showSearchBar(PRODUCTS, activeCategories);
+
+    // Inicializar la funcionalidad de búsqueda sticky
+    initStickySearch();
 };
 
 initStore();

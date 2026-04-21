@@ -76,7 +76,7 @@ export const renderHeader = (containerId: string): void => {
         <ul class="menu__list">
             <li class="menu__item"><a href="/src/pages/store/home/home.html">Inicio</a></li>
             <li class="menu__item"><a href="#">Mis Pedidos</a></li>
-            <li class="menu__item"><a href="/src/pages/store/cart/cart.html">Carrito</a></li>
+            <li class="menu__item"><a href="/src/pages/store/cart/cart.html">Carrito</a><span class="menu__item-badge">0</span></li>
             ${
                 role === "admin" && !isAdminArea
                     ? `<li class="menu__item menu__item--admin"><a href="/src/pages/admin/home/home.html">${name}</a></li>`

@@ -36,7 +36,7 @@ export const productService = {
                 fastFoodApiPromise = fetch(
                     "https://devsapihub.com/api-fast-food",
                 )
-                    .then((res: Response): Promise<string> => res.json())
+                    .then((res: Response) => res.json() as Promise<any[]>)
                     .catch((err: Error) => {
                         console.error(
                             "Error consumiendo la API de imágenes:",

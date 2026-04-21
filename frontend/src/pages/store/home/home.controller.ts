@@ -2,6 +2,9 @@ import type { Product } from "@interfaces/Product";
 import type { ICategory } from "@interfaces/ICategory";
 import { storage } from "@utils/storage";
 import { productService as ps } from "@/services/productService";
+import { updateProductImageUI } from "@/utils/uiUtils";
+import { formattedPriceHTML } from "@/utils/uiUtils";
+import type { ICartItem } from "@/types/ICartItem";
 
 // Función para cargar el título en el menú lateral
 export const showHeadingInSidebar = (title: string): void => {
@@ -83,28 +86,35 @@ export const showProducts = (products: Product[]): void => {
             const article: HTMLElement = document.createElement("article");
             article.classList.add("card", "product__card");
 
-            const formattedPrice: string = prod.precio.toLocaleString("es-AR", {
-                style: "currency",
-                currency: "ARS",
-            });
-
-            const [wholePrice, decimalPrice]: string[] =
-                formattedPrice.split(",");
+            const unitPrice: string = formattedPriceHTML(prod.precio);
 
             const categoryName =
                 prod.categorias.length > 0 && prod.categorias[0]
                     ? prod.categorias[0].nombre
                     : "Sin categoría";
 
-            const btnAvailable: string = prod.disponible
+            // Obtener cuánto de este producto ya está en el carrito
+            const cartItem: ICartItem | undefined = storage
+                .getCartItems()
+                .find((i: ICartItem): boolean => i.id === prod.id);
+            const qtyInCart: number = cartItem ? cartItem.qty : 0;
+
+            // Calcular el stock disponible para mostrar
+            const displayStock: number = prod.stock - qtyInCart;
+
+            // Determinar si habilitar el botón
+            const isActuallyAvailable: boolean =
+                prod.disponible && displayStock > 0;
+
+            const btnAvailable: string = isActuallyAvailable
                 ? `<button class="btn btn--primary btn--add-product">
                         Agregar al carrito
                     </button>`
                 : `<button class="btn btn--secondary btn--add-product btn--disabled" disabled >No disponible</button>`;
 
             article.innerHTML = `
-            <img class="product__img" src="https://via.placeholder.com/400x300?text=Cargando..." id="img-product-${prod.id}" alt="${prod.nombre}">
-            <p class="product__stock ${prod.disponible ? "product__stock--available" : ""}">${prod.disponible ? "Disponible" : "Agotado"}</p>
+            <img class="product__img" src="" id="img-product-${prod.id}" alt="${prod.nombre}">
+            <p class="product__stock ${isActuallyAvailable ? "product__stock--available" : ""}">${isActuallyAvailable ? "Disponible" : "Agotado"}</p>
             <div class="product__content">
                 <div class="product__body">
                     <p class="product__category">${categoryName}</p>
@@ -112,7 +122,7 @@ export const showProducts = (products: Product[]): void => {
                     <p class="product__description">${prod.descripcion}</p>
                 </div>
                 <div class="product__foot">
-                    <p class="product__price">${wholePrice}<span>${decimalPrice}</span></p>
+                    <p class="price product__price">${unitPrice}</p>
                     ${btnAvailable}
                 </div>
             </div>
@@ -120,17 +130,25 @@ export const showProducts = (products: Product[]): void => {
             productContainer?.appendChild(article);
 
             // Iniciamos la carga asíncrona de la imagen
-            fetchAndAssignProductImage(prod.id, prod.nombre);
+            updateProductImageUI(prod.id, prod.nombre);
 
             const btnAdd = article.querySelector(
                 ".btn--add-product",
             ) as HTMLButtonElement;
             btnAdd?.addEventListener("click", (): void => {
                 if (storage.updateCartItem(prod.id)) {
-                    alert(`Has agregado: ${prod.nombre}`);
-                    storage.updateCartItem(prod.id);
-                } else {
-                    alert("Stock insuficiente");
+                    // Calculamos el stock remanente
+                    const cartItem: ICartItem | undefined = storage
+                        .getCartItems()
+                        .find((i: ICartItem): boolean => i.id === prod.id);
+                    const qtyInCart: number = cartItem ? cartItem.qty : 0;
+                    const currentAvailable: number = prod.stock - qtyInCart;
+
+                    if (currentAvailable <= 0) {
+                        // Stock agotado: Refrescamos para deshabilitar el botón y cambiar estilos
+                        showProducts(products);
+                        alert("¡Has añadido la última unidad!");
+                    }
                 }
             });
         });
@@ -190,20 +208,26 @@ export const showSearchBar = (
     });
 };
 
-// Función asíncrona para obtener y asignar la imagen al producto dinámicamente
-const fetchAndAssignProductImage = async (
-    productId: number,
-    productName: string,
-): Promise<void> => {
-    // Delegamos la obtención del dato al servicio
-    const imageUrl: string = await ps.getProductImageUrl(productName);
+// Función para detectar cuando la barra de búsqueda se vuelva sticky al hacer scroll
+export const initStickySearch = (): void => {
+    const searchBar = document.querySelector(".search-bar") as HTMLElement;
+    if (!searchBar) return;
 
-    // Solo interactuamos con el DOM en esta capa
-    const imgElement = document.getElementById(
-        `img-product-${productId}`,
-    ) as HTMLImageElement;
+    const sentinel: HTMLElement = document.createElement("div");
+    sentinel.classList.add("main__sticky-sentinel");
+    searchBar.parentNode?.insertBefore(sentinel, searchBar);
 
-    if (imgElement) {
-        imgElement.src = imageUrl;
-    }
+    const observer: IntersectionObserver = new IntersectionObserver(
+        ([entry]: IntersectionObserverEntry[]) => {
+            if (entry) {
+                searchBar.classList.toggle(
+                    "search-bar--is-sticky",
+                    !entry.isIntersecting,
+                );
+            }
+        },
+        { threshold: [0] },
+    );
+
+    observer.observe(sentinel);
 };

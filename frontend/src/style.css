@@ -1,7 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Oswald:wght@200..700&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap');
+
 /* ESTILOS ROOT */
 :root {
   /* Tipografía y tamaños de fuente */
   --font-family: 'Roboto', sans-serif;
+  --font-family-mono: 'Source Code Pro', monospace;
   --font-size-xxs: 0.5rem;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
@@ -174,6 +177,23 @@ select {
   border: var(--border-box);
 }
 
+/* PRICE */
+.price {
+  font-family: var(--font-family-mono);
+  font-weight: bold;
+  font-size: var(--font-size-md);
+}
+
+.price--whole {
+  font-size: var(--font-size-md);
+}
+
+.price--decimal {
+  vertical-align: super;
+  font-size: var(--font-size-xs);
+  padding-left: 2px;
+}
+
 /* ---------------------------
     LAYOUT
    --------------------------- */
@@ -248,6 +268,20 @@ select {
 .menu__item a:hover {
   color: var(--color-primary);
   text-decoration: underline;
+}
+
+.menu__item-badge {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  font-size: var(--font-size-xs);
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 50%;
+  position: relative;
+  top: -10px;
+  right: -15px;
+  margin-left: -15px;
+  z-index: 1;
 }
 
 /* SIDEBAR */
@@ -439,11 +473,22 @@ select {
   position: relative;
 }
 
+.main__sticky-sentinel {
+  position: absolute;
+}
+
 .search-bar {
   padding: var(--space-base);
   position: sticky;
   top: calc(var(--space-double)*-1);
   z-index: 9;
+  transition: margin var(--transition-duration);
+}
+
+.search-bar.search-bar--is-sticky {
+  border-top-left-radius: 0%;
+  border-top-right-radius: 0%;
+  margin: 0 calc(var(--space-double)*-1);
 }
 
 .search-bar form {
@@ -543,12 +588,15 @@ select {
   font-size: var(--font-size-lg);
   color: var(--color-primary);
   font-weight: bold;
-}
 
-.product__price span {
-  vertical-align: super;
-  font-size: var(--font-size-xs);
-  padding-left: 2px;
+  & .price--whole {
+    font-size: var(--font-size-lg);
+  }
+
+  & .price--decimal {
+    font-size: var(--font-size-xs);
+  }
+
 }
 
 /* ---------------------------
@@ -676,7 +724,8 @@ select {
   margin-bottom: var(--space-base);
 }
 
-.cart__summary-row--total p {
+.cart__summary-row--total p,
+#cart-total-amount .price--whole {
   color: var(--color-primary);
   font-weight: bold;
   font-size: var(--font-size-lg);
