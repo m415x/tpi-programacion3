@@ -4,6 +4,9 @@ import { productService as ps } from "@/services/productService";
 import { cartService as cs } from "@/services/cartService";
 import { updateProductImageUI, formattedPriceHTML } from "@/utils/uiUtils";
 import type { ICartItem } from "@/types/ICartItem";
+import { updateCartBadge } from "@/utils/components";
+import { navigate } from "@/utils/navigate";
+import { PATHS } from "@utils/paths";
 
 // Función para cargar los productos en el contenedor principal
 export const showCart = (products: Product[]): void => {
@@ -111,13 +114,31 @@ export const showCart = (products: Product[]): void => {
             });
         });
     } else {
-        const emptyResult: HTMLParagraphElement = document.createElement("p");
+        const cartEmpty = document.createElement("div") as HTMLDivElement;
+        const emptyResult = document.createElement("p") as HTMLParagraphElement;
+        const btnReturnStore = document.createElement(
+            "button",
+        ) as HTMLButtonElement;
 
+        cartEmpty.classList.add("cart__empty");
         emptyResult.classList.add("empty-result");
         emptyResult.textContent = "No se encontraron productos en el carrito.";
-        cartProductContainer?.appendChild(emptyResult);
+        btnReturnStore.classList.add("btn", "btn--primary");
+        btnReturnStore.textContent = "Volver a la tienda";
+
+        cartEmpty?.appendChild(emptyResult);
+        cartEmpty?.appendChild(btnReturnStore);
+        cartProductContainer?.appendChild(cartEmpty);
+
+        btnReturnStore.addEventListener("click", (): void => {
+            navigate(PATHS.STORE.HOME);
+        });
     }
+    // Actualizamos el resumen del carrito
     updateCartSummary(cartItems);
+
+    // Actualizamos el badge del carrito
+    updateCartBadge();
 };
 
 const updateCartSummary = (items: Product[]) => {

@@ -5,6 +5,7 @@ import { productService as ps } from "@/services/productService";
 import { updateProductImageUI } from "@/utils/uiUtils";
 import { formattedPriceHTML } from "@/utils/uiUtils";
 import type { ICartItem } from "@/types/ICartItem";
+import { updateCartBadge } from "@/utils/components";
 
 // Función para cargar el título en el menú lateral
 export const showHeadingInSidebar = (title: string): void => {
@@ -149,6 +150,8 @@ export const showProducts = (products: Product[]): void => {
                         showProducts(products);
                         alert("¡Has añadido la última unidad!");
                     }
+                    // Actualizamos el badge del carrito
+                    updateCartBadge();
                 }
             });
         });

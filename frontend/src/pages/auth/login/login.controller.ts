@@ -1,5 +1,6 @@
 import { authService as as } from "@/services/authService";
 import { navigate } from "@utils/navigate";
+import { PATHS } from "@utils/paths";
 
 // Lógica de Login: Validaciones, encriptación y redirección.
 export const initLoginLogic = (): void => {
@@ -26,7 +27,7 @@ export const initLoginLogic = (): void => {
 
         // Intento de Login
         if (as.login(email, encryptedPass)) {
-            window.location.href = "/src/pages/store/home/home.html";
+            navigate(PATHS.STORE.HOME);
         } else {
             alert("Credenciales incorrectas.");
         }
@@ -39,6 +40,6 @@ export const initLoginLogic = (): void => {
     // Listener para cambiar entre login y registro
     authLink?.addEventListener("click", (e: MouseEvent) => {
         e.preventDefault();
-        navigate("/src/pages/auth/register/register.html");
+        navigate(PATHS.AUTH.REGISTER);
     });
 };

@@ -1,5 +1,7 @@
 import { storage } from "@utils/storage";
 import { logout } from "@utils/auth";
+import type { ICartItem } from "@/types/ICartItem";
+import { PATHS } from "@utils/paths";
 
 // Función para renderizar la tarjeta de autenticación (Login/Registro)
 export const renderAuthCard = (
@@ -74,24 +76,24 @@ export const renderHeader = (containerId: string): void => {
         <h1>Food Store</h1>
         <nav class="menu">
         <ul class="menu__list">
-            <li class="menu__item"><a href="/src/pages/store/home/home.html">Inicio</a></li>
+            <li class="menu__item"><a href="${PATHS.STORE.HOME}">Inicio</a></li>
             <li class="menu__item"><a href="#">Mis Pedidos</a></li>
-            <li class="menu__item"><a href="/src/pages/store/cart/cart.html">Carrito</a><span class="menu__item-badge">0</span></li>
+            <li class="menu__item menu__item--cart"><a href="${PATHS.STORE.CART}">Carrito</a></li>
             ${
                 role === "admin" && !isAdminArea
-                    ? `<li class="menu__item menu__item--admin"><a href="/src/pages/admin/home/home.html">${name}</a></li>`
+                    ? `<li class="menu__item menu__item--admin"><a href="${PATHS.ADMIN.HOME}">${name}</a></li>`
                     : ""
             }
             
             ${
                 role === "client" && !isClientArea
-                    ? `<li class="menu__item menu__item--client"><a href="/src/pages/client/home/home.html">${name}</a></li>`
+                    ? `<li class="menu__item menu__item--client"><a href="${PATHS.CLIENT.HOME}">${name}</a></li>`
                     : ""
             }
             
             ${
                 isAdminArea || isClientArea
-                    ? '<li class="menu__item menu__item--return-to-store"><a href="/src/pages/store/home/home.html">Volver a la tienda</a></li>'
+                    ? `<li class="menu__item menu__item--return-to-store"><a href="${PATHS.STORE.HOME}">Volver a la tienda</a></li>`
                     : ""
             }
         </ul>
@@ -100,12 +102,49 @@ export const renderHeader = (containerId: string): void => {
     </div>
     `;
 
+    // Actualizamos el badge del carrito
+    updateCartBadge();
+
     // Asignamos el evento de logout una vez inyectado el HTML
     const btnLogout = document.getElementById(
         "logoutButton",
     ) as HTMLButtonElement | null;
 
     btnLogout?.addEventListener("click", (): void => logout());
+};
+
+// Función para actualizar el badge del carrito en el menú cada vez que se modifica el carrito
+export const updateCartBadge = (): void => {
+    // 1. Buscamos el contenedor del badge
+    const cartLink = document.querySelector(
+        ".menu__item--cart a",
+    ) as HTMLLinkElement | null;
+    if (!cartLink) return;
+
+    // 2. Calculamos la cantidad actual
+    const cartItems: ICartItem[] = storage.getCartItems();
+    const totalQty: number = cartItems.reduce(
+        (acc: number, item: ICartItem): number => acc + item.qty,
+        0,
+    );
+
+    // 3. Buscamos si ya existe el badge
+    let badge = cartLink.parentElement?.querySelector(
+        ".menu__item-badge",
+    ) as HTMLElement | null;
+
+    if (totalQty > 0) {
+        if (!badge) {
+            // Si no existe y hay items, lo creamos
+            badge = document.createElement("span");
+            badge.classList.add("menu__item-badge");
+            cartLink.parentElement?.appendChild(badge);
+        }
+        badge.textContent = totalQty.toString();
+    } else {
+        // Si no hay items, lo eliminamos si existía
+        badge?.remove();
+    }
 };
 
 // Función para renderizar el Aside con la estructura base

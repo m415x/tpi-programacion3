@@ -1,5 +1,6 @@
 import { authService as as } from "@/services/authService";
 import type { IUser } from "@/types/IUser";
+import { PATHS } from "@/utils/paths";
 import { navigate } from "@utils/navigate";
 
 // Lógica de Registro: Validaciones, encriptación y redirección.
@@ -52,7 +53,7 @@ export const initRegisterLogic = (): void => {
 
         if (result.success) {
             alert(result.message);
-            navigate("/src/pages/auth/login/login.html");
+            navigate(PATHS.AUTH.LOGIN);
         } else {
             // Si el email ya existe, el mensaje vendrá del service
             alert(result.message);
@@ -66,6 +67,6 @@ export const initRegisterLogic = (): void => {
     // Listener para cambiar entre login y registro
     authLink?.addEventListener("click", (e: MouseEvent) => {
         e.preventDefault();
-        navigate("/src/pages/auth/login/login.html");
+        navigate(PATHS.AUTH.LOGIN);
     });
 };
