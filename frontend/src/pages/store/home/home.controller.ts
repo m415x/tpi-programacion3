@@ -3,7 +3,11 @@ import type { ICategory } from "@interfaces/ICategory";
 import { storage } from "@utils/storage";
 import { productService as ps } from "@/services/productService";
 import { cartService as cs } from "@/services/cartService";
-import { updateProductImageUI, wrapWithDetailLink } from "@/utils/uiUtils";
+import {
+    getDisabledState,
+    updateProductImageUI,
+    wrapWithDetailLink,
+} from "@/utils/uiUtils";
 import { formattedPriceHTML } from "@/utils/uiUtils";
 import type { ICartItem } from "@/types/ICartItem";
 import { updateCartBadge } from "@/utils/components";
@@ -101,15 +105,21 @@ export const showProducts = (products: Product[]): void => {
             // Calcular el stock disponible para mostrar
             const displayStock: number = prod.stock - qtyInCart;
 
-            // Determinar si habilitar el botón
+            // Determinar si habilitar el elemento
             const isActuallyAvailable: boolean =
                 prod.disponible && displayStock > 0;
+            const disabledState: string = getDisabledState(isActuallyAvailable);
+            const disabledStateBadge: string = getDisabledState(
+                isActuallyAvailable,
+                "stock-badge--out-of-stock",
+            );
 
-            const btnAvailable: string = isActuallyAvailable
-                ? `<button class="btn btn--primary btn--add-product">
-                        Agregar al carrito
-                    </button>`
-                : `<button class="btn btn--secondary btn--add-product btn--disabled" disabled >No disponible</button>`;
+            const badgeText: string = isActuallyAvailable
+                ? "Disponible"
+                : "Agotado";
+            const btnTextAddToCart: string = isActuallyAvailable
+                ? `Agregar al carrito`
+                : `No disponible`;
 
             const linkedImg = wrapWithDetailLink(
                 prod.id,
@@ -123,7 +133,7 @@ export const showProducts = (products: Product[]): void => {
 
             article.innerHTML = `
             ${linkedImg}
-            <p class="product__stock stock-badge ${isActuallyAvailable ? "stock-badge--available" : ""}">${isActuallyAvailable ? "Disponible" : "Agotado"}</p>
+            <p class="product__stock stock-badge ${disabledStateBadge}">${badgeText}</p>
             <div class="product__content">
                 <div class="product__body">
                     <p class="product__category">${categoryName}</p>
@@ -132,7 +142,7 @@ export const showProducts = (products: Product[]): void => {
                 </div>
                 <div class="product__foot">
                     <p class="price product__price">${unitPrice}</p>
-                    ${btnAvailable}
+                    <button class="btn btn--primary btn--add-product" ${disabledState}>${btnTextAddToCart}</button>
                 </div>
             </div>
             `;

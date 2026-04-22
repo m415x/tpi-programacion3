@@ -2,7 +2,11 @@ import type { Product } from "@interfaces/Product";
 import { storage } from "@utils/storage";
 import { productService as ps } from "@/services/productService";
 import { cartService as cs } from "@/services/cartService";
-import { updateProductImageUI, formattedPriceHTML } from "@/utils/uiUtils";
+import {
+    updateProductImageUI,
+    formattedPriceHTML,
+    wrapWithDetailLink,
+} from "@/utils/uiUtils";
 import type { ICartItem } from "@/types/ICartItem";
 import { updateCartBadge } from "@/utils/components";
 import { navigate } from "@/utils/navigate";
@@ -26,13 +30,18 @@ export const showCart = (products: Product[]): void => {
             const article: HTMLElement = document.createElement("article");
             article.classList.add("card", "cart__product");
 
+            const linkedName = wrapWithDetailLink(
+                prod.id,
+                `<h3 class="cart__product-title">${prod.nombre}</h3>`,
+            );
+
             const unitPrice: string = formattedPriceHTML(prod.precio);
 
             article.innerHTML = `
             <div class="cart__product-info">
                 <img class="cart__product-img" src="" id="img-product-${prod.id}" alt="${prod.nombre}">
                 <div class="cart__product-details">
-                    <h4 class="cart__product-title">${prod.nombre}</h4>
+                    ${linkedName}
                     <p class="cart__product-description">${prod.descripcion}</p>
                     <p class="price cart__product-price">${unitPrice}<span>c/u</span></p>
                 </div>

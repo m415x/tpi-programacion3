@@ -54,5 +54,22 @@ export const formattedPriceHTML = (price: number): string => {
  * @returns String HTML del enlace.
  */
 export const wrapWithDetailLink = (id: number, content: string): string => {
-    return `<a href="${PATHS.STORE.DETAIL(id)}" class="product-link">${content}</a>`;
+    return `<a href="${PATHS.STORE.DETAIL(id)}" class="link">${content}</a>`;
+};
+
+/**
+ * Genera el atributo 'disabled' o una clase CSS para indicar que un control no está disponible.
+ * @param isAvailable Booleano que indica si el control debe estar activo.
+ * @param classSelector Opcional. Si se proporciona, se devuelve la clase CSS en
+ * lugar del atributo 'disabled'.
+ * @returns Un string con el atributo 'disabled' y/o la clase CSS.
+ */
+export const getDisabledState = (
+    isAvailable: boolean,
+    classSelector?: string,
+): string => {
+    if (classSelector) {
+        return !isAvailable ? `${classSelector}` : "";
+    }
+    return !isAvailable ? "disabled" : "";
 };

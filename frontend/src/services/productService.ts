@@ -48,7 +48,7 @@ export const productService = {
 
         // 2. Si ya existe la imagen para este ID, devolverla
         if (imageMap[productId]) {
-            return imageMap[productId];
+            return imageMap[productId] as string;
         }
 
         // 3. Buscamos el producto para obtener su categoría

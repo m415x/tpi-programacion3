@@ -1,6 +1,6 @@
 import { renderHeader, renderFooter } from "@utils/components";
 import { PRODUCTS } from "@/data/data";
-import { showProductDetail } from "./productDetail.controller";
+import { showProductDetail } from "@pages/store/productDetail/productDetail.controller";
 import { navigate } from "@utils/navigate";
 import { PATHS } from "@utils/paths";
 import type { Product } from "@/types/Product";
