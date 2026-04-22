@@ -1,6 +1,7 @@
 import { storage } from "@utils/storage";
 import { logout } from "@utils/auth";
 import type { ICartItem } from "@/types/ICartItem";
+import { cartService as cs } from "@/services/cartService";
 import { PATHS } from "@utils/paths";
 
 // Función para renderizar la tarjeta de autenticación (Login/Registro)
@@ -111,11 +112,7 @@ export const updateCartBadge = (): void => {
     if (!cartLink) return;
 
     // 2. Calculamos la cantidad actual
-    const cartItems: ICartItem[] = storage.getCartItems();
-    const totalQty: number = cartItems.reduce(
-        (acc: number, item: ICartItem): number => acc + item.qty,
-        0,
-    );
+    const totalQty: number = cs.getTotalQuantity();
 
     // 3. Buscamos si ya existe el badge
     let badge = cartLink.parentElement?.querySelector(

@@ -2,7 +2,8 @@ import type { Product } from "@interfaces/Product";
 import type { ICategory } from "@interfaces/ICategory";
 import { storage } from "@utils/storage";
 import { productService as ps } from "@/services/productService";
-import { updateProductImageUI } from "@/utils/uiUtils";
+import { cartService as cs } from "@/services/cartService";
+import { updateProductImageUI, wrapWithDetailLink } from "@/utils/uiUtils";
 import { formattedPriceHTML } from "@/utils/uiUtils";
 import type { ICartItem } from "@/types/ICartItem";
 import { updateCartBadge } from "@/utils/components";
@@ -95,10 +96,7 @@ export const showProducts = (products: Product[]): void => {
                     : "Sin categoría";
 
             // Obtener cuánto de este producto ya está en el carrito
-            const cartItem: ICartItem | undefined = storage
-                .getCartItems()
-                .find((i: ICartItem): boolean => i.id === prod.id);
-            const qtyInCart: number = cartItem ? cartItem.qty : 0;
+            const qtyInCart: number = cs.getProductQuantity(prod.id);
 
             // Calcular el stock disponible para mostrar
             const displayStock: number = prod.stock - qtyInCart;
@@ -113,13 +111,23 @@ export const showProducts = (products: Product[]): void => {
                     </button>`
                 : `<button class="btn btn--secondary btn--add-product btn--disabled" disabled >No disponible</button>`;
 
+            const linkedImg = wrapWithDetailLink(
+                prod.id,
+                `<img class="product__img" src="" id="img-product-${prod.id}" alt="${prod.nombre}">`,
+            );
+
+            const linkedName = wrapWithDetailLink(
+                prod.id,
+                `<h3 class="product__name">${prod.nombre}</h3>`,
+            );
+
             article.innerHTML = `
-            <img class="product__img" src="" id="img-product-${prod.id}" alt="${prod.nombre}">
-            <p class="product__stock ${isActuallyAvailable ? "product__stock--available" : ""}">${isActuallyAvailable ? "Disponible" : "Agotado"}</p>
+            ${linkedImg}
+            <p class="product__stock stock-badge ${isActuallyAvailable ? "stock-badge--available" : ""}">${isActuallyAvailable ? "Disponible" : "Agotado"}</p>
             <div class="product__content">
                 <div class="product__body">
                     <p class="product__category">${categoryName}</p>
-                    <h3 class="product__name">${prod.nombre}</h3>
+                    ${linkedName}
                     <p class="product__description">${prod.descripcion}</p>
                 </div>
                 <div class="product__foot">

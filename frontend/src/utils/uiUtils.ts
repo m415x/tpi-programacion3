@@ -1,4 +1,14 @@
+/**
+ * Este módulo contiene funciones de utilidad para la interfaz de usuario
+ * relacionadas con la visualización de productos, formateo de precios y
+ * generación de enlaces a detalles de productos. Estas funciones abstraen la
+ * lógica de presentación y permiten una separación clara entre la lógica de
+ * datos (servicios) y la lógica de interfaz (manipulación del DOM). Esto
+ * facilita el mantenimiento y la reutilización del código en diferentes partes
+ * de la aplicación.
+ */
 import { productService as ps } from "@/services/productService";
+import { PATHS } from "@utils/paths";
 
 /**
  * Busca la imagen de un producto aleatorio en la API y la asigna al elemento
@@ -35,4 +45,14 @@ export const formattedPriceHTML = (price: number): string => {
     return `
     <span class="price--whole">${wholePrice}</span><span class="price--decimal">${decimalPrice}</span>
     `;
+};
+
+/**
+ * Envuelve un fragmento de HTML con un enlace al detalle del producto.
+ * @param id ID del producto.
+ * @param content Contenido HTML a envolver.
+ * @returns String HTML del enlace.
+ */
+export const wrapWithDetailLink = (id: number, content: string): string => {
+    return `<a href="${PATHS.STORE.DETAIL(id)}" class="product-link">${content}</a>`;
 };

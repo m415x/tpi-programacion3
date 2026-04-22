@@ -3,7 +3,12 @@ import type { ICartItem } from "@/types/ICartItem";
 import { PRODUCTS } from "@/data/data";
 import type { Product } from "@/types/Product";
 
-// Store centralizado para gestionar el estado de la sesión
+/**
+ * Este objeto contiene un store centralizado para gestionar el estado de la
+ * sesión, incluyendo usuarios y carrito de compras. Proporciona funciones para
+ * obtener, guardar y eliminar datos relacionados con la autenticación y el
+ * carrito, utilizando localStorage como mecanismo de persistencia.
+ */
 export const storage = {
     // --- Funciones para gestionar usuarios ---
 

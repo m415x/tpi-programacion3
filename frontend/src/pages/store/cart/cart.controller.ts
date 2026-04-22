@@ -38,11 +38,11 @@ export const showCart = (products: Product[]): void => {
                 </div>
               </div>
               <div class="cart__product-btns">
-                <button class="btn btn--product-cart btn--minus">-</button>
+                <button class="btn btn--square btn--minus">-</button>
                 <input type="number" class="product-qty" value="" min="1">
-                <button class="btn btn--product-cart btn--plus">+</button>
+                <button class="btn btn--square btn--plus">+</button>
                 <p class="price cart__product-price cart__product-price--subtotal"></p>
-                <button class="btn btn--product-cart btn--trash">🗑</button>
+                <button class="btn btn--square btn--trash">🗑</button>
               </div>
             `;
             cartProductContainer?.appendChild(article);
@@ -51,11 +51,7 @@ export const showCart = (products: Product[]): void => {
             updateProductImageUI(prod.id);
 
             // Obtener la cantidad actual desde el storage para este producto
-            const currentQty: number =
-                storage
-                    .getCartItems()
-                    .find((i: ICartItem): boolean => i.id === prod.id)?.qty ||
-                1;
+            const currentQty: number = cs.getProductQuantity(prod.id);
             const inputQty = article.querySelector(
                 ".product-qty",
             ) as HTMLInputElement;
@@ -63,7 +59,10 @@ export const showCart = (products: Product[]): void => {
             inputQty.addEventListener("change", (): void => {
                 const newQty: number = parseInt(inputQty.value, 10);
                 if (newQty > 0) {
-                    const success = storage.updateCartItem(prod.id, newQty);
+                    const success: boolean = storage.updateCartItem(
+                        prod.id,
+                        newQty,
+                    );
                     if (!success) {
                         alert("No hay suficiente stock");
                     }
@@ -80,7 +79,6 @@ export const showCart = (products: Product[]): void => {
             subtotalElement.innerHTML = subtotalPrice;
 
             // Eventos de botones
-
             const btnMinus = article.querySelector(
                 ".btn--minus",
             ) as HTMLButtonElement;
@@ -94,7 +92,7 @@ export const showCart = (products: Product[]): void => {
             ) as HTMLButtonElement;
             btnPlus.addEventListener("click", (e: Event): void => {
                 e.preventDefault();
-                const success = storage.updateCartItem(prod.id);
+                const success: boolean = storage.updateCartItem(prod.id);
 
                 if (success) {
                     showCart(products);

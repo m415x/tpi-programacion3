@@ -141,7 +141,7 @@ select {
   pointer-events: none;
 }
 
-.btn--product-cart {
+.btn--square {
   width: var(--space-double);
   height: var(--space-double);
   display: flex;
@@ -192,6 +192,20 @@ select {
   vertical-align: super;
   font-size: var(--font-size-xs);
   padding-left: 2px;
+}
+
+/* STOCK BADGE */
+.stock-badge {
+  font-size: var(--font-size-xs);
+  width: fit-content;
+  padding: 0.5rem 0.7rem;
+  border-radius: 3rem;
+  background-color: color-mix(in srgb, var(--color-white), transparent 20%);
+}
+
+.stock-badge--available {
+  background-color: color-mix(in srgb, var(--color-tertiary), transparent 20%);
+  color: var(--color-white);
 }
 
 /* ---------------------------
@@ -525,6 +539,16 @@ select {
   box-shadow: var(--box-shadow-hover);
 }
 
+.product-link {
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+.product-link:hover>.product__name {
+  color: var(--color-primary);
+  transition: color var(--transition-duration);
+}
+
 .product__img {
   width: 100%;
   aspect-ratio: 2 / 1;
@@ -534,19 +558,9 @@ select {
 }
 
 .product__stock {
-  font-size: var(--font-size-xs);
-  width: fit-content;
-  padding: 0.5rem 0.7rem;
-  border-radius: 3rem;
-  background-color: color-mix(in srgb, var(--color-background), transparent 20%);
   position: absolute;
   top: var(--space-base);
   right: var(--space-base);
-}
-
-.product__stock--available {
-  background-color: color-mix(in srgb, var(--color-tertiary), transparent 20%);
-  color: var(--color-white);
 }
 
 .product__content {
@@ -596,6 +610,58 @@ select {
   & .price--decimal {
     font-size: var(--font-size-xs);
   }
+
+}
+
+/* ---------------------------
+    PRODUCT DETAIL
+   --------------------------- */
+.product-detail__content {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-triple);
+}
+
+.product-detail__img-container {
+  display: flex;
+  max-width: 400px;
+  max-height: 400px;
+}
+
+.product-detail__img {
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+}
+
+.product-detail__details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-base);
+  padding-top: var(--space-base);
+}
+
+.product-detail__title {
+  text-transform: uppercase;
+  font-size: var(--font-size-xl);
+  font-weight: bold;
+}
+
+.product-detail__price span {
+  color: var(--color-primary);
+  font-weight: bold;
+}
+
+.product-detail__price .price--whole {
+  font-size: var(--font-size-xxl);
+}
+
+.product-detail__price .price--decimal {
+  font-size: var(--font-size-base);
+}
+
+.product-detail__description {
+  font-size: var(--font-size-sm);
 
 }
 

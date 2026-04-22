@@ -1,5 +1,5 @@
 import { renderHeader, renderFooter } from "@utils/components";
-import { showCart } from "./cart.controller";
+import { showCart } from "@pages/store/cart/cart.controller";
 import { PRODUCTS } from "@/data/data";
 
 // Función principal para inicializar la página del carrito

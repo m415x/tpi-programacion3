@@ -52,11 +52,13 @@ export const productService = {
         }
 
         // 3. Buscamos el producto para obtener su categoría
-        const product = PRODUCTS.find((p) => p.id === productId);
-        const categoryName = product?.categorias[0]?.nombre || "food";
+        const product: Product | undefined = PRODUCTS.find(
+            (p: Product): boolean => p.id === productId,
+        );
+        const categoryName: string = product?.categorias[0]?.nombre || "food";
 
         // 4. Traducimos el nombre de la categoría al inglés para la API
-        const keyword = CATEGORY_TRANSLATIONS[categoryName] || "food";
+        const keyword: string = CATEGORY_TRANSLATIONS[categoryName] || "food";
 
         // 5. Usamos el endpoint "featured" con keywords y una semilla (sig)
         // Esto garantiza que para el ID 1 siempre devuelva la misma imagen, pero distinta a la del ID 2.
