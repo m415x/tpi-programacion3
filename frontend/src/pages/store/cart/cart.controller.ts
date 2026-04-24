@@ -82,14 +82,8 @@ export const showCart = (products: Product[]): void => {
             inputQty.addEventListener("change", (): void => {
                 const newQty: number = parseInt(inputQty.value, 10);
                 if (newQty > 0) {
-                    const success: boolean = storage.updateCartItem(
-                        prod.id,
-                        newQty,
-                    );
-                    if (!success) {
-                        alert("No hay suficiente stock");
-                    }
-                    showCart(products);
+                    // Actualizamos el storage
+                    handleUpdateQuantity(products, prod.id, newQty);
                 }
             });
 
@@ -122,13 +116,9 @@ export const showCart = (products: Product[]): void => {
             });
             btnPlus.addEventListener("click", (e: Event): void => {
                 e.preventDefault();
-                const success: boolean = storage.updateCartItem(prod.id);
 
-                if (success) {
-                    showCart(products);
-                } else {
-                    alert("No hay más stock disponible");
-                }
+                // Actualizamos el storage
+                handleUpdateQuantity(products, prod.id);
             });
             btnTrash.addEventListener("click", (): void => {
                 if (confirm(`¿Eliminar ${prod.nombre} del carrito?`)) {
@@ -247,4 +237,24 @@ export const initCartEvents = (products: Product[]): void => {
             alert("Checkout Próximamente");
         });
     }
+};
+
+/**
+ * Función para manejar la actualización de cantidad desde el input numérico
+ * @param id ID del producto a actualizar
+ * @param targetQty Cantidad objetivo a establecer para el producto en el carrito
+ */
+export const handleUpdateQuantity = (
+    products: Product[],
+    id: number,
+    targetQty?: number,
+): void => {
+    // Actualizamos el storage
+    const success: boolean = storage.updateCartItem(id, targetQty);
+    if (!success) {
+        alert("No hay suficiente stock");
+    }
+
+    // Refrescamos la vista para actualizar subtotales y totales
+    showCart(products);
 };

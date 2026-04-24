@@ -108,7 +108,8 @@ export const renderHeader = (containerSelector: string): void => {
     updateCartBadge();
 
     // Agregamos el listener para el botón de logout
-    const btnLogout = document.querySelector<HTMLButtonElement>("logoutButton");
+    const btnLogout =
+        document.querySelector<HTMLButtonElement>("#logoutButton");
 
     // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!btnLogout) return;
@@ -136,9 +137,6 @@ export const updateCartBadge = (): void => {
     let badge =
         cartLink.parentElement?.querySelector<HTMLElement>(".menu__item-badge");
 
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
-    if (!badge) return;
-
     // Si hay items, actualizamos el badge
     if (totalQty > 0) {
         // Si no existe y hay items, lo creamos
@@ -148,7 +146,7 @@ export const updateCartBadge = (): void => {
             cartLink.parentElement?.appendChild(badge);
         }
         badge.textContent = totalQty.toString();
-    } else {
+    } else if (badge) {
         // Si no hay items, lo eliminamos si existía
         badge.remove();
     }
