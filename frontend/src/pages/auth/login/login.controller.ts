@@ -1,12 +1,18 @@
-import { authService as as } from "@/services/authService";
+import { authService as as } from "@services/authService";
 import { navigate } from "@utils/navigate";
 import { PATHS } from "@utils/paths";
 
-// Lógica de Login: Validaciones, encriptación y redirección.
+/**
+ * Inicializa la lógica del login, incluyendo validaciones, encriptación de contraseña y manejo de eventos.
+ */
 export const initLoginLogic = (): void => {
-    const loginForm = document.querySelector("#form") as HTMLFormElement;
+    const loginForm = document.querySelector<HTMLFormElement>("#form");
 
-    loginForm?.addEventListener("submit", async (e: SubmitEvent) => {
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+    if (!loginForm) return;
+
+    // Listener para el submit del formulario de login
+    loginForm.addEventListener("submit", async (e: SubmitEvent) => {
         e.preventDefault();
 
         const email: string = (
@@ -33,12 +39,14 @@ export const initLoginLogic = (): void => {
         }
     });
 
-    const authLink = document.getElementById(
-        "auth-switch-link",
-    ) as HTMLLinkElement;
+    const authLink =
+        document.querySelector<HTMLLinkElement>("#auth-switch-link");
+
+    //Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+    if (!authLink) return;
 
     // Listener para cambiar entre login y registro
-    authLink?.addEventListener("click", (e: MouseEvent) => {
+    authLink.addEventListener("click", (e: MouseEvent) => {
         e.preventDefault();
         navigate(PATHS.AUTH.REGISTER);
     });

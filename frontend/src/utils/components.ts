@@ -1,20 +1,26 @@
-import { storage } from "@utils/storage";
-import { logout } from "@utils/auth";
-import type { ICartItem } from "@/types/ICartItem";
-import { cartService as cs } from "@/services/cartService";
+import { Role } from "@interfaces/Role";
+import { cartService as cs } from "@services/cartService";
+import { logout } from "@utils/authGuard";
 import { PATHS } from "@utils/paths";
+import { storage } from "@utils/storage";
 
-// Función para renderizar la tarjeta de autenticación (Login/Registro)
+/**
+ * Función para renderizar la card de autenticación (login/register) en el
+ * contenedor especificado.
+ * @param containerSelector selector del contenedor donde se inyectará la card
+ * @param isRegister Booleano que indica si se renderiza el formulario de
+ * registro (true) o de login (false)
+ */
 export const renderAuthCard = (
-    containerId: string,
+    containerSelector: string,
     isRegister: boolean,
 ): void => {
-    const container = document.getElementById(
-        containerId,
-    ) as HTMLElement | null;
+    const container = document.querySelector<HTMLElement>(containerSelector);
 
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!container) return;
 
+    // Definimos los textos dinámicos según el tipo de formulario
     const title: string = isRegister ? "Registrarse" : "Iniciar Sesión";
     const btnText: string = isRegister ? "Registrarse" : "Ingresar";
     const footerText: string = isRegister
@@ -24,6 +30,7 @@ export const renderAuthCard = (
         ? "Ingresa acá"
         : "Registrate acá";
 
+    // Inyectamos el HTML de la card en el contenedor
     container.innerHTML = `
       <section class="card auth-card">
         <h1 class="auth-card__title">Food Store</h1>
@@ -56,26 +63,31 @@ export const renderAuthCard = (
     `;
 };
 
-// Función para renderizar el Header estándar con menú y botón de logout
-export const renderHeader = (containerId: string): void => {
-    const container = document.getElementById(
-        containerId,
-    ) as HTMLElement | null;
+/**
+ * Función para renderizar el Header estándar con el menú de navegación.
+ * @param containerSelector selector del contenedor donde se inyectará el Header
+ */
+export const renderHeader = (containerSelector: string): void => {
+    const container = document.querySelector<HTMLElement>(containerSelector);
 
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!container) return;
 
-    const role = storage.getRole();
-    const name = storage.getUser()?.name;
+    // Obtenemos el rol y nombre del usuario para personalizar el menú
+    const role: Role | null = storage.getRole();
+    const name: string | undefined = storage.getUser()?.name;
 
+    // Construimos las partes del menú que dependen del rol
     const adminMenu =
-        role === "admin"
+        role === Role.ADMIN
             ? `<li class="menu__item menu__item--admin"><a href="${PATHS.ADMIN.HOME}">Admin</a></li>`
             : "";
     const userAreaMenu =
-        role === "client"
+        role === Role.CLIENT
             ? `<li class="menu__item menu__item--client"><a href="${PATHS.CLIENT.HOME}">${name}</a></li>`
             : `<li class="menu__item menu__item--client"><a href="${PATHS.ADMIN.HOME}">${name}</a></li>`;
 
+    // Inyectamos el HTML del Header en el contenedor
     container.innerHTML = `
     <div class="header__content">
         <h1>Food Store</h1>
@@ -95,53 +107,65 @@ export const renderHeader = (containerId: string): void => {
     // Actualizamos el badge del carrito
     updateCartBadge();
 
-    // Asignamos el evento de logout una vez inyectado el HTML
-    const btnLogout = document.getElementById(
-        "logoutButton",
-    ) as HTMLButtonElement | null;
+    // Agregamos el listener para el botón de logout
+    const btnLogout = document.querySelector<HTMLButtonElement>("logoutButton");
 
-    btnLogout?.addEventListener("click", (): void => logout());
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+    if (!btnLogout) return;
+
+    btnLogout.addEventListener("click", (): void => logout());
 };
 
-// Función para actualizar el badge del carrito en el menú cada vez que se modifica el carrito
+/**
+ * Función para actualizar el badge del carrito en el menú cada vez que se
+ * modifica el carrito (agregar/quitar productos). Si el carrito está vacío,
+ * se elimina el badge.
+ */
 export const updateCartBadge = (): void => {
-    // 1. Buscamos el contenedor del badge
-    const cartLink = document.querySelector(
+    const cartLink = document.querySelector<HTMLLinkElement>(
         ".menu__item--cart a",
-    ) as HTMLLinkElement | null;
+    );
+
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!cartLink) return;
 
-    // 2. Calculamos la cantidad actual
+    // Obtenemos la cantidad total de items en el carrito
     const totalQty: number = cs.getTotalQuantity();
 
-    // 3. Buscamos si ya existe el badge
-    let badge = cartLink.parentElement?.querySelector(
-        ".menu__item-badge",
-    ) as HTMLElement | null;
+    // Buscamos el badge existente (si lo hay)
+    let badge =
+        cartLink.parentElement?.querySelector<HTMLElement>(".menu__item-badge");
 
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+    if (!badge) return;
+
+    // Si hay items, actualizamos el badge
     if (totalQty > 0) {
+        // Si no existe y hay items, lo creamos
         if (!badge) {
-            // Si no existe y hay items, lo creamos
-            badge = document.createElement("span");
+            badge = document.createElement("span") as HTMLElement;
             badge.classList.add("menu__item-badge");
             cartLink.parentElement?.appendChild(badge);
         }
         badge.textContent = totalQty.toString();
     } else {
         // Si no hay items, lo eliminamos si existía
-        badge?.remove();
+        badge.remove();
     }
 };
 
-// Función para renderizar el Aside con la estructura base
+/**
+ * Función para renderizar el contenido específico del Aside en el contenedor
+ * @param containerSelector selector del contenedor donde se inyectará el contenido del Aside
+ * @param callback Función que inyecta el contenido específico del Aside (opcional)
+ */
 export const renderAside = (
-    containerId: string,
+    containerSelector: string,
     callback?: () => void,
 ): void => {
-    const container = document.getElementById(
-        containerId,
-    ) as HTMLElement | null;
+    const container = document.querySelector<HTMLElement>(containerSelector);
 
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!container) return;
 
     // Limpiamos el contenedor
@@ -153,22 +177,30 @@ export const renderAside = (
     }
 };
 
-// Función para renderizar el Footer estándar
-export const renderFooter = (containerId: string): void => {
-    const container = document.getElementById(
-        containerId,
-    ) as HTMLElement | null;
+/**
+ * Función para renderizar el Footer
+ * @param containerSelector selector del contenedor donde se inyectará el Footer
+ */
+export const renderFooter = (containerSelector: string): void => {
+    const container = document.querySelector<HTMLElement>(containerSelector);
 
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!container) return;
 
+    // Obtenemos el rol del usuario para personalizar el contenido del Footer
     const role = storage.getRole();
     const path = window.location.pathname;
 
+    // Definimos el contenido del Footer
+    const poweredBy =
+        '<p>Powered by <a href="https://github.com/m415x" target="_blank">Cristian Lahoz</a></p>';
+
+    // Contenido del Footer según el rol
     const clientInfo = `
         <div class="footer__content">
             <p>&copy; 2026 Food Store. Todos los derechos reservados.</p>
             <p>Contacto: <a href="mailto:info@foodstore.com" target="_blank">info@foodstore.com</a></p>
-            <p>Powered by <a href="https://github.com/m415x" target="_blank">Cristian Lahoz</a></p>
+            ${poweredBy}
         </div>
     `;
 
@@ -176,10 +208,11 @@ export const renderFooter = (containerId: string): void => {
         <div class="footer__content footer__content--admin">
             <p>Panel de Control v1.0</p>
             <p>Sesión iniciada como: <strong>${role}</strong></p>
-            <p>Powered by <a href="https://github.com/m415x" target="_blank">Cristian Lahoz</a></p>
+            ${poweredBy}
         </div>
     `;
 
+    // Inyectamos el HTML del Footer en el contenedor
     container.innerHTML = `
         ${path.includes("/admin/") ? adminInfo : clientInfo}
     `;

@@ -1,16 +1,31 @@
-import type { IUser } from "@/types/IUser";
+import type { IUser } from "@interfaces/IUser";
 import { storage } from "@utils/storage";
 
+/**
+ * Este servicio maneja toda la lógica relacionada con la autenticación y
+ * gestión de usuarios. Incluye validación de email, fortaleza de contraseña,
+ * encriptación y las funciones de login y registro.
+ */
 export const authService = {
-    // Valida si un email tiene un formato correcto.
+    /**
+     * Valida el formato del email usando una expresión regular simple.
+     * @param email El email a validar.
+     * @returns true si el email es válido.
+     */
     validateEmail(email: string): boolean {
+        // Expresión regular para validar el formato del email
         const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+        // Probamos el email contra la expresión regular
         return emailRegex.test(email);
     },
 
-    // Valida la fortaleza de la contraseña.
-    // Mínimo 8 caracteres, una mayúscula y un número.
+    /**
+     * Valida la fortaleza de la contraseña. Requiere al menos 8 caracteres, una
+     * letra mayúscula y un número.
+     * @param password La contraseña a validar.
+     * @returns true si la contraseña cumple con los requisitos de fortaleza.
+     */
     validatePasswordStrength(password: string): boolean {
         return (
             password.length >= 8 &&
@@ -19,10 +34,19 @@ export const authService = {
         );
     },
 
-    // Encripta la contraseña usando SHA-256.
+    /**
+     * Encripta la contraseña usando SHA-256.
+     * @param password La contraseña a encriptar.
+     * @returns Una promesa que resuelve con el hash hexadecimal.
+     */
     async encryptPassword(password: string): Promise<string> {
+        // Encriptamos la contraseña
         const encoder: TextEncoder = new TextEncoder();
+
+        // Convertimos la contraseña a un Uint8Array para el hashing
         const data: Uint8Array<ArrayBuffer> = encoder.encode(password);
+
+        // Generamos el hash SHA-256
         const hash: ArrayBuffer = await crypto.subtle.digest("SHA-256", data);
 
         // Convertimos el buffer a un string hexadecimal
@@ -31,16 +55,25 @@ export const authService = {
             .join("");
     },
 
-    // Lógica de Login: Verifica credenciales contra el storage.
+    /**
+     * Lógica de Login: Verifica email y contraseña, y si son correctos, guarda
+     * la sesión en "userData".
+     * @param email El email del usuario que intenta iniciar sesión.
+     * @param passwordHash El hash de la contraseña proporcionada por el usuario.
+     * @returns true si el login es exitoso, false si las credenciales son incorrectas.
+     */
     login(email: string, passwordHash: string): boolean {
-        // Obtenemos los usuarios registrados y buscamos una coincidencia con el email y contraseña
+        // Obtenemos los usuarios registrados
         const users: IUser[] = storage.getUsers();
 
+        // Buscamos un usuario que coincida con el email y el hash de la contraseña
         const userFound: IUser | undefined = users.find(
             (u: IUser): boolean =>
                 u.email === email && u.password === passwordHash,
         );
 
+        // Si encontramos un usuario válido, guardamos su sesión en "userData"
+        // y retornamos true
         if (userFound) {
             // Creamos la sesión en "userData"
             storage.setUser(userFound);
@@ -49,7 +82,12 @@ export const authService = {
         return false;
     },
 
-    // Lógica de Registro: Valida unicidad y guarda en storage
+    /**
+     * Lógica de Registro: Verifica que el email no esté registrado, asigna un ID
+     * autoincremental, encripta la contraseña y guarda el nuevo usuario en "users".
+     * @param newUser El objeto IUser con los datos del nuevo usuario (sin ID).
+     * @returns Un objeto con el resultado del registro y un mensaje descriptivo.
+     */
     register(newUser: IUser): { success: boolean; message: string } {
         // Obtenemos los usuarios registrados
         const users: IUser[] = storage.getUsers();
@@ -59,6 +97,7 @@ export const authService = {
             (user: IUser): boolean => user.email === newUser.email,
         );
 
+        // Si el email ya existe, retornamos un mensaje de error sin registrar al usuario
         if (emailExists) {
             return {
                 success: false,
@@ -73,11 +112,14 @@ export const authService = {
                 ? Math.max(...users.map((user: IUser): number => user.id))
                 : 0;
 
+        // Asignamos el nuevo ID
         newUser.id = lastId + 1;
 
         // Persistencia
         users.push(newUser);
-        storage.saveUsers(users); // Guarda la lista completa actualizada
+
+        // Guarda la lista completa actualizada
+        storage.saveUsers(users);
 
         return { success: true, message: "Usuario registrado con éxito." };
     },

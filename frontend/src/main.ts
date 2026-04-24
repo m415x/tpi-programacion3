@@ -1,4 +1,7 @@
-import { checkAuth } from "@utils/auth";
+/**
+ * Punto de entrada principal de la aplicación frontend. Iniciar la aplicación y
+ * realizar cualquier configuración inicial necesaria.
+ */
+import { checkAuth } from "@utils/authGuard";
 
-// El middleware se ejecuta automáticamente en cada carga de página
 checkAuth();

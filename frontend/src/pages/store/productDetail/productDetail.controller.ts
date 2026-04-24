@@ -1,21 +1,33 @@
 import type { Product } from "@interfaces/Product";
+import { cartService as cs } from "@services/cartService";
+import { updateCartBadge } from "@utils/components";
+import { navigate } from "@utils/navigate";
+import { PATHS } from "@utils/paths";
 import { storage } from "@utils/storage";
-import { cartService as cs } from "@/services/cartService";
 import {
     updateProductImageUI,
     formattedPriceHTML,
     getDisabledState,
-} from "@/utils/uiUtils";
-import { updateCartBadge } from "@/utils/components";
-import { navigate } from "@/utils/navigate";
-import { PATHS } from "@utils/paths";
+} from "@utils/uiUtils";
 
-// Función para cargar los productos en el contenedor principal
+/**
+ * Muestra el detalle de un producto específico, incluyendo su imagen, descripción,
+ * precio y opciones para agregar al carrito.
+ * @param product El producto del cual se desea mostrar el detalle.
+ */
 export const showProductDetail = (product: Product): void => {
-    const productDetailContainer = document.querySelector(
+    const productDetailContainer = document.querySelector<HTMLElement>(
         "#product-detail-container",
-    ) as HTMLElement;
+    );
+    const pageTitle = document.querySelector<HTMLElement>("title");
 
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+    if (!productDetailContainer || !pageTitle) return;
+
+    // Actualizar el título de la página
+    pageTitle.innerText = "Food Store - " + product.nombre;
+
+    // Formatear el precio
     const unitPrice: string = formattedPriceHTML(product.precio);
 
     // Obtener la cantidad actual desde el storage para este producto
@@ -35,6 +47,7 @@ export const showProductDetail = (product: Product): void => {
     // Estado inicial: Iniciamos en 1 si hay stock
     let selectedQty: number = isActuallyAvailable ? 1 : 0;
 
+    // Actualizar el badge
     const badgeText: string = isActuallyAvailable
         ? `Disponible (Stock ${displayStock})`
         : "Agotado";
@@ -68,12 +81,25 @@ export const showProductDetail = (product: Product): void => {
         // Iniciamos la carga asíncrona de la imagen
         updateProductImageUI(product.id);
 
-        const inputQty = productDetailContainer.querySelector(
-            ".product-qty",
-        ) as HTMLInputElement;
-        const btnAdd = productDetailContainer.querySelector(
-            ".btn--add-product",
-        ) as HTMLButtonElement;
+        const inputQty =
+            productDetailContainer.querySelector<HTMLInputElement>(
+                ".product-qty",
+            );
+        const btnAdd =
+            productDetailContainer.querySelector<HTMLButtonElement>(
+                ".btn--add-product",
+            );
+        const btnPlus =
+            productDetailContainer.querySelector<HTMLButtonElement>(
+                ".btn--plus",
+            );
+        const btnMinus =
+            productDetailContainer.querySelector<HTMLButtonElement>(
+                ".btn--minus",
+            );
+
+        // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+        if (!inputQty || !btnAdd || !btnPlus || !btnMinus) return;
 
         // Función interna para actualizar el número visual sin tocar el Storage
         const updateLocalUI = (): void => {
@@ -83,33 +109,29 @@ export const showProductDetail = (product: Product): void => {
         };
 
         // Eventos de cantidad (Modifican solo la variable local)
-        productDetailContainer
-            .querySelector(".btn--plus")
-            ?.addEventListener("click", (): void => {
-                if (selectedQty < displayStock) {
-                    selectedQty++;
-                    updateLocalUI();
-                }
-            });
+        btnPlus.addEventListener("click", (): void => {
+            if (selectedQty < displayStock) {
+                selectedQty++;
+                updateLocalUI();
+            }
+        });
 
-        productDetailContainer
-            .querySelector(".btn--minus")
-            ?.addEventListener("click", (): void => {
-                if (selectedQty > 1) {
-                    selectedQty--;
-                    updateLocalUI();
-                }
-            });
+        btnMinus.addEventListener("click", (): void => {
+            if (selectedQty > 1) {
+                selectedQty--;
+                updateLocalUI();
+            }
+        });
 
         // Evento de input
-        inputQty?.addEventListener("change", (): void => {
+        inputQty.addEventListener("change", (): void => {
             const val: number = parseInt(inputQty.value, 10);
             selectedQty = isNaN(val) ? 1 : val;
             updateLocalUI();
         });
 
-        // Se afecta el carrito
-        btnAdd?.addEventListener("click", (): void => {
+        // Evento de agregar al carrito (Intenta actualizar el Storage)
+        btnAdd.addEventListener("click", (): void => {
             // Al sumar la cantidad seleccionada a lo que ya había en el carrito
             const totalNewQty: number = qtyInCart + selectedQty;
 
@@ -125,9 +147,13 @@ export const showProductDetail = (product: Product): void => {
             }
         });
 
-        const btnBack = productDetailContainer.querySelector(
+        // Evento de volver
+        const btnBack = productDetailContainer.querySelector<HTMLButtonElement>(
             ".product-detail__row .btn--secondary",
-        ) as HTMLButtonElement;
+        );
+
+        // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+        if (!btnBack) return;
 
         btnBack.addEventListener("click", (): void => {
             navigate(PATHS.STORE.HOME);

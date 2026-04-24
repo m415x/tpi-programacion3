@@ -1,4 +1,6 @@
-// Interfaz que define la estructura de un ICategory en la tienda
+/**
+ *  Interfaz que define la estructura de una categoría de productos
+ */
 export interface ICategory {
     id: number;
     eliminado: boolean;

@@ -1,30 +1,33 @@
-import { renderHeader, renderAside, renderFooter } from "@utils/components";
+import type { ICategory } from "@interfaces/ICategory";
 import {
     showCategoriesInSidebar,
     showProducts,
     showSearchBar,
     initStickySearch,
 } from "@pages/store/home/home.controller";
+import { renderHeader, renderAside, renderFooter } from "@utils/components";
 import { PRODUCTS, getCategories } from "@/data/data";
-import type { ICategory } from "@interfaces/ICategory";
 
-// Función principal para inicializar la página de la tienda
+/**
+ * Función principal para inicializar la página de la tienda
+ */
 const initStore = (): void => {
-    // Obtener las categorías activas primero para inyectarlas al aside
+    // Obtener las categorías activas
     const activeCategories: ICategory[] = getCategories();
 
     // Renderizar componentes base
-    renderHeader("header");
-    renderAside("sidebar", () =>
-        showCategoriesInSidebar("sidebar", activeCategories, PRODUCTS),
+    renderHeader("#header");
+    renderAside("#sidebar", () =>
+        // Inyectar las categorías activas en el sidebar
+        showCategoriesInSidebar("#sidebar", activeCategories, PRODUCTS),
     );
-    renderFooter("footer");
+    renderFooter("#footer");
 
     // Invocar funciones que inyectan los datos de productos y categorías
     showProducts(PRODUCTS);
     showSearchBar(PRODUCTS, activeCategories);
 
-    // Inicializar la funcionalidad de búsqueda sticky
+    // Inicializar la funcionalidad de búsqueda sticky al hacer scroll
     initStickySearch();
 };
 

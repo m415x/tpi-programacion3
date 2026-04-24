@@ -1,7 +1,8 @@
 import type { IUser } from "@interfaces/IUser";
-import type { ICartItem } from "@/types/ICartItem";
+import type { ICartItem } from "@interfaces/ICartItem";
 import { PRODUCTS } from "@/data/data";
-import type { Product } from "@/types/Product";
+import type { Product } from "@interfaces/Product";
+import type { Role } from "@interfaces/Role";
 
 /**
  * Este objeto contiene un store centralizado para gestionar el estado de la
@@ -12,55 +13,97 @@ import type { Product } from "@/types/Product";
 export const storage = {
     // --- Funciones para gestionar usuarios ---
 
-    // Obtener usuarios
+    /**
+     * Obtiene la lista completa de usuarios almacenados en localStorage. Si no
+     * hay usuarios.
+     * @returns Un array de objetos IUser o un array vacío si no hay usuarios almacenados.
+     */
     getUsers(): IUser[] {
         const users: string | null = localStorage.getItem("users");
         return users ? JSON.parse(users) : [];
     },
 
-    // Guardar la lista completa
+    /**
+     * Guarda una lista de usuarios en localStorage. Reemplaza cualquier lista
+     * anterior almacenada bajo la clave "users".
+     * @param users Un array de objetos IUser que se desea almacenar.
+     * Este array se convertirá a una cadena JSON antes de guardarse.
+     */
     saveUsers(users: IUser[]): void {
         localStorage.setItem("users", JSON.stringify(users));
     },
 
     // --- Funciones para gestionar la sesión actual ---
 
-    // Obtener el usuario actual
+    /**
+     * Obtiene los datos del usuario actualmente autenticado desde localStorage.
+     * @returns El objeto IUser del usuario en sesión o null si no hay sesión activa.
+     */
     getUser(): IUser | null {
         const data: string | null = localStorage.getItem("userData");
         return data ? JSON.parse(data) : null;
     },
 
-    // Guardar sesión
+    /**
+     * Guarda los datos del usuario actualmente autenticado en localStorage bajo la
+     * clave "userData". Esto se utiliza para mantener la sesión activa entre recargas
+     * de página.
+     * @param user Un objeto IUser que representa al usuario que se desea mantener en
+     * sesión. Este objeto se convertirá a una cadena JSON antes de guardarse en localStorage.
+     */
     setUser(user: IUser): void {
         localStorage.setItem("userData", JSON.stringify(user));
     },
 
-    // Eliminar sesión
+    /**
+     * Elimina los datos del usuario actualmente autenticado de localStorage, cerrando
+     * la sesión activa.
+     */
     clear(): void {
         localStorage.removeItem("userData");
     },
 
-    // Verificar si hay una sesión activa
+    /**
+     * Verifica si hay un usuario actualmente autenticado al comprobar si getUser() devuelve
+     * un objeto válido en lugar de null. Esto se utiliza para determinar si se debe mostrar
+     * contenido protegido o redirigir a la página de inicio de sesión.
+     * @returns true si hay un usuario autenticado, false si no lo hay.
+     */
     isAuthenticated(): boolean {
         return this.getUser() !== null;
     },
 
-    // Obtener el rol rápidamente
-    getRole(): string | null {
+    /**
+     * Obtiene el rol del usuario actualmente autenticado.
+     * @returns El rol del usuario autenticado o null si no hay sesión activa.
+     */
+    getRole(): Role | null {
         const user: IUser | null = this.getUser();
         return user ? user.role : null;
     },
 
     // --- Funciones para gestionar carrito ---
 
-    // Obtener items
+    /**
+     * Obtiene los items actualmente almacenados en el carrito desde localStorage.
+     * @returns Un array de objetos ICartItem que representan los items en el carrito
+     * o un array vacío si no hay items almacenados.
+     */
     getCartItems(): ICartItem[] {
         const cartItems: string | null = localStorage.getItem("cartItems");
         return cartItems ? JSON.parse(cartItems) : [];
     },
 
-    // Actualizar cantidad de un item en el carrito (incrementar o fijar)
+    /**
+     * Agrega un producto al carrito o actualiza su cantidad si ya existe. Si se proporciona
+     * fixedQty, se establece esa cantidad específica para el producto. Si no, se incrementa
+     * la cantidad actual del producto en el carrito en 1.
+     * @param id El ID del producto que se desea agregar o actualizar en el carrito.
+     * @param fixedQty Opcional. Si se proporciona, se establece esta cantidad
+     * específica para el producto en el carrito.
+     * @returns true si el producto se agregó o actualizó exitosamente en el carrito,
+     * false si no se pudo agregar o actualizar debido a restricciones de stock o si el producto no existe.
+     */
     updateCartItem(id: number, fixedQty?: number): boolean {
         const cartItems: ICartItem[] = this.getCartItems();
 
@@ -74,8 +117,7 @@ export const storage = {
             (i: ICartItem): boolean => i.id === id,
         );
 
-        // Determinamos la cantidad que se quiere setear
-        // Si viene fixedQty, usamos esa. Si no, incrementamos la actual + 1.
+        // Si viene fixedQty, se usa esa. Si no, se incrementa la actual + 1.
         const newQty =
             fixedQty !== undefined
                 ? fixedQty
@@ -83,12 +125,12 @@ export const storage = {
                   ? existingItem.qty + 1
                   : 1;
 
-        // Validamos contra el stock
+        // Validar contra el stock
         if (newQty > product.stock) {
             return false;
         }
 
-        // Lógica de actualización
+        // Si el item ya existe, actualizamos su cantidad. Si no, lo agregamos al carrito.
         if (existingItem) {
             existingItem.qty = newQty;
         } else {
@@ -99,7 +141,11 @@ export const storage = {
         return true;
     },
 
-    // Disminuir cantidad de un item en el carrito
+    /**
+     * Disminuye la cantidad de un producto en el carrito en 1 solo si la
+     * cantidad actual es mayor a 1.
+     * @param id El ID del producto cuya cantidad se desea disminuir en el carrito.
+     */
     decreaseCartItem(id: number): void {
         const cartItems: ICartItem[] = this.getCartItems();
 
@@ -110,13 +156,17 @@ export const storage = {
         // Cláusula de guarda: si no existe el item, no hacemos nada
         if (!item) return;
 
+        // Solo disminuimos la cantidad si es mayor a 1 para evitar eliminar el item del carrito
         if (item.qty > 1) {
             item.qty--;
             localStorage.setItem("cartItems", JSON.stringify(cartItems));
         }
     },
 
-    // Eliminar un item del carrito
+    /**
+     * Elimina completamente un producto del carrito, sin importar su cantidad actual.
+     * @param id El ID del producto que se desea eliminar del carrito.
+     */
     removeCartItem(id: number): void {
         const cartItems: ICartItem[] = this.getCartItems();
         // Creamos un nuevo array sin el producto a eliminar
@@ -125,7 +175,11 @@ export const storage = {
         localStorage.setItem("cartItems", JSON.stringify(updatedCart));
     },
 
-    // Limpiar carrito
+    /**
+     * Vacía completamente el carrito de compras eliminando la clave "cartItems" de
+     * localStorage. Esto se utiliza típicamente después de completar una compra o
+     * cuando el usuario desea reiniciar su carrito.
+     */
     clearCart(): void {
         localStorage.removeItem("cartItems");
     },

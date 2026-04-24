@@ -1,40 +1,50 @@
-import type { Product } from "@interfaces/Product";
+import type { ICartItem } from "@interfaces/ICartItem";
 import type { ICategory } from "@interfaces/ICategory";
+import type { Product } from "@interfaces/Product";
+import { cartService as cs } from "@services/cartService";
+import { productService as ps } from "@services/productService";
+import { updateCartBadge } from "@utils/components";
 import { storage } from "@utils/storage";
-import { productService as ps } from "@/services/productService";
-import { cartService as cs } from "@/services/cartService";
 import {
     getDisabledState,
     updateProductImageUI,
     wrapWithDetailLink,
-} from "@/utils/uiUtils";
-import { formattedPriceHTML } from "@/utils/uiUtils";
-import type { ICartItem } from "@/types/ICartItem";
-import { updateCartBadge } from "@/utils/components";
+    formattedPriceHTML,
+} from "@utils/uiUtils";
 
-// Función para cargar el título en el menú lateral
+/**
+ * Función para mostrar un título en el menú lateral
+ * @param title el texto del título a mostrar
+ */
 export const showHeadingInSidebar = (title: string): void => {
     const heading = document.createElement("h2") as HTMLHeadingElement;
     heading.textContent = title;
 };
 
-// Función para cargar las categorías en el menú lateral
+/**
+ * Función para mostrar las categorías disponibles en el menú lateral
+ * @param containerSelector el selector del elemento contenedor donde se mostrarán las categorías
+ * @param categories el array de categorías a mostrar
+ * @param products el array completo de productos, necesario para filtrar por categoría
+ * al hacer click en cada una de ellas
+ */
 export const showCategoriesInSidebar = (
-    containerId: string,
+    containerSelector: string,
     categories: ICategory[],
     products: Product[],
 ): void => {
-    const container = document.getElementById(
-        containerId,
-    ) as HTMLElement | null;
+    const container = document.querySelector<HTMLElement>(containerSelector);
+
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+    if (!container) return;
 
     const title = document.createElement("h2") as HTMLHeadingElement;
     title.textContent = "Categorías";
-    container?.appendChild(title);
+    container.appendChild(title);
 
     const unOrderedList = document.createElement("ul") as HTMLUListElement;
     unOrderedList.id = "category-list";
-    container?.appendChild(unOrderedList);
+    container.appendChild(unOrderedList);
 
     const li = document.createElement("li") as HTMLLIElement;
     const a = document.createElement("a") as HTMLAnchorElement;
@@ -47,6 +57,7 @@ export const showCategoriesInSidebar = (
     li.appendChild(a);
     unOrderedList?.appendChild(li);
 
+    // Iteramos sobre las categorías para crear un enlace por cada una
     categories.forEach((c: ICategory): void => {
         const li = document.createElement("li") as HTMLLIElement;
         const a = document.createElement("a") as HTMLAnchorElement;
@@ -65,7 +76,10 @@ export const showCategoriesInSidebar = (
     });
 };
 
-// Función para cargar los productos en el contenedor principal
+/**
+ * Función para mostrar los productos en el contenedor principal de la tienda
+ * @param products el array de productos a mostrar en la interfaz
+ */
 export const showProducts = (products: Product[]): void => {
     const productContainer =
         document.querySelector<HTMLElement>("#product-container");
@@ -73,8 +87,14 @@ export const showProducts = (products: Product[]): void => {
     const productQty =
         document.querySelector<HTMLParagraphElement>("#product-qty");
 
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+    if (!productContainer || !productQty) return;
+
+    // Filtramos los productos activos (disponibles y con stock) para mostrar la
+    // cantidad correcta en el título
     const activeProducts: Product[] = ps.getActiveProducts(products);
 
+    // Actualizamos el texto de cantidad de productos encontrados
     if (productQty) {
         if (activeProducts.length === 0) {
             productQty.textContent = "";
@@ -114,6 +134,7 @@ export const showProducts = (products: Product[]): void => {
                 "stock-badge--out-of-stock",
             );
 
+            // Determinar el texto del badge y del botón según la disponibilidad real del producto
             const badgeText: string = isActuallyAvailable
                 ? "Disponible"
                 : "Agotado";
@@ -121,11 +142,13 @@ export const showProducts = (products: Product[]): void => {
                 ? `Agregar al carrito`
                 : `No disponible`;
 
+            // Creamos el HTML del producto, incluyendo la imagen con carga asíncrona y los enlaces a detalle
             const linkedImg = wrapWithDetailLink(
                 prod.id,
                 `<img class="product__img" src="" id="img-product-${prod.id}" alt="${prod.nombre}">`,
             );
 
+            // El nombre del producto también se envuelve en un enlace a detalle
             const linkedName = wrapWithDetailLink(
                 prod.id,
                 `<h3 class="product__name">${prod.nombre}</h3>`,
@@ -146,15 +169,18 @@ export const showProducts = (products: Product[]): void => {
                 </div>
             </div>
             `;
-            productContainer?.appendChild(article);
+            productContainer.appendChild(article);
 
             // Iniciamos la carga asíncrona de la imagen
             updateProductImageUI(prod.id);
 
-            const btnAdd = article.querySelector(
-                ".btn--add-product",
-            ) as HTMLButtonElement;
-            btnAdd?.addEventListener("click", (): void => {
+            const btnAdd =
+                article.querySelector<HTMLButtonElement>(".btn--add-product");
+
+            // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+            if (!btnAdd) return;
+
+            btnAdd.addEventListener("click", (): void => {
                 if (storage.updateCartItem(prod.id)) {
                     // Calculamos el stock remanente
                     const cartItem: ICartItem | undefined = storage
@@ -182,7 +208,11 @@ export const showProducts = (products: Product[]): void => {
     }
 };
 
-// Función para cargar la barra de búsqueda y filtros
+/**
+ * Función para mostrar la barra de búsqueda y el filtro por categorías, y manejar sus eventos
+ * @param product el array de productos sobre los cuales realizar la búsqueda
+ * @param category el array de categorías para poblar el selector de filtros
+ */
 export const showSearchBar = (
     product: Product[],
     category: ICategory[],
@@ -190,7 +220,10 @@ export const showSearchBar = (
     const inputSearch =
         document.querySelector<HTMLInputElement>("#input-search");
 
-    inputSearch?.addEventListener("input", (e: Event) => {
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+    if (!inputSearch) return;
+
+    inputSearch.addEventListener("input", (e: Event) => {
         const target = e.target as HTMLInputElement;
 
         const filteredProducts: Product[] = product.filter(
@@ -203,6 +236,7 @@ export const showSearchBar = (
     const selectCategories =
         document.querySelector<HTMLSelectElement>("#select-categories");
 
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!selectCategories) return;
 
     category.forEach((c: ICategory): void => {
@@ -210,10 +244,10 @@ export const showSearchBar = (
 
         option.value = c.id.toString();
         option.textContent = c.nombre;
-        selectCategories?.appendChild(option);
+        selectCategories.appendChild(option);
     });
 
-    selectCategories?.addEventListener("change", (e: Event): void => {
+    selectCategories.addEventListener("change", (e: Event): void => {
         const target = e.target as HTMLSelectElement;
         const value: string = target.value;
 
@@ -231,7 +265,9 @@ export const showSearchBar = (
 
 // Función para detectar cuando la barra de búsqueda se vuelva sticky al hacer scroll
 export const initStickySearch = (): void => {
-    const searchBar = document.querySelector(".search-bar") as HTMLElement;
+    const searchBar = document.querySelector<HTMLElement>(".search-bar");
+
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!searchBar) return;
 
     const sentinel: HTMLElement = document.createElement("div");

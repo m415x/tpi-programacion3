@@ -1,13 +1,20 @@
-import { authService as as } from "@/services/authService";
-import type { IUser } from "@/types/IUser";
-import { PATHS } from "@/utils/paths";
+import { authService as as } from "@services/authService";
+import type { IUser } from "@interfaces/IUser";
+import { Role } from "@interfaces/Role";
+import { PATHS } from "@utils/paths";
 import { navigate } from "@utils/navigate";
 
-// Lógica de Registro: Validaciones, encriptación y redirección.
+/**
+ * Inicializa la lógica del formulario de registro, incluyendo validaciones, encriptación de contraseña y manejo de eventos.
+ */
 export const initRegisterLogic = (): void => {
-    const loginForm = document.querySelector("#form") as HTMLFormElement;
+    const loginForm = document.querySelector<HTMLFormElement>("#form");
 
-    loginForm?.addEventListener("submit", async (e: SubmitEvent) => {
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+    if (!loginForm) return;
+
+    // Listener para el submit del formulario de registro
+    loginForm.addEventListener("submit", async (e: SubmitEvent) => {
         e.preventDefault();
 
         const name: string = (
@@ -37,7 +44,7 @@ export const initRegisterLogic = (): void => {
         // Encriptación
         const encryptedPass: string = await as.encryptPassword(pass);
 
-        // Creamos el objeto (el ID lo asignará el service)
+        // Creación el objeto (el ID lo asignará el Auth Service)
         const newUser: IUser = {
             id: 0, // Valor temporal
             deleted: false,
@@ -45,7 +52,7 @@ export const initRegisterLogic = (): void => {
             name: name,
             email: email,
             password: encryptedPass,
-            role: "client",
+            role: Role.CLIENT,
         };
 
         // Intento de Registro
@@ -60,12 +67,14 @@ export const initRegisterLogic = (): void => {
         }
     });
 
-    const authLink = document.getElementById(
-        "auth-switch-link",
-    ) as HTMLLinkElement;
+    const authLink =
+        document.querySelector<HTMLLinkElement>("#auth-switch-link");
+
+    //Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+    if (!authLink) return;
 
     // Listener para cambiar entre login y registro
-    authLink?.addEventListener("click", (e: MouseEvent) => {
+    authLink.addEventListener("click", (e: MouseEvent) => {
         e.preventDefault();
         navigate(PATHS.AUTH.LOGIN);
     });

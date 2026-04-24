@@ -1,2 +1,7 @@
-// Tipo que define los roles de usuario en la aplicación
-export type Role = "client" | "admin";
+/**
+ * Enum que define los roles de usuario en el sistema
+ */
+export enum Role {
+    ADMIN = "admin",
+    CLIENT = "client",
+}

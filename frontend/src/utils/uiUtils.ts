@@ -1,14 +1,5 @@
-/**
- * Este módulo contiene funciones de utilidad para la interfaz de usuario
- * relacionadas con la visualización de productos, formateo de precios y
- * generación de enlaces a detalles de productos. Estas funciones abstraen la
- * lógica de presentación y permiten una separación clara entre la lógica de
- * datos (servicios) y la lógica de interfaz (manipulación del DOM). Esto
- * facilita el mantenimiento y la reutilización del código en diferentes partes
- * de la aplicación.
- */
-import { productService as ps } from "@/services/productService";
 import { PATHS } from "@utils/paths";
+import { productService as ps } from "@services/productService";
 
 /**
  * Busca la imagen de un producto aleatorio en la API y la asigna al elemento
@@ -16,13 +7,16 @@ import { PATHS } from "@utils/paths";
  * @param id ID del producto para localizar el elemento en el DOM.
  */
 export const updateProductImageUI = (id: number): void => {
-    // 1. Obtenemos la URL desde el servicio (Lógica de datos)
+    // Obtener URL de la imagen desde el servicio
     const url: string = ps.getPersistentImage(id);
 
-    // 2. Localizamos el elemento en el DOM (Lógica de interfaz)
-    const imgElement = document.getElementById(
-        `img-product-${id}`,
-    ) as HTMLImageElement;
+    // Actualizar el src del elemento <img> con el ID específico
+    const imgElement = document.querySelector<HTMLImageElement>(
+        `#img-product-${id}`,
+    );
+
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+    if (!imgElement) return;
 
     if (imgElement) {
         imgElement.src = url;
@@ -37,10 +31,13 @@ export const updateProductImageUI = (id: number): void => {
  * estilos separados.
  */
 export const formattedPriceHTML = (price: number): string => {
+    // Formatear el precio a moneda argentina
     const priceString: string = price.toLocaleString("es-AR", {
         style: "currency",
         currency: "ARS",
     });
+
+    // Dividir el precio en parte entera y decimal
     const [wholePrice, decimalPrice]: string[] = priceString.split(",");
     return `
     <span class="price--whole">${wholePrice}</span><span class="price--decimal">${decimalPrice}</span>
@@ -68,8 +65,11 @@ export const getDisabledState = (
     isAvailable: boolean,
     classSelector?: string,
 ): string => {
-    if (classSelector) {
-        return !isAvailable ? `${classSelector}` : "";
+    // Si no está disponible y se pasó una clase CSS, devolver esa clase.
+    if (!isAvailable && classSelector) {
+        return classSelector;
     }
+
+    // Si no, devolver "disabled" como atributo.
     return !isAvailable ? "disabled" : "";
 };

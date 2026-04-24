@@ -1,6 +1,8 @@
 import type { ICategory } from "@interfaces/ICategory";
 
-// Interfaz que define la estructura de un Producto en la tienda
+/**
+ * Interfaz que define la estructura de un producto en el sistema
+ */
 export interface Product {
     id: number;
     eliminado: boolean;
