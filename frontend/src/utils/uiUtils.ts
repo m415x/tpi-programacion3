@@ -73,3 +73,41 @@ export const getDisabledState = (
     // Si no, devolver "disabled" como atributo.
     return !isAvailable ? "disabled" : "";
 };
+
+/**
+ * Crea y muestra un aviso visual cuando se añade un producto al carrito
+ * @param parentElement Elemento de referencia en el DOM
+ * @param qty Cantidad añadida
+ * @param productName Nombre del producto añadido
+ * @param position 'after' inserta el aviso después del elemento, 'append' lo inserta como último hijo
+ */
+export const showCartNotice = (
+    parentElement: HTMLElement,
+    qty: number,
+    productName: string,
+    position: "after" | "append" = "after",
+): void => {
+    // Eliminar notificación anterior si existe para no acumularlas
+    document.querySelector(".cart-notice")?.remove();
+
+    const notice = document.createElement("div");
+    notice.classList.add("cart-notice");
+    notice.setAttribute("role", "alert");
+    notice.innerHTML = `
+        <p>${qty} &times; &ldquo;${productName}&rdquo; han sido añadidos a tu carrito.</p>
+        <a href="${PATHS.STORE.CART}" class="btn btn--primary">Ver carrito</a>
+    `;
+
+    if (position === "after") {
+        parentElement.after(notice);
+    } else {
+        parentElement.appendChild(notice);
+    }
+
+    // Remover automáticamente después de 5 segundos
+    setTimeout(() => {
+        if (document.body.contains(notice)) {
+            notice.remove();
+        }
+    }, 5000);
+};

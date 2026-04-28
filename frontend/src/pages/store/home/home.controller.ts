@@ -10,6 +10,7 @@ import {
     updateProductImageUI,
     wrapWithDetailLink,
     formattedPriceHTML,
+    showCartNotice,
 } from "@utils/uiUtils";
 
 /**
@@ -226,6 +227,13 @@ export const showProducts = (products: Product[]): void => {
                     }
                     // Actualizamos el badge del carrito
                     updateCartBadge();
+
+                    // Mostrar el aviso debajo de la searchBar
+                    const searchBar =
+                        document.querySelector<HTMLElement>(".search-bar");
+                    if (searchBar) {
+                        showCartNotice(searchBar, 1, prod.nombre, "after");
+                    }
                 }
             });
         });

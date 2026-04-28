@@ -58,7 +58,7 @@ export const showCart = (products: Product[]): void => {
               </div>
               <div class="cart__product-btns">
                 <button class="btn btn--square btn--minus">-</button>
-                <input type="number" class="product-qty" value="" min="1">
+                <input type="number" name="quantity" class="product-qty" value="" min="1">
                 <button class="btn btn--square btn--plus">+</button>
                 <p class="price cart__product-price cart__product-price--subtotal"></p>
                 <button class="btn btn--square btn--trash">🗑</button>

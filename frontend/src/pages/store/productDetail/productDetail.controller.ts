@@ -8,6 +8,7 @@ import {
     updateProductImageUI,
     formattedPriceHTML,
     getDisabledState,
+    showCartNotice,
 } from "@utils/uiUtils";
 
 /**
@@ -136,10 +137,20 @@ export const showProductDetail = (product: Product): void => {
             const totalNewQty: number = qtyInCart + selectedQty;
 
             if (storage.updateCartItem(product.id, totalNewQty)) {
-                alert(
-                    `Agregaste ${selectedQty} unidad(es) de ${product.nombre}`,
-                );
                 showProductDetail(product); // Refrescamos para actualizar el stock visual remanente
+
+                // Buscamos el nuevo contenedor recién renderizado y agregamos el mensaje al final
+                const newDetailsContainer = document.querySelector<HTMLElement>(
+                    ".product-detail__details",
+                );
+                if (newDetailsContainer) {
+                    showCartNotice(
+                        newDetailsContainer,
+                        selectedQty,
+                        product.nombre,
+                        "append",
+                    );
+                }
             } else {
                 alert(
                     "Error: La cantidad seleccionada supera el stock disponible.",

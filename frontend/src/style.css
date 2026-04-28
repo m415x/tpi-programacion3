@@ -105,10 +105,12 @@ button:disabled {
 /* BUTTONS */
 .btn {
   padding: 0.5rem 1rem;
+  font-size: var(--font-size-sm);
   font-weight: bold;
   border: none;
   border-radius: var(--border-radius-sm);
   cursor: pointer;
+  text-decoration: none;
   transition: background-color var(--transition-duration);
 }
 
@@ -223,6 +225,32 @@ button:disabled {
   background-color: color-mix(in srgb, var(--color-secondary), transparent 20%);
 }
 
+/* CART NOTICE */
+.cart-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-base);
+  background-color: var(--color-white);
+  border-top: 3px solid var(--color-tertiary);
+  padding: var(--space-base) var(--space-double);
+  /* margin: var(--space-xs) 0 var(--space-xs) 0; */
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--box-shadow);
+  animation: slide-in 0.3s ease-out forwards;
+  width: 100%;
+  position: sticky;
+  top: 3.5rem;
+  z-index: 9;
+}
+
+.cart-notice p {
+  margin: 0;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
 /* LINK */
 .link {
   text-decoration: none;
@@ -237,6 +265,18 @@ button:disabled {
 .link--active {
   color: var(--color-primary);
   font-weight: bold;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ---------------------------

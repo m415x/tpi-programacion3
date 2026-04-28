@@ -3,7 +3,7 @@ import type { Product } from "@interfaces/Product";
 import { PRODUCTS } from "@/data/data";
 
 // Clave de almacenamiento para el mapa de imágenes persistentes
-const IMAGE_STORAGE_KEY: string = "product_images_map";
+const IMAGE_STORAGE_KEY: string = "productImages";
 
 // Diccionario traductor para términos de búsqueda precisos
 const CATEGORY_TRANSLATIONS: Record<string, string> = {
