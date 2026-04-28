@@ -77,15 +77,20 @@ export const renderHeader = (containerSelector: string): void => {
     const role: Role | null = storage.getRole();
     const name: string | undefined = storage.getUser()?.name;
 
+    // Obtenemos la ruta actual para determinar qué enlace está activo
+    const currentPath: string = window.location.pathname;
+    const getActiveClass = (path: string): string =>
+        currentPath.includes(path) ? "link--active" : "";
+
     // Construimos las partes del menú que dependen del rol
     const adminMenu =
         role === Role.ADMIN
-            ? `<li class="menu__item menu__item--admin"><a href="${PATHS.ADMIN.HOME}">Admin</a></li>`
+            ? `<li class="menu__item menu__item--admin"><a href="${PATHS.ADMIN.HOME}" class="link ${getActiveClass(PATHS.ADMIN.HOME)}">Admin</a></li>`
             : "";
     const userAreaMenu =
         role === Role.CLIENT
-            ? `<li class="menu__item menu__item--client"><a href="${PATHS.CLIENT.HOME}">${name}</a></li>`
-            : `<li class="menu__item menu__item--client"><a href="${PATHS.ADMIN.HOME}">${name}</a></li>`;
+            ? `<li class="menu__item menu__item--client"><a href="${PATHS.CLIENT.HOME}" class="link ${getActiveClass(PATHS.CLIENT.HOME)}">${name}</a></li>`
+            : `<li class="menu__item menu__item--client"><a href="${PATHS.ADMIN.HOME}" class="link ${getActiveClass(PATHS.ADMIN.HOME)}">${name}</a></li>`;
 
     // Inyectamos el HTML del Header en el contenedor
     container.innerHTML = `
@@ -93,10 +98,10 @@ export const renderHeader = (containerSelector: string): void => {
         <h1>Food Store</h1>
         <nav class="menu">
         <ul class="menu__list">
-            <li class="menu__item"><a href="${PATHS.STORE.HOME}">Tienda</a></li>
-            <li class="menu__item"><a href="#">Mis Pedidos</a></li>
+            <li class="menu__item"><a href="${PATHS.STORE.HOME}" class="link ${getActiveClass(PATHS.STORE.HOME)}">Tienda</a></li>
+            <li class="menu__item"><a href="#" class="link ${getActiveClass("#")}">Mis Pedidos</a></li>
             ${adminMenu}
-            <li class="menu__item menu__item--cart"><a href="${PATHS.STORE.CART}">Carrito</a></li>
+            <li class="menu__item menu__item--cart"><a href="${PATHS.STORE.CART}" class="link ${getActiveClass(PATHS.STORE.CART)}">Carrito</a></li>
             ${userAreaMenu}
         </ul>
         <button id="logoutButton" class="btn btn--secondary">Cerrar Sesión</button>

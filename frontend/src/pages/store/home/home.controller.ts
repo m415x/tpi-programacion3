@@ -22,6 +22,30 @@ export const showHeadingInSidebar = (title: string): void => {
 };
 
 /**
+ * Función central para sincronizar la categoría activa en los elementos visuales (sidebar y select)
+ * @param categoryId ID de la categoría (o "all" para todas)
+ */
+export const syncCategorySelection = (categoryId: string): void => {
+    // Sincronizar el select
+    const selectCategories =
+        document.querySelector<HTMLSelectElement>("#select-categories");
+    if (selectCategories && selectCategories.value !== categoryId) {
+        selectCategories.value = categoryId;
+    }
+
+    // Sincronizar los enlaces del sidebar
+    const sidebarLinks =
+        document.querySelectorAll<HTMLAnchorElement>("#category-list a");
+    sidebarLinks.forEach((link: HTMLAnchorElement) => {
+        if (link.dataset.categoryId === categoryId) {
+            link.classList.add("link--active");
+        } else {
+            link.classList.remove("link--active");
+        }
+    });
+};
+
+/**
  * Función para mostrar las categorías disponibles en el menú lateral
  * @param containerSelector el selector del elemento contenedor donde se mostrarán las categorías
  * @param categories el array de categorías a mostrar
@@ -50,8 +74,11 @@ export const showCategoriesInSidebar = (
     const a = document.createElement("a") as HTMLAnchorElement;
     a.href = "#";
     a.textContent = "Todas";
+    a.dataset.categoryId = "all";
+    a.classList.add("link", "link--active");
     a.addEventListener("click", (e: Event): void => {
         e.preventDefault();
+        syncCategorySelection("all");
         showProducts(products);
     });
     li.appendChild(a);
@@ -63,8 +90,11 @@ export const showCategoriesInSidebar = (
         const a = document.createElement("a") as HTMLAnchorElement;
         a.href = `#${c.nombre.toLocaleLowerCase().replaceAll(" ", "-")}`;
         a.textContent = c.nombre;
+        a.dataset.categoryId = c.id.toString();
+        a.classList.add("link");
         a.addEventListener("click", (e: Event): void => {
             e.preventDefault();
+            syncCategorySelection(c.id.toString());
             const filteredProducts: Product[] = ps.filterByCategory(
                 products,
                 c.id,
@@ -250,6 +280,8 @@ export const showSearchBar = (
     selectCategories.addEventListener("change", (e: Event): void => {
         const target = e.target as HTMLSelectElement;
         const value: string = target.value;
+
+        syncCategorySelection(value);
 
         if (value === "all") {
             showProducts(product);

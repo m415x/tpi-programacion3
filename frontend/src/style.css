@@ -227,11 +227,16 @@ button:disabled {
 .link {
   text-decoration: none;
   color: var(--color-text);
+  transition: color var(--transition-duration);
 }
 
 .link:hover>h3 {
   color: var(--color-primary);
-  transition: color var(--transition-duration);
+}
+
+.link--active {
+  color: var(--color-primary);
+  font-weight: bold;
 }
 
 /* ---------------------------
@@ -298,15 +303,11 @@ button:disabled {
   list-style: none;
 }
 
-.menu__item a {
-  text-decoration: none;
-  color: var(--color-text);
+:where(.menu__item) .link {
   font-weight: bold;
-  transition: color var(--transition-duration);
 }
 
-.menu__item a:hover {
-  color: var(--color-primary);
+.menu__item .link--active {
   text-decoration: underline;
 }
 
@@ -496,16 +497,6 @@ button:disabled {
 #category-list li {
   list-style: none;
   margin-bottom: 0.5rem;
-}
-
-#category-list li a {
-  text-decoration: none;
-  color: var(--color-text);
-  transition: color var(--transition-duration);
-}
-
-#category-list li a:hover {
-  color: var(--color-primary);
 }
 
 /* MAIN */
