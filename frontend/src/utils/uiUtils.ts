@@ -91,7 +91,7 @@ export const showCartNotice = (
     document.querySelector(".cart-notice")?.remove();
 
     const notice = document.createElement("div");
-    notice.classList.add("cart-notice");
+    notice.classList.add("card", "cart-notice");
     notice.setAttribute("role", "alert");
     notice.innerHTML = `
         <p>${qty} &times; &ldquo;${productName}&rdquo; han sido añadidos a tu carrito.</p>

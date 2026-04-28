@@ -189,7 +189,6 @@ button:disabled {
   background-color: var(--color-white);
   border-radius: var(--border-radius-sm);
   box-shadow: var(--box-shadow);
-  border: var(--border-box);
 }
 
 /* PRICE */
@@ -232,12 +231,8 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-base);
-  background-color: var(--color-white);
   border-top: 3px solid var(--color-tertiary);
   padding: var(--space-base) var(--space-double);
-  /* margin: var(--space-xs) 0 var(--space-xs) 0; */
-  border-radius: var(--border-radius-sm);
-  box-shadow: var(--box-shadow);
   animation: slide-in 0.3s ease-out forwards;
   width: 100%;
   position: sticky;
