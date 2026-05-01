@@ -1,7 +1,7 @@
 import type { ICartItem } from "@interfaces/ICartItem";
 import type { Product } from "@interfaces/Product";
-import { cartService as cs } from "@services/cartService";
-import { productService as ps } from "@services/productService";
+import { cartService } from "@services/cartService";
+import { productService } from "@services/productService";
 import { updateCartBadge } from "@utils/components";
 import { navigate } from "@utils/navigate";
 import { PATHS } from "@utils/paths";
@@ -25,10 +25,11 @@ export const showCart = (products: Product[]): void => {
     if (!cartProductContainer) return;
 
     // Filtramos los productos activos
-    const activeProducts: Product[] = ps.getActiveProducts(products);
+    const activeProducts: Product[] =
+        productService.getActiveProducts(products);
 
     // Filtramos los productos del carrito
-    const cartItems: Product[] = cs.getCartItems(activeProducts);
+    const cartItems: Product[] = cartService.getCartItems(activeProducts);
 
     // Limpiar el contenedor de productos
     cartProductContainer ? (cartProductContainer.innerHTML = "") : null;
@@ -39,6 +40,8 @@ export const showCart = (products: Product[]): void => {
         cartItems.forEach((prod: Product): void => {
             const article: HTMLElement = document.createElement("article");
             article.classList.add("card", "cart__product");
+            article.dataset.id = prod.id.toString();
+            article.dataset.price = prod.precio.toString();
 
             const linkedName = wrapWithDetailLink(
                 prod.id,
@@ -70,7 +73,7 @@ export const showCart = (products: Product[]): void => {
             updateProductImageUI(prod.id);
 
             // Obtener la cantidad actual desde el storage para este producto
-            const currentQty: number = cs.getProductQuantity(prod.id);
+            const currentQty: number = cartService.getProductQuantity(prod.id);
             const inputQty =
                 article.querySelector<HTMLInputElement>(".product-qty");
 
@@ -80,11 +83,13 @@ export const showCart = (products: Product[]): void => {
             // Establecer el máximo en base al stock disponible
             inputQty.value = currentQty.toString();
             inputQty.addEventListener("change", (): void => {
-                const newQty: number = parseInt(inputQty.value, 10);
-                if (newQty > 0) {
-                    // Actualizamos el storage
-                    handleUpdateQuantity(products, prod.id, newQty);
-                }
+                const newQty: number = parseInt(inputQty.value, 10) || 1;
+                updateCartItemUI(
+                    prod.id,
+                    newQty,
+                    products,
+                    cartProductContainer,
+                );
             });
 
             // Calcular subtotal de este producto
@@ -111,19 +116,33 @@ export const showCart = (products: Product[]): void => {
             if (!btnMinus || !btnPlus || !btnTrash) return;
 
             btnMinus.addEventListener("click", (): void => {
-                storage.decreaseCartItem(prod.id);
-                showCart(products);
+                const currentQty = parseInt(inputQty.value, 10) || 1;
+                updateCartItemUI(
+                    prod.id,
+                    currentQty - 1,
+                    products,
+                    cartProductContainer,
+                );
             });
             btnPlus.addEventListener("click", (e: Event): void => {
                 e.preventDefault();
 
-                // Actualizamos el storage
-                handleUpdateQuantity(products, prod.id);
+                const currentQty = parseInt(inputQty.value, 10) || 1;
+                updateCartItemUI(
+                    prod.id,
+                    currentQty + 1,
+                    products,
+                    cartProductContainer,
+                );
             });
             btnTrash.addEventListener("click", (): void => {
                 if (confirm(`¿Eliminar ${prod.nombre} del carrito?`)) {
-                    storage.removeCartItem(prod.id);
-                    showCart(products);
+                    updateCartItemUI(
+                        prod.id,
+                        0,
+                        products,
+                        cartProductContainer,
+                    );
                 }
             });
         });
@@ -156,54 +175,118 @@ export const showCart = (products: Product[]): void => {
 };
 
 /**
+ * Función para actualizar la interfaz de un producto específico en el carrito
+ * cuando se cambia su cantidad o se elimina sin necesidad de recargar toda la vista.
+ * @param id ID del producto a actualizar
+ * @param newQty Nueva cantidad del producto (si es 0 o menor, se eliminará del carrito)
+ * @param products lista completa de productos para poder recalcular el resumen
+ * del carrito después de la actualización
+ * @param cartContainer El elemento HTML que contiene los productos del carrito
+ */
+export const updateCartItemUI = (
+    id: number,
+    newQty: number,
+    products: Product[],
+    cartContainer: HTMLElement,
+): void => {
+    // 1. Buscamos la "fila" específica por su dataset id
+    const itemContainer = cartContainer.querySelector<HTMLElement>(
+        `[data-id="${id}"]`,
+    );
+
+    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
+    if (!itemContainer) return;
+
+    if (newQty <= 0) {
+        // Eliminar del DOM y storage
+        storage.removeCartItem(id);
+        itemContainer.remove();
+
+        // Verificamos si el carrito quedó vacío
+        const cartItems: ICartItem[] = storage.getCartItems();
+        if (cartItems.length === 0) {
+            showCart(products);
+            return; // Cortamos el flujo, el propio showCart limpiará todo el DOM
+        }
+    } else {
+        const input =
+            itemContainer.querySelector<HTMLInputElement>(".product-qty");
+
+        // Actualizamos storage y verificamos stock
+        const success: boolean = storage.updateCartItem(id, newQty);
+        if (!success) {
+            alert("No hay suficiente stock disponible.");
+
+            // Revertir input a la cantidad real existente en el carrito
+            const currentQty: number = cartService.getProductQuantity(id);
+            if (input) input.value = currentQty.toString();
+            return;
+        }
+
+        // 2. Actualizamos el valor del input sin renderizar nada más
+        if (input) input.value = newQty.toString();
+
+        // 3. Calculamos el nuevo subtotal con data attributes
+        const price: number = Number(itemContainer.dataset.price) || 0;
+        const subtotalElement =
+            itemContainer.querySelector<HTMLParagraphElement>(
+                ".cart__product-price--subtotal",
+            );
+        if (subtotalElement) {
+            const nuevoSubtotal: number = price * newQty;
+            subtotalElement.innerHTML = formattedPriceHTML(nuevoSubtotal);
+        }
+    }
+
+    // 4. Actualizamos el resumen total de forma dinámica
+    const activeProducts: Product[] =
+        productService.getActiveProducts(products);
+    const updatedCartItems: Product[] =
+        cartService.getCartItems(activeProducts);
+    updateCartSummary(updatedCartItems);
+
+    // Y actualizamos el badge de la barra de navegación superior
+    updateCartBadge();
+};
+
+/**
+ * Calcula el subtotal del carrito
+ * @param items lista de productos en el carrito
+ * @returns el monto subtotal
+ */
+const getSubtotal = (items: Product[]): number => {
+    const cartData: ICartItem[] = storage.getCartItems();
+    return items.reduce((acc: number, prod: Product): number => {
+        const qty: number =
+            cartData.find((i: ICartItem): boolean => i.id === prod.id)?.qty ||
+            0;
+        return acc + prod.precio * qty;
+    }, 0);
+};
+
+/**
+ * Actualiza un elemento del DOM con un monto formateado
+ * @param selector selector del elemento DOM
+ * @param amount monto a renderizar
+ */
+const renderAmount = (selector: string, amount: number): void => {
+    const element = document.querySelector<HTMLElement>(selector);
+    if (element) {
+        element.innerHTML = formattedPriceHTML(amount);
+    }
+};
+
+/**
  * Función para actualizar el resumen del carrito (subtotal, envío, total)
  * @param items lista de productos actualmente en el carrito
  */
-const updateCartSummary = (items: Product[]) => {
-    const subtotalElement = document.querySelector<HTMLParagraphElement>(
-        "#cart-subtotal-amount",
-    );
-    const shippingCosts = document.querySelector<HTMLParagraphElement>(
-        "#cart-shipping-amount",
-    );
-    const totalElement =
-        document.querySelector<HTMLParagraphElement>("#cart-total-amount");
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
-    if (!subtotalElement || !shippingCosts || !totalElement) return;
-
-    const cartData: ICartItem[] = storage.getCartItems();
-
-    // Calculamos el subtotal
-    const subtotal: number = items.reduce(
-        (acc: number, prod: Product): number => {
-            const qty: number =
-                cartData.find((i: ICartItem): boolean => i.id === prod.id)
-                    ?.qty || 0;
-            return acc + prod.precio * qty;
-        },
-        0,
-    );
-
-    // Actualizamos el subtotal
-    if (subtotalElement) {
-        const totalPrice: string = formattedPriceHTML(subtotal);
-        subtotalElement.innerHTML = totalPrice;
-    }
-
-    // Calculamos el costo de envío
+const updateCartSummary = (items: Product[]): void => {
+    const subtotal: number = getSubtotal(items);
     const shippingCost: number = subtotal > 0 ? 500 : 0;
-    if (shippingCosts) {
-        const shippingPrice: string = formattedPriceHTML(shippingCost);
-        shippingCosts.innerHTML = shippingPrice;
-    }
 
-    // Calculamos el total
-    const total: number = subtotal + shippingCost;
-    if (totalElement) {
-        const totalPrice: string = formattedPriceHTML(total);
-        totalElement.innerHTML = totalPrice;
-    }
+    renderAmount("#cart-subtotal-amount", subtotal);
+    renderAmount("#cart-shipping-amount", shippingCost);
+    renderAmount("#cart-total-amount", subtotal + shippingCost);
 };
 
 /**
@@ -237,24 +320,4 @@ export const initCartEvents = (products: Product[]): void => {
             alert("Checkout Próximamente");
         });
     }
-};
-
-/**
- * Función para manejar la actualización de cantidad desde el input numérico
- * @param id ID del producto a actualizar
- * @param targetQty Cantidad objetivo a establecer para el producto en el carrito
- */
-export const handleUpdateQuantity = (
-    products: Product[],
-    id: number,
-    targetQty?: number,
-): void => {
-    // Actualizamos el storage
-    const success: boolean = storage.updateCartItem(id, targetQty);
-    if (!success) {
-        alert("No hay suficiente stock");
-    }
-
-    // Refrescamos la vista para actualizar subtotales y totales
-    showCart(products);
 };

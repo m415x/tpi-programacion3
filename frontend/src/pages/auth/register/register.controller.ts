@@ -1,4 +1,4 @@
-import { authService as as } from "@services/authService";
+import { authService } from "@services/authService";
 import type { IUser } from "@interfaces/IUser";
 import { Role } from "@interfaces/Role";
 import { PATHS } from "@utils/paths";
@@ -28,13 +28,13 @@ export const initRegisterLogic = (): void => {
         ).value;
 
         // Validaciones de formato de email
-        if (!as.validateEmail(email)) {
+        if (!authService.validateEmail(email)) {
             alert("Por favor, ingresa un email válido.");
             return;
         }
 
         // Validaciones de contraseña
-        if (!as.validatePasswordStrength(pass)) {
+        if (!authService.validatePasswordStrength(pass)) {
             alert(
                 "La contraseña debe tener al menos 8 caracteres, una mayúscula y un número.",
             );
@@ -42,7 +42,7 @@ export const initRegisterLogic = (): void => {
         }
 
         // Encriptación
-        const encryptedPass: string = await as.encryptPassword(pass);
+        const encryptedPass: string = await authService.encryptPassword(pass);
 
         // Creación el objeto (el ID lo asignará el Auth Service)
         const newUser: IUser = {
@@ -56,7 +56,7 @@ export const initRegisterLogic = (): void => {
         };
 
         // Intento de Registro
-        const result = as.register(newUser);
+        const result = authService.register(newUser);
 
         if (result.success) {
             alert(result.message);

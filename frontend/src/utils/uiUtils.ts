@@ -1,5 +1,5 @@
 import { PATHS } from "@utils/paths";
-import { productService as ps } from "@services/productService";
+import { productService } from "@services/productService";
 
 /**
  * Busca la imagen de un producto aleatorio en la API y la asigna al elemento
@@ -8,7 +8,7 @@ import { productService as ps } from "@services/productService";
  */
 export const updateProductImageUI = (id: number): void => {
     // Obtener URL de la imagen desde el servicio
-    const url: string = ps.getPersistentImage(id);
+    const url: string = productService.getPersistentImage(id);
 
     // Actualizar el src del elemento <img> con el ID específico
     const imgElement = document.querySelector<HTMLImageElement>(
@@ -91,8 +91,9 @@ export const showCartNotice = (
     document.querySelector(".cart-notice")?.remove();
 
     const notice = document.createElement("div");
-    notice.classList.add("card", "cart-notice");
+    notice.classList.add("card", "cart-notice", "cart-notice--slide-in");
     notice.setAttribute("role", "alert");
+
     notice.innerHTML = `
         <p>${qty} &times; &ldquo;${productName}&rdquo; han sido añadidos a tu carrito.</p>
         <a href="${PATHS.STORE.CART}" class="btn btn--primary">Ver carrito</a>
@@ -101,13 +102,26 @@ export const showCartNotice = (
     if (position === "after") {
         parentElement.after(notice);
     } else {
+        // Nos aseguramos que el padre pueda contener un elemento con posición absoluta
+        if (window.getComputedStyle(parentElement).position === "static") {
+            parentElement.style.position = "relative";
+        }
         parentElement.appendChild(notice);
     }
 
     // Remover automáticamente después de 5 segundos
     setTimeout(() => {
         if (document.body.contains(notice)) {
-            notice.remove();
+            // En lugar de removerlo de inmediato, disparamos la animación de salida
+            notice.classList.replace(
+                "cart-notice--slide-in",
+                "cart-notice--slide-out",
+            );
+
+            // Esperamos a que la animación termine (ej: 300ms) para quitarlo del DOM
+            setTimeout(() => {
+                if (document.body.contains(notice)) notice.remove();
+            }, 300);
         }
     }, 5000);
 };

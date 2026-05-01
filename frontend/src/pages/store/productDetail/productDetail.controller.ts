@@ -1,5 +1,5 @@
 import type { Product } from "@interfaces/Product";
-import { cartService as cs } from "@services/cartService";
+import { cartService } from "@services/cartService";
 import { updateCartBadge } from "@utils/components";
 import { navigate } from "@utils/navigate";
 import { PATHS } from "@utils/paths";
@@ -32,7 +32,7 @@ export const showProductDetail = (product: Product): void => {
     const unitPrice: string = formattedPriceHTML(product.precio);
 
     // Obtener la cantidad actual desde el storage para este producto
-    const qtyInCart: number = cs.getProductQuantity(product.id);
+    const qtyInCart: number = cartService.getProductQuantity(product.id);
 
     // Calcular el stock disponible para mostrar
     const displayStock: number = product.stock - qtyInCart;

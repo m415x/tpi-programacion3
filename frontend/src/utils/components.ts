@@ -1,5 +1,5 @@
 import { Role } from "@interfaces/Role";
-import { cartService as cs } from "@services/cartService";
+import { cartService } from "@services/cartService";
 import { logout } from "@utils/authGuard";
 import { PATHS } from "@utils/paths";
 import { storage } from "@utils/storage";
@@ -136,7 +136,7 @@ export const updateCartBadge = (): void => {
     if (!cartLink) return;
 
     // Obtenemos la cantidad total de items en el carrito
-    const totalQty: number = cs.getTotalQuantity();
+    const totalQty: number = cartService.getTotalQuantity();
 
     // Buscamos el badge existente (si lo hay)
     let badge =

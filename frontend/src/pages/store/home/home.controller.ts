@@ -1,8 +1,8 @@
 import type { ICartItem } from "@interfaces/ICartItem";
 import type { ICategory } from "@interfaces/ICategory";
 import type { Product } from "@interfaces/Product";
-import { cartService as cs } from "@services/cartService";
-import { productService as ps } from "@services/productService";
+import { cartService } from "@services/cartService";
+import { productService } from "@services/productService";
 import { updateCartBadge } from "@utils/components";
 import { storage } from "@utils/storage";
 import {
@@ -96,7 +96,7 @@ export const showCategoriesInSidebar = (
         a.addEventListener("click", (e: Event): void => {
             e.preventDefault();
             syncCategorySelection(c.id.toString());
-            const filteredProducts: Product[] = ps.filterByCategory(
+            const filteredProducts: Product[] = productService.filterByCategory(
                 products,
                 c.id,
             );
@@ -123,7 +123,8 @@ export const showProducts = (products: Product[]): void => {
 
     // Filtramos los productos activos (disponibles y con stock) para mostrar la
     // cantidad correcta en el título
-    const activeProducts: Product[] = ps.getActiveProducts(products);
+    const activeProducts: Product[] =
+        productService.getActiveProducts(products);
 
     // Actualizamos el texto de cantidad de productos encontrados
     if (productQty) {
@@ -151,7 +152,7 @@ export const showProducts = (products: Product[]): void => {
                     : "Sin categoría";
 
             // Obtener cuánto de este producto ya está en el carrito
-            const qtyInCart: number = cs.getProductQuantity(prod.id);
+            const qtyInCart: number = cartService.getProductQuantity(prod.id);
 
             // Calcular el stock disponible para mostrar
             const displayStock: number = prod.stock - qtyInCart;
@@ -294,7 +295,7 @@ export const showSearchBar = (
         if (value === "all") {
             showProducts(product);
         } else {
-            const filteredProducts: Product[] = ps.filterByCategory(
+            const filteredProducts: Product[] = productService.filterByCategory(
                 product,
                 value,
             );
@@ -314,6 +315,7 @@ export const initStickySearch = (): void => {
     sentinel.classList.add("main__sticky-sentinel");
     searchBar.parentNode?.insertBefore(sentinel, searchBar);
 
+    // Usamos IntersectionObserver para detectar cuando el centinela sale de la vista
     const observer: IntersectionObserver = new IntersectionObserver(
         ([entry]: IntersectionObserverEntry[]) => {
             if (entry) {

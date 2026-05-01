@@ -1,4 +1,4 @@
-import { authService as as } from "@services/authService";
+import { authService } from "@services/authService";
 import { navigate } from "@utils/navigate";
 import { PATHS } from "@utils/paths";
 
@@ -23,16 +23,16 @@ export const initLoginLogic = (): void => {
         ).value;
 
         // Validaciones de formato de email
-        if (!as.validateEmail(email)) {
+        if (!authService.validateEmail(email)) {
             alert("Por favor, ingresa un email válido.");
             return;
         }
 
         // Encriptación
-        const encryptedPass: string = await as.encryptPassword(pass);
+        const encryptedPass: string = await authService.encryptPassword(pass);
 
         // Intento de Login
-        if (as.login(email, encryptedPass)) {
+        if (authService.login(email, encryptedPass)) {
             navigate(PATHS.STORE.HOME);
         } else {
             alert("Credenciales incorrectas.");
