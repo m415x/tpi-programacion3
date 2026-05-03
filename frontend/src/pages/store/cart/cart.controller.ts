@@ -268,9 +268,14 @@ const getSubtotal = (items: Product[]): number => {
  * Actualiza un elemento del DOM con un monto formateado
  * @param selector selector del elemento DOM
  * @param amount monto a renderizar
+ * @param container contenedor donde buscar el elemento (por defecto, document)
  */
-const renderAmount = (selector: string, amount: number): void => {
-    const element = document.querySelector<HTMLElement>(selector);
+const renderAmount = (
+    selector: string,
+    amount: number,
+    container: ParentNode = document,
+): void => {
+    const element = container.querySelector<HTMLElement>(selector);
     if (element) {
         element.innerHTML = formattedPriceHTML(amount);
     }

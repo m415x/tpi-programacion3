@@ -1,5 +1,7 @@
 import { PATHS } from "@utils/paths";
 import { productService } from "@services/productService";
+import { cartService } from "@/services/cartService";
+import type { Product } from "@/types/Product";
 
 /**
  * Busca la imagen de un producto aleatorio en la API y la asigna al elemento
@@ -65,12 +67,12 @@ export const getDisabledState = (
     isAvailable: boolean,
     classSelector?: string,
 ): string => {
-    // Si no está disponible y se pasó una clase CSS, devolver esa clase.
+    // Si no está disponible y se pasó una clase CSS, devolvemos esa clase.
     if (!isAvailable && classSelector) {
         return classSelector;
     }
 
-    // Si no, devolver "disabled" como atributo.
+    // Si no, devolvemos "disabled" como atributo.
     return !isAvailable ? "disabled" : "";
 };
 
@@ -87,29 +89,37 @@ export const showCartNotice = (
     productName: string,
     position: "after" | "append" = "after",
 ): void => {
-    // Eliminar notificación anterior si existe para no acumularlas
+    // Eliminamos la notificación anterior si existe para no acumularlas
     document.querySelector(".cart-notice")?.remove();
 
-    const notice = document.createElement("div");
+    const notice: HTMLDivElement = document.createElement("div");
     notice.classList.add("card", "cart-notice", "cart-notice--slide-in");
     notice.setAttribute("role", "alert");
 
-    notice.innerHTML = `
-        <p>${qty} &times; &ldquo;${productName}&rdquo; han sido añadidos a tu carrito.</p>
-        <a href="${PATHS.STORE.CART}" class="btn btn--primary">Ver carrito</a>
-    `;
-
     if (position === "after") {
+        notice.innerHTML = `
+        <p>Se añadió "${productName}" a tu carrito.</p>
+        <a href="${PATHS.STORE.CART}" class="btn btn--primary">Ver carrito</a>
+        `;
+
+        // Insertamos el aviso después del elemento padre
         parentElement.after(notice);
     } else {
+        notice.innerHTML = `
+        <p>${qty} &times; "${productName}" ${qty > 1 ? "han sido añadidos" : "ha sido añadido"} a tu carrito.</p>
+        <a href="${PATHS.STORE.CART}" class="btn btn--primary">Ver carrito</a>
+        `;
+
         // Nos aseguramos que el padre pueda contener un elemento con posición absoluta
         if (window.getComputedStyle(parentElement).position === "static") {
             parentElement.style.position = "relative";
         }
+
+        // Insertamos el aviso como último hijo del elemento padre
         parentElement.appendChild(notice);
     }
 
-    // Remover automáticamente después de 5 segundos
+    // Removemos automáticamente después de 5 segundos
     setTimeout(() => {
         if (document.body.contains(notice)) {
             // En lugar de removerlo de inmediato, disparamos la animación de salida
@@ -118,10 +128,57 @@ export const showCartNotice = (
                 "cart-notice--slide-out",
             );
 
-            // Esperamos a que la animación termine (ej: 300ms) para quitarlo del DOM
-            setTimeout(() => {
+            // Esperamos a que la animación termine para quitarlo del DOM
+            setTimeout((): void => {
                 if (document.body.contains(notice)) notice.remove();
             }, 300);
         }
     }, 5000);
+};
+
+/**
+ * Calcula la disponibilidad de un producto restando lo que ya está en el carrito.
+ * del stock total.
+ * @param product El producto del cual se desea calcular la disponibilidad.
+ * @return Un objeto con la cantidad disponible restante, un booleano que indica si el
+ * producto está disponible para agregar al carrito y la cantidad actual en el carrito.
+ */
+export const getItemAvailability = (
+    product: Product,
+): {
+    available: number;
+    isAvailable: boolean;
+    qtyInCart: number;
+} => {
+    const qtyInCart = cartService.getProductQuantity(product.id);
+    const available: number = product.stock - qtyInCart;
+    const isAvailable: boolean = product.disponible && available > 0;
+
+    return { available, isAvailable, qtyInCart };
+};
+
+/**
+ * Helper que actualiza la interfaz de usuario para reflejar el estado de stock y disponibilidad
+ * @param container El contenedor HTML donde se encuentran los elementos a actualizar.
+ * @param isAvailable Un booleano que indica si el producto está disponible para agregar al carrito.
+ * @param selectors Un objeto con los selectores CSS para el badge de stock y el botón de agregar al carrito.
+ */
+export const updateBaseAvailabilityUI = (
+    container: HTMLElement,
+    isAvailable: boolean,
+    selectors: { badge: string; button: string },
+): void => {
+    const badge = container.querySelector<HTMLElement>(selectors.badge);
+    const btnAdd = container.querySelector<HTMLButtonElement>(selectors.button);
+
+    if (badge) {
+        badge.classList.toggle("stock-badge--out-of-stock", !isAvailable);
+    }
+
+    if (btnAdd) {
+        btnAdd.disabled = !isAvailable;
+        btnAdd.textContent = isAvailable
+            ? "Agregar al carrito"
+            : "No disponible";
+    }
 };

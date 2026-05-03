@@ -1,6 +1,6 @@
 # Proyecto: Food Store
 
-## ✍️ Descripción
+## Descripción
 
 Este es un proyecto de demostración creado con fines educativos para ilustrar el desarrollo de un frontend para un E-commerce de comida utilizando **Vite**, **TypeScript Vanilla** (manipulación directa del DOM) y CSS puro.
 
@@ -8,7 +8,7 @@ El objetivo es mostrar la implementación de funcionalidades típicas de una tie
 
 ---
 
-## ⚠️ ¡Importante! Nivel de Seguridad
+## ¡Importante! Nivel de Seguridad
 
 La protección de rutas y la gestión de sesiones implementadas en este proyecto **NO SON SEGURAS** y no deben utilizarse en un entorno de producción.
 
@@ -19,7 +19,7 @@ Este enfoque es útil únicamente para fines de aprendizaje, lógica de estado f
 
 ---
 
-## 🚀 Instalación y Uso
+## Instalación y Uso
 
 Se recomienda usar `pnpm` como gestor de paquetes para mayor eficiencia en el manejo de dependencias.
 
@@ -51,7 +51,7 @@ La aplicación estará disponible en la URL que aparezca en la terminal (general
 
 ---
 
-## ⚙️ ¿Cómo Funciona la Arquitectura?
+## ¿Cómo Funciona la Arquitectura?
 
 El proyecto utiliza una arquitectura basada en servicios y utilidades para separar la lógica de negocio de la interfaz gráfica:
 
