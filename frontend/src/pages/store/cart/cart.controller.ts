@@ -58,14 +58,20 @@ export const showCart = (products: Product[]): void => {
                     <p class="cart__product-description">${prod.descripcion}</p>
                     <p class="price cart__product-price">${unitPrice}<span>c/u</span></p>
                 </div>
-              </div>
-              <div class="cart__product-btns">
-                <button class="btn btn--square btn--minus">-</button>
-                <input type="number" name="quantity" class="product-qty" value="" min="1">
-                <button class="btn btn--square btn--plus">+</button>
-                <p class="price cart__product-price cart__product-price--subtotal"></p>
-                <button class="btn btn--square btn--trash">🗑</button>
-              </div>
+            </div>
+            <div class="cart__product-btns">
+                <section>
+                    <button class="btn btn--square btn--minus">-</button>
+                    <input type="number" name="quantity" class="product-qty" value="" min="1">
+                    <button class="btn btn--square btn--plus">+</button>
+                </section>
+                <section>
+                    <p class="price cart__product-price cart__product-price--subtotal"></p>
+                </section>
+                <section>
+                    <button class="btn btn--square btn--trash">🗑</button>
+                </section>
+            </div>
             `;
             cartProductContainer?.appendChild(article);
 

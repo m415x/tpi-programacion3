@@ -1,7 +1,8 @@
-import { PATHS } from "@utils/paths";
+import type { Product } from "@interfaces/Product";
+import { cartService } from "@services/cartService";
 import { productService } from "@services/productService";
-import { cartService } from "@/services/cartService";
-import type { Product } from "@/types/Product";
+import { PATHS } from "@utils/paths";
+import { BRAND_NAME } from "@utils/constants";
 
 /**
  * Busca la imagen de un producto aleatorio en la API y la asigna al elemento
@@ -180,5 +181,17 @@ export const updateBaseAvailabilityUI = (
         btnAdd.textContent = isAvailable
             ? "Agregar al carrito"
             : "No disponible";
+    }
+};
+
+/**
+ * Actualiza el título de la pestaña del navegador siguiendo el formato de marca.
+ * @param pageName El nombre específico de la sección actual
+ */
+export const setPageTitle = (pageName: string): void => {
+    const titleElement = document.querySelector<HTMLTitleElement>("title");
+
+    if (titleElement) {
+        titleElement.innerText = `${BRAND_NAME} - ${pageName}`;
     }
 };

@@ -6,12 +6,16 @@ import {
     initStickySearch,
 } from "@pages/store/home/home.controller";
 import { renderHeader, renderAside, renderFooter } from "@utils/components";
+import { setPageTitle } from "@utils/uiUtils";
 import { PRODUCTS, getCategories } from "@/data/data";
 
 /**
  * Función principal para inicializar la página de la tienda
  */
 const initStore = (): void => {
+    // Establecer el título de la página
+    setPageTitle("Tienda");
+
     // Obtener las categorías activas
     const activeCategories: ICategory[] = getCategories();
 

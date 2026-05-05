@@ -1,11 +1,15 @@
 import { initCartEvents, showCart } from "@pages/store/cart/cart.controller";
 import { renderHeader, renderFooter } from "@utils/components";
+import { setPageTitle } from "@utils/uiUtils";
 import { PRODUCTS } from "@/data/data";
 
 /**
  * Función principal para inicializar la página de Carrito de Compras
  */
 const initCart = (): void => {
+    // Establecer el título de la página
+    setPageTitle("Carrito de Compras");
+
     // Renderizar componentes base
     renderHeader("#header");
     renderFooter("#footer");

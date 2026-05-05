@@ -1,5 +1,5 @@
-import { cartService } from "@/services/cartService";
 import type { Product } from "@interfaces/Product";
+import { cartService } from "@services/cartService";
 import { updateCartBadge } from "@utils/components";
 import { navigate } from "@utils/navigate";
 import { PATHS } from "@utils/paths";
@@ -7,6 +7,7 @@ import { storage } from "@utils/storage";
 import {
     formattedPriceHTML,
     getItemAvailability,
+    setPageTitle,
     showCartNotice,
     updateBaseAvailabilityUI,
     updateProductImageUI,
@@ -18,13 +19,8 @@ import {
  * @param product El producto del cual se desea mostrar el detalle.
  */
 export const showProductDetail = (product: Product): void => {
-    const pageTitle = document.querySelector<HTMLElement>("title");
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
-    if (!pageTitle) return;
-
-    // Actualizar el título de la página
-    pageTitle.innerText = "Food Store - " + product.nombre;
+    // Actualizamos el título de la página
+    setPageTitle(product.nombre);
 
     const productDetailContainer = document.querySelector<HTMLElement>(
         "#product-detail-container",

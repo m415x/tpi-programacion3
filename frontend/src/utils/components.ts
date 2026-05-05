@@ -3,6 +3,7 @@ import { cartService } from "@services/cartService";
 import { logout } from "@utils/authGuard";
 import { PATHS } from "@utils/paths";
 import { storage } from "@utils/storage";
+import { APP_VERSION, BRAND_NAME } from "@utils/constants";
 
 /**
  * Función para renderizar la card de autenticación (login/register) en el
@@ -32,34 +33,34 @@ export const renderAuthCard = (
 
     // Inyectamos el HTML de la card en el contenedor
     container.innerHTML = `
-      <section class="card auth-card">
+    <section class="card auth-card">
         <h1 class="auth-card__title">Food Store</h1>
         <h2 class="auth-card__subtitle">${title}</h2>
 
         <form id="form" class="auth-card__form">
-          ${
-              isRegister
-                  ? `
-          <label for="name">Nombre</label>
-          <input type="text" name="name" id="name" autocomplete="off" placeholder="Ingrese su nombre completo" required>
-        `
-                  : ""
-          }
+            ${
+                isRegister
+                    ? `
+            <label for="name">Nombre</label>
+            <input type="text" name="name" id="name" autocomplete="off" placeholder="Ingrese su nombre completo" required>
+            `
+                    : ""
+            }
 
-          <label for="email">Email</label>
-          <input type="email" name="email" id="email" autocomplete="off" placeholder="tucorreo@email.com" required>
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" autocomplete="off" placeholder="tucorreo@email.com" required>
 
-          <label for="pass">Contraseña</label>
-          <input type="password" name="pass" id="pass" autocomplete="off"
-            placeholder="Mínimo 8 caracteres" required>
+            <label for="pass">Contraseña</label>
+            <input type="password" name="pass" id="pass" autocomplete="off"
+                placeholder="Mínimo 8 caracteres" required>
 
-          <button class="btn btn--primary" type="submit">${btnText}</button>
+            <button class="btn btn--primary" type="submit">${btnText}</button>
         </form>
 
         <p class="auth-card__switch-link">
             ${footerText} <a href="#" id="auth-switch-link">${footerLinkText}</a>
         </p>
-      </section>
+    </section>
     `;
 };
 
@@ -95,7 +96,7 @@ export const renderHeader = (containerSelector: string): void => {
     // Inyectamos el HTML del Header en el contenedor
     container.innerHTML = `
     <div class="header__content">
-        <h1>Food Store</h1>
+        <h1>${BRAND_NAME}</h1>
         <nav class="menu">
         <ul class="menu__list">
             <li class="menu__item"><a href="${PATHS.STORE.HOME}" class="link ${getActiveClass(PATHS.STORE.HOME)}">Tienda</a></li>
@@ -201,7 +202,7 @@ export const renderFooter = (containerSelector: string): void => {
     // Contenido del Footer según el rol
     const clientInfo = `
         <div class="footer__content">
-            <p>&copy; 2026 Food Store. Todos los derechos reservados.</p>
+            <p>&copy; 2026 ${BRAND_NAME}. Todos los derechos reservados.</p>
             <p>Contacto: <a href="mailto:info@foodstore.com" target="_blank">info@foodstore.com</a></p>
             ${poweredBy}
         </div>
@@ -209,7 +210,7 @@ export const renderFooter = (containerSelector: string): void => {
 
     const adminInfo = `
         <div class="footer__content footer__content--admin">
-            <p>Panel de Control v1.0</p>
+            <p>Panel de Control ${APP_VERSION}</p>
             <p>Sesión iniciada como: <strong>${role}</strong></p>
             ${poweredBy}
         </div>
@@ -219,4 +220,24 @@ export const renderFooter = (containerSelector: string): void => {
     container.innerHTML = `
         ${path.includes("/admin/") ? adminInfo : clientInfo}
     `;
+};
+
+/**
+ * Función para inyectar el favicon mediante Data URI para optimizar la carga
+ */
+export const initFavicon = (): void => {
+    const faviconUri: string =
+        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Roboto, sans-serif' font-size='60' font-weight='bold' fill='%23ff6347'%3EFS%3C/text%3E%3C/svg%3E";
+
+    let link: HTMLLinkElement | null =
+        document.querySelector("link[rel~='icon']");
+
+    if (!link) {
+        link = document.createElement("link") as HTMLLinkElement;
+        link.rel = "icon";
+        document.head.appendChild(link);
+    }
+
+    link.type = "image/svg+xml";
+    link.href = faviconUri;
 };
