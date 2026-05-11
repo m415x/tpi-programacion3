@@ -19,12 +19,17 @@ import {
 export const showProducts = (products: Product[]): void => {
     const productContainer =
         document.querySelector<HTMLElement>("#product-container");
+    if (!productContainer) return;
 
     const productQty =
         document.querySelector<HTMLParagraphElement>("#product-qty");
+    if (!productQty) return;
 
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
-    if (!productContainer || !productQty) return;
+    // Limpiamos el contenedor antes de mostrar los productos para evitar duplicados
+    productContainer.innerHTML = "";
+
+    // Creamos un fragmento para optimizar la inserción de múltiples elementos en el DOM
+    const fragment: DocumentFragment = document.createDocumentFragment();
 
     // Filtramos los productos activos (disponibles y con stock) para mostrar la
     // cantidad correcta en el título
@@ -41,13 +46,13 @@ export const showProducts = (products: Product[]): void => {
             productQty.textContent = `${activeProducts.length} productos`;
         }
     }
-    // Limpiar el contenedor de productos
-    productContainer ? (productContainer.innerHTML = "") : null;
 
     if (activeProducts.length > 0) {
         activeProducts.forEach((prod: Product): void => {
+            // Creamos los nodos uno por uno
             const article: HTMLElement = document.createElement("article");
             article.classList.add("card", "product__card");
+            article.dataset.id = prod.id.toString();
 
             // Formateamos el precio
             const unitPrice: string = formattedPriceHTML(prod.precio);
@@ -89,18 +94,18 @@ export const showProducts = (products: Product[]): void => {
                 </div>
             </div>
             `;
-            productContainer.appendChild(article);
+
+            // Agregamos la card al fragmento en lugar de al DOM directamente para mejorar el rendimiento
+            fragment.appendChild(article);
 
             // Sincronizamos el estado inicial de la card
             updateProductCardUI(article, isAvailable);
 
             // Iniciamos la carga de la imagen
-            updateProductImageUI(prod.id);
+            updateProductImageUI(prod.id, article);
 
             const btnAdd =
                 article.querySelector<HTMLButtonElement>(".btn--add-product");
-
-            // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
             if (!btnAdd) return;
 
             btnAdd.addEventListener("click", (): void => {
@@ -125,6 +130,10 @@ export const showProducts = (products: Product[]): void => {
                 }
             });
         });
+
+        // Una vez que hemos creado todas las cards en el fragmento, lo agregamos
+        // al contenedor de productos en el DOM de una sola vez
+        productContainer.appendChild(fragment);
     } else {
         const emptyResult: HTMLElement = document.createElement("p");
 
@@ -159,55 +168,58 @@ const updateProductCardUI = (
  * @param category el array de categorías para poblar el selector de filtros
  */
 export const showSearchBar = (
-    product: Product[],
-    category: ICategory[],
+    products: Product[],
+    categories: ICategory[],
 ): void => {
     const inputSearch =
         document.querySelector<HTMLInputElement>("#input-search");
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
-    if (!inputSearch) return;
-
-    inputSearch.addEventListener("input", (e: Event) => {
-        const target = e.target as HTMLInputElement;
-
-        const filteredProducts: Product[] = product.filter(
-            (prod: Product): boolean =>
-                prod.nombre.toLowerCase().includes(target.value.toLowerCase()),
-        );
-        showProducts(filteredProducts);
-    });
-
     const selectCategories =
         document.querySelector<HTMLSelectElement>("#select-categories");
+    if (!inputSearch || !selectCategories) return;
 
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
-    if (!selectCategories) return;
+    // Variable para manejar el debounce de la búsqueda
+    let debounceTimer: number;
 
-    category.forEach((c: ICategory): void => {
+    // Función para manejar los filtros de búsqueda y categoría, delegando la lógica
+    // al servicio y actualizando la UI
+    const handleFilters = (): void => {
+        // Capturamos los valores actuales de la UI
+        const searchTerm: string = inputSearch.value || "";
+        const categoryId: string = selectCategories.value || "all";
+
+        // Delegamos la lógica al servicio
+        const filteredProducts = productService.applyFilters(products, {
+            searchTerm,
+            categoryId,
+        });
+
+        showProducts(filteredProducts);
+    };
+
+    inputSearch.addEventListener("input", (): void => {
+        // Cancelamos el temporizador anterior si el usuario sigue escribiendo
+        clearTimeout(debounceTimer);
+
+        // Esperamos 300ms antes de ejecutar la lógica de búsqueda
+        debounceTimer = window.setTimeout((): void => handleFilters(), 300);
+    });
+
+    // Creamos un fragmento para optimizar la inserción de múltiples elementos en el DOM
+    const fragment: DocumentFragment = document.createDocumentFragment();
+
+    categories.forEach((c: ICategory): void => {
+        // Creamos los nodos uno por uno
         const option: HTMLOptionElement = document.createElement("option");
 
         option.value = c.id.toString();
         option.textContent = c.nombre;
-        selectCategories.appendChild(option);
+        fragment.appendChild(option);
     });
 
-    selectCategories.addEventListener("change", (e: Event): void => {
-        const target = e.target as HTMLSelectElement;
-        const value: string = target.value;
+    // Insertamos todas las opciones al DOM de una sola vez
+    selectCategories.appendChild(fragment);
 
-        syncCategorySelection(value);
-
-        if (value === "all") {
-            showProducts(product);
-        } else {
-            const filteredProducts: Product[] = productService.filterByCategory(
-                product,
-                value,
-            );
-            showProducts(filteredProducts);
-        }
-    });
+    selectCategories.addEventListener("change", (): void => handleFilters());
 };
 
 /**
@@ -227,6 +239,8 @@ export const syncCategorySelection = (categoryId: string): void => {
     // Sincronizar el select
     const selectCategories =
         document.querySelector<HTMLSelectElement>("#select-categories");
+
+    // Actualizamos el valor del select
     if (selectCategories && selectCategories.value !== categoryId) {
         selectCategories.value = categoryId;
     }
@@ -256,31 +270,34 @@ export const showCategoriesInSidebar = (
     products: Product[],
 ): void => {
     const container = document.querySelector<HTMLElement>(containerSelector);
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!container) return;
 
-    const title = document.createElement("h2") as HTMLHeadingElement;
-    title.textContent = "Categorías";
-    container.appendChild(title);
+    // Creamos un fragmento para optimizar la inserción de múltiples elementos en el DOM
+    const fragment: DocumentFragment = document.createDocumentFragment();
 
-    const unOrderedList = document.createElement("ul") as HTMLUListElement;
-    unOrderedList.id = "category-list";
-    container.appendChild(unOrderedList);
+    container.innerHTML = `
+        <h2 class="sidebar__title">Categorías</h2>
+        <ul id="category-list" class="sidebar__list">
+            <li>
+                <a href="#" class="link link--active" data-category-id="all">Todas</a>
+            </li>
+        </ul>
+    `;
 
-    const li = document.createElement("li") as HTMLLIElement;
-    const a = document.createElement("a") as HTMLAnchorElement;
-    a.href = "#";
-    a.textContent = "Todas";
-    a.dataset.categoryId = "all";
-    a.classList.add("link", "link--active");
-    a.addEventListener("click", (e: Event): void => {
+    const categoryAll = container.querySelector<HTMLLinkElement>(
+        "[data-category-id='all']",
+    );
+    if (!categoryAll) return;
+
+    const categoryList =
+        container.querySelector<HTMLUListElement>("#category-list");
+    if (!categoryList) return;
+
+    categoryAll.addEventListener("click", (e: Event): void => {
         e.preventDefault();
         syncCategorySelection("all");
         showProducts(products);
     });
-    li.appendChild(a);
-    unOrderedList?.appendChild(li);
 
     // Iteramos sobre las categorías para crear un enlace por cada una
     categories.forEach((c: ICategory): void => {
@@ -300,15 +317,14 @@ export const showCategoriesInSidebar = (
             showProducts(filteredProducts);
         });
         li.appendChild(a);
-        unOrderedList?.appendChild(li);
+        fragment.appendChild(li);
     });
+    categoryList.appendChild(fragment);
 };
 
 // Función para detectar cuando la barra de búsqueda se vuelva sticky al hacer scroll
 export const initStickySearch = (): void => {
     const searchBar = document.querySelector<HTMLElement>(".search-bar");
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!searchBar) return;
 
     const sentinel: HTMLElement = document.createElement("div");

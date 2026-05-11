@@ -17,8 +17,6 @@ export const renderAuthCard = (
     isRegister: boolean,
 ): void => {
     const container = document.querySelector<HTMLElement>(containerSelector);
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!container) return;
 
     // Definimos los textos dinámicos según el tipo de formulario
@@ -70,8 +68,6 @@ export const renderAuthCard = (
  */
 export const renderHeader = (containerSelector: string): void => {
     const container = document.querySelector<HTMLElement>(containerSelector);
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!container) return;
 
     // Obtenemos el rol y nombre del usuario para personalizar el menú
@@ -116,8 +112,6 @@ export const renderHeader = (containerSelector: string): void => {
     // Agregamos el listener para el botón de logout
     const btnLogout =
         document.querySelector<HTMLButtonElement>("#logoutButton");
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!btnLogout) return;
 
     btnLogout.addEventListener("click", (): void => logout());
@@ -132,8 +126,6 @@ export const updateCartBadge = (): void => {
     const cartLink = document.querySelector<HTMLLinkElement>(
         ".menu__item--cart a",
     );
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!cartLink) return;
 
     // Obtenemos la cantidad total de items en el carrito
@@ -168,8 +160,6 @@ export const renderAside = (
     callback?: () => void,
 ): void => {
     const container = document.querySelector<HTMLElement>(containerSelector);
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!container) return;
 
     // Limpiamos el contenedor
@@ -187,8 +177,6 @@ export const renderAside = (
  */
 export const renderFooter = (containerSelector: string): void => {
     const container = document.querySelector<HTMLElement>(containerSelector);
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!container) return;
 
     // Obtenemos el rol del usuario para personalizar el contenido del Footer

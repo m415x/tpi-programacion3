@@ -8,23 +8,21 @@ import { navigate } from "@utils/navigate";
  * Inicializa la lógica del formulario de registro, incluyendo validaciones, encriptación de contraseña y manejo de eventos.
  */
 export const initRegisterLogic = (): void => {
-    const loginForm = document.querySelector<HTMLFormElement>("#form");
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
-    if (!loginForm) return;
+    const registerForm = document.querySelector<HTMLFormElement>("#form");
+    if (!registerForm) return;
 
     // Listener para el submit del formulario de registro
-    loginForm.addEventListener("submit", async (e: SubmitEvent) => {
+    registerForm.addEventListener("submit", async (e: SubmitEvent) => {
         e.preventDefault();
 
         const name: string = (
-            document.querySelector("#name") as HTMLInputElement
+            registerForm.querySelector("#name") as HTMLInputElement
         ).value;
         const email: string = (
-            document.querySelector("#email") as HTMLInputElement
+            registerForm.querySelector("#email") as HTMLInputElement
         ).value;
         const pass: string = (
-            document.querySelector("#pass") as HTMLInputElement
+            registerForm.querySelector("#pass") as HTMLInputElement
         ).value;
 
         // Validaciones de formato de email
@@ -56,7 +54,8 @@ export const initRegisterLogic = (): void => {
         };
 
         // Intento de Registro
-        const result = authService.register(newUser);
+        const result: { success: boolean; message: string } =
+            authService.register(newUser);
 
         if (result.success) {
             alert(result.message);
@@ -69,8 +68,6 @@ export const initRegisterLogic = (): void => {
 
     const authLink =
         document.querySelector<HTMLLinkElement>("#auth-switch-link");
-
-    //Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!authLink) return;
 
     // Listener para cambiar entre login y registro

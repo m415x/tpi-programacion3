@@ -25,7 +25,6 @@ export const showProductDetail = (product: Product): void => {
     const productDetailContainer = document.querySelector<HTMLElement>(
         "#product-detail-container",
     );
-
     if (!productDetailContainer) return;
 
     // Formatear el precio
@@ -75,8 +74,6 @@ export const showProductDetail = (product: Product): void => {
         productDetailContainer.querySelector<HTMLButtonElement>(".btn--plus");
     const btnMinus =
         productDetailContainer.querySelector<HTMLButtonElement>(".btn--minus");
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!inputQty || !btnAdd || !btnPlus || !btnMinus) return;
 
     // Función interna para actualizar el número visual sin tocar el Storage
@@ -111,7 +108,9 @@ export const showProductDetail = (product: Product): void => {
     // Evento de agregar al carrito (Intenta actualizar el Storage)
     btnAdd.addEventListener("click", (): void => {
         // Calculamos la nueva cantidad total que se desea tener en el carrito para este producto
-        const currentQtyInCart = cartService.getProductQuantity(product.id);
+        const currentQtyInCart: number = cartService.getProductQuantity(
+            product.id,
+        );
         const totalNewQty: number = currentQtyInCart + selectedQty;
 
         if (storage.updateCartItem(product.id, totalNewQty)) {
@@ -154,8 +153,6 @@ export const showProductDetail = (product: Product): void => {
     const btnBack = productDetailContainer.querySelector<HTMLButtonElement>(
         ".product-detail__row .btn--secondary",
     );
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!btnBack) return;
 
     btnBack.addEventListener("click", (): void => {
@@ -196,6 +193,7 @@ const renderStockStatus = (
     const inputQty = container.querySelector<HTMLInputElement>(".product-qty");
     const btnPlus = container.querySelector<HTMLButtonElement>(".btn--plus");
     const btnMinus = container.querySelector<HTMLButtonElement>(".btn--minus");
+    if (!inputQty || !btnPlus || !btnMinus) return;
 
     // Deshabilita los controles de cantidad si no hay stock
     [inputQty, btnPlus, btnMinus].forEach((el: HTMLElement | null): void => {

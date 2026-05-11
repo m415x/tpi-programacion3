@@ -7,8 +7,6 @@ import { PATHS } from "@utils/paths";
  */
 export const initLoginLogic = (): void => {
     const loginForm = document.querySelector<HTMLFormElement>("#form");
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!loginForm) return;
 
     // Listener para el submit del formulario de login
@@ -16,10 +14,10 @@ export const initLoginLogic = (): void => {
         e.preventDefault();
 
         const email: string = (
-            document.querySelector("#email") as HTMLInputElement
+            loginForm.querySelector("#email") as HTMLInputElement
         ).value;
         const pass: string = (
-            document.querySelector("#pass") as HTMLInputElement
+            loginForm.querySelector("#pass") as HTMLInputElement
         ).value;
 
         // Validaciones de formato de email
@@ -41,8 +39,6 @@ export const initLoginLogic = (): void => {
 
     const authLink =
         document.querySelector<HTMLLinkElement>("#auth-switch-link");
-
-    //Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!authLink) return;
 
     // Listener para cambiar entre login y registro

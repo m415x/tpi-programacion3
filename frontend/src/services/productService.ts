@@ -111,4 +111,36 @@ export const productService = {
     getProductById(id: number): Product | undefined {
         return PRODUCTS.find((p: Product): boolean => p.id === id);
     },
+
+    /**
+     * Aplica múltiples criterios de filtrado sobre una lista de productos.
+     * @param products Lista original de productos.
+     * @param criteria Objeto con los términos de búsqueda y categoría.
+     * @returns Lista de productos que cumplen con todos los criterios.
+     */
+    applyFilters(
+        products: Product[],
+        criteria: { searchTerm: string; categoryId: string },
+    ): Product[] {
+        const { searchTerm, categoryId } = criteria;
+        const term = searchTerm.toLowerCase().trim();
+
+        return products.filter((prod: Product): boolean => {
+            // Criterio 1: Coincidencia por nombre
+            const matchesName: boolean = prod.nombre
+                .toLowerCase()
+                .includes(term);
+
+            // Criterio 2: Coincidencia por categoría
+            const matchesCategory: boolean =
+                categoryId === "all" ||
+                prod.categorias.some(
+                    (cat: ICategory | undefined): boolean =>
+                        cat?.id.toString() === categoryId,
+                );
+
+            // Debe cumplir ambos para ser incluido
+            return matchesName && matchesCategory;
+        });
+    },
 };

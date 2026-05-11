@@ -8,18 +8,19 @@ import { BRAND_NAME } from "@utils/constants";
  * Busca la imagen de un producto aleatorio en la API y la asigna al elemento
  * <img> correspondiente.
  * @param id ID del producto para localizar el elemento en el DOM.
+ * @param container Opcional. Contenedor DOM donde buscar (por defecto es el document global).
  */
-export const updateProductImageUI = (id: number): void => {
+export const updateProductImageUI = (
+    id: number,
+    container: Document | HTMLElement | DocumentFragment = document,
+): void => {
     // Obtener URL de la imagen desde el servicio
     const url: string = productService.getPersistentImage(id);
 
     // Actualizar el src del elemento <img> con el ID específico
-    const imgElement = document.querySelector<HTMLImageElement>(
+    const imgElement = container.querySelector<HTMLImageElement>(
         `#img-product-${id}`,
     );
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
-    if (!imgElement) return;
 
     if (imgElement) {
         imgElement.src = url;

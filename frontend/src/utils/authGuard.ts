@@ -28,7 +28,7 @@ export const checkAuth = (): void => {
     // 2. Si está autenticado y está en una página de auth/ o landing -> a su zona
     if (storage.isAuthenticated() && isAuthPage) {
         const destination: string =
-            role === Role.ADMIN ? PATHS.ADMIN.HOME : PATHS.CLIENT.HOME;
+            role === Role.ADMIN ? PATHS.ADMIN.HOME : PATHS.STORE.HOME;
         navigateClear(destination);
         return;
     }

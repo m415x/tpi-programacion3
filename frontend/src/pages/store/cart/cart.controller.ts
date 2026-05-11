@@ -20,9 +20,10 @@ export const showCart = (products: Product[]): void => {
     const cartProductContainer = document.querySelector<HTMLElement>(
         "#cart-product-container",
     );
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!cartProductContainer) return;
+
+    // Creamos un fragmento para optimizar la inserción de múltiples elementos en el DOM
+    const fragment: DocumentFragment = document.createDocumentFragment();
 
     // Filtramos los productos activos
     const activeProducts: Product[] =
@@ -32,7 +33,7 @@ export const showCart = (products: Product[]): void => {
     const cartItems: Product[] = cartService.getCartItems(activeProducts);
 
     // Limpiar el contenedor de productos
-    cartProductContainer ? (cartProductContainer.innerHTML = "") : null;
+    cartProductContainer.innerHTML = "";
 
     // Si hay productos en el carrito, los mostramos. De lo contrario,
     // mostramos mensaje de carrito vacío.
@@ -51,39 +52,37 @@ export const showCart = (products: Product[]): void => {
             const unitPrice: string = formattedPriceHTML(prod.precio);
 
             article.innerHTML = `
-            <div class="cart__product-info">
-                <img class="cart__product-img" src="" id="img-product-${prod.id}" alt="${prod.nombre}">
-                <div class="cart__product-details">
-                    ${linkedName}
-                    <p class="cart__product-description">${prod.descripcion}</p>
-                    <p class="price cart__product-price">${unitPrice}<span>c/u</span></p>
+                <div class="cart__product-info">
+                    <img class="cart__product-img" src="" id="img-product-${prod.id}" alt="${prod.nombre}">
+                    <div class="cart__product-details">
+                        ${linkedName}
+                        <p class="cart__product-description">${prod.descripcion}</p>
+                        <p class="price cart__product-price">${unitPrice}<span>c/u</span></p>
+                    </div>
                 </div>
-            </div>
-            <div class="cart__product-btns">
-                <section>
-                    <button class="btn btn--square btn--minus">-</button>
-                    <input type="number" name="quantity" class="product-qty" value="" min="1">
-                    <button class="btn btn--square btn--plus">+</button>
-                </section>
-                <section>
-                    <p class="price cart__product-price cart__product-price--subtotal"></p>
-                </section>
-                <section>
-                    <button class="btn btn--square btn--trash">🗑</button>
-                </section>
-            </div>
+                <div class="cart__product-btns">
+                    <section>
+                        <button class="btn btn--square btn--minus">-</button>
+                        <input type="number" name="quantity" class="product-qty" value="" min="1">
+                        <button class="btn btn--square btn--plus">+</button>
+                    </section>
+                    <section>
+                        <p class="price cart__product-price cart__product-price--subtotal"></p>
+                    </section>
+                    <section>
+                        <button class="btn btn--square btn--trash">🗑</button>
+                    </section>
+                </div>
             `;
-            cartProductContainer?.appendChild(article);
+            fragment.appendChild(article);
 
             // Iniciamos la carga asíncrona de la imagen
-            updateProductImageUI(prod.id);
+            updateProductImageUI(prod.id, article);
 
             // Obtener la cantidad actual desde el storage para este producto
             const currentQty: number = cartService.getProductQuantity(prod.id);
             const inputQty =
                 article.querySelector<HTMLInputElement>(".product-qty");
-
-            // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
             if (!inputQty) return;
 
             // Establecer el máximo en base al stock disponible
@@ -104,8 +103,6 @@ export const showCart = (products: Product[]): void => {
             const subtotalElement = article.querySelector<HTMLParagraphElement>(
                 ".cart__product-price--subtotal",
             );
-
-            // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
             if (!subtotalElement) return;
 
             subtotalElement.innerHTML = subtotalPrice;
@@ -117,8 +114,6 @@ export const showCart = (products: Product[]): void => {
                 article.querySelector<HTMLButtonElement>(".btn--plus");
             const btnTrash =
                 article.querySelector<HTMLButtonElement>(".btn--trash");
-
-            // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
             if (!btnMinus || !btnPlus || !btnTrash) return;
 
             btnMinus.addEventListener("click", (): void => {
@@ -152,6 +147,7 @@ export const showCart = (products: Product[]): void => {
                 }
             });
         });
+        cartProductContainer.appendChild(fragment);
     } else {
         const cartEmpty = document.createElement("div") as HTMLDivElement;
         const emptyResult = document.createElement("p") as HTMLParagraphElement;
@@ -199,8 +195,6 @@ export const updateCartItemUI = (
     const itemContainer = cartContainer.querySelector<HTMLElement>(
         `[data-id="${id}"]`,
     );
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
     if (!itemContainer) return;
 
     if (newQty <= 0) {
@@ -238,6 +232,7 @@ export const updateCartItemUI = (
             itemContainer.querySelector<HTMLParagraphElement>(
                 ".cart__product-price--subtotal",
             );
+
         if (subtotalElement) {
             const nuevoSubtotal: number = price * newQty;
             subtotalElement.innerHTML = formattedPriceHTML(nuevoSubtotal);
@@ -309,9 +304,6 @@ export const initCartEvents = (products: Product[]): void => {
         document.querySelector<HTMLButtonElement>("#btn-clear-cart");
     const btnCheckout =
         document.querySelector<HTMLButtonElement>("#btn-checkout");
-
-    // Cláusula de guarda para evitar errores si el elemento no existe en el DOM
-    if (!btnClearCart || !btnCheckout) return;
 
     // Evento del botón "Vaciar carrito"
     if (btnClearCart) {

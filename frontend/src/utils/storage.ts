@@ -152,8 +152,6 @@ export const storage = {
         const item: ICartItem | undefined = cartItems.find(
             (i: ICartItem): boolean => i.id === id,
         );
-
-        // Cláusula de guarda: si no existe el item, no hacemos nada
         if (!item) return;
 
         // Solo disminuimos la cantidad si es mayor a 1 para evitar eliminar el item del carrito

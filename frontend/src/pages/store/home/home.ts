@@ -21,7 +21,7 @@ const initStore = (): void => {
 
     // Renderizar componentes base
     renderHeader("#header");
-    renderAside("#sidebar", () =>
+    renderAside("#sidebar", (): void =>
         // Inyectar las categorías activas en el sidebar
         showCategoriesInSidebar("#sidebar", activeCategories, PRODUCTS),
     );
