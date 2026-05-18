@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: SGP
+
+  # DB config
+  datasource:
+    url: jdbc:h2:file:./backend/data/sgp_db
+    username: m415xs
+    password: 123456
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    # Mostrar SQL en consola
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
