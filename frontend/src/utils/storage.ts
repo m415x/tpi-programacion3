@@ -1,8 +1,8 @@
-import type { IUser } from "@interfaces/IUser";
 import type { ICartItem } from "@interfaces/ICartItem";
-import { PRODUCTS } from "@/data/data";
-import type { Product } from "@interfaces/Product";
+import type { IProduct } from "@interfaces/IProduct";
+import type { IUser } from "@interfaces/IUser";
 import type { Role } from "@interfaces/Role";
+import { PRODUCTS } from "@/data/data";
 
 /**
  * Este objeto contiene un store centralizado para gestionar el estado de la
@@ -108,8 +108,8 @@ export const storage = {
         const cartItems: ICartItem[] = this.getCartItems();
 
         // Buscar producto y validar existencia
-        const product: Product | undefined = PRODUCTS.find(
-            (p: Product): boolean => p.id === id,
+        const product: IProduct | undefined = PRODUCTS.find(
+            (p: IProduct): boolean => p.id === id,
         );
         if (!product) return false;
 
@@ -118,7 +118,7 @@ export const storage = {
         );
 
         // Si viene fixedQty, se usa esa. Si no, se incrementa la actual + 1.
-        const newQty =
+        const newQty: number =
             fixedQty !== undefined
                 ? fixedQty
                 : existingItem
@@ -168,7 +168,7 @@ export const storage = {
     removeCartItem(id: number): void {
         const cartItems: ICartItem[] = this.getCartItems();
         // Creamos un nuevo array sin el producto a eliminar
-        const updatedCart = cartItems.filter((i) => i.id !== id);
+        const updatedCart: ICartItem[] = cartItems.filter((i: ICartItem): boolean => i.id !== id);
 
         localStorage.setItem("cartItems", JSON.stringify(updatedCart));
     },

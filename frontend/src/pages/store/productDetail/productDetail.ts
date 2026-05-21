@@ -1,4 +1,4 @@
-import type { Product } from "@interfaces/Product";
+import type { IProduct } from "@interfaces/IProduct";
 import { showProductDetail } from "@pages/store/productDetail/productDetail.controller";
 import { productService } from "@services/productService";
 import { renderHeader, renderFooter } from "@utils/components";
@@ -22,7 +22,7 @@ const initProductDetail = (): void => {
     const productId: number = parseInt(urlParams.get("id") || "0", 10);
 
     // Buscar el producto por su id
-    const product: Product | undefined =
+    const product: IProduct | undefined =
         productService.getProductById(productId);
 
     // Si el producto existe, mostrar su detalle

@@ -1,4 +1,4 @@
-import type { Product } from "@interfaces/Product";
+import type { IProduct } from "@interfaces/IProduct";
 import { cartService } from "@services/cartService";
 import { updateCartBadge } from "@utils/components";
 import { navigate } from "@utils/navigate";
@@ -18,9 +18,9 @@ import {
  * precio y opciones para agregar al carrito.
  * @param product El producto del cual se desea mostrar el detalle.
  */
-export const showProductDetail = (product: Product): void => {
+export const showProductDetail = (product: IProduct): void => {
     // Actualizamos el título de la página
-    setPageTitle(product.nombre);
+    setPageTitle(product.name);
 
     const productDetailContainer = document.querySelector<HTMLElement>(
         "#product-detail-container",
@@ -28,7 +28,7 @@ export const showProductDetail = (product: Product): void => {
     if (!productDetailContainer) return;
 
     // Formatear el precio
-    const unitPrice: string = formattedPriceHTML(product.precio);
+    const unitPrice: string = formattedPriceHTML(product.price);
 
     // Calcular disponibilidad
     const { available, isAvailable, qtyInCart } = getItemAvailability(product);
@@ -38,13 +38,13 @@ export const showProductDetail = (product: Product): void => {
 
     productDetailContainer.innerHTML = `
         <div class="card product-detail__img-container">
-            <img class="product-detail__img" src="" id="img-product-${product.id}" alt="${product.nombre}">
+            <img class="product-detail__img" src="" id="img-product-${product.id}" alt="${product.name}">
         </div>
         <div class="product-detail__details">
-            <h4 class="product-detail__title">${product.nombre}</h4>
+            <h4 class="product-detail__title">${product.name}</h4>
             <p class="price product-detail__price">${unitPrice}</p>
             <p class="stock-badge"></p> <!-- Lo renderiza renderStockStatus -->
-            <p class="product-detail__description">${product.descripcion}</p>
+            <p class="product-detail__description">${product.description}</p>
             <p class="product-detail__subtitle">Cantidad:</p>
             <div class="product-detail__row">
                 <button class="btn btn--square btn--minus">-</button>
@@ -137,7 +137,7 @@ export const showProductDetail = (product: Product): void => {
                 showCartNotice(
                     detailsContainer,
                     selectedQty,
-                    product.nombre,
+                    product.name,
                     "append",
                 );
             }

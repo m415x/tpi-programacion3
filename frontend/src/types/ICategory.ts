@@ -3,8 +3,8 @@
  */
 export interface ICategory {
     id: number;
-    eliminado: boolean;
+    deleted: boolean;
     createdAt: string;
-    nombre: string;
-    descripcion: string;
+    name: string;
+    description: string;
 }

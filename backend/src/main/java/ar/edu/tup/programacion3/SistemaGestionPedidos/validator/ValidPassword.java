@@ -12,7 +12,8 @@ import java.lang.annotation.*;
 @Pattern(
         regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,64}$",
         message =
-                "La contraseña debe tener entre 6 y 64 caracteres, al menos una letra mayúscula, una minúscula, un número y un carácter especial")
+                "La contraseña debe tener entre 6 y 64 caracteres, al menos una letra mayúscula, una minúscula, un "
+                        + "número y un carácter especial")
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

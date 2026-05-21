@@ -1,5 +1,5 @@
 import type { ICategory } from "@interfaces/ICategory";
-import type { Product } from "@interfaces/Product";
+import type { IProduct } from "@interfaces/IProduct";
 import { PRODUCTS } from "@/data/data";
 
 // Clave de almacenamiento para el mapa de imágenes persistentes
@@ -31,16 +31,16 @@ export const productService = {
      * @returns Lista de productos que pertenecen a la categoría especificada.
      */
     filterByCategory(
-        products: Product[],
+        products: IProduct[],
         categoryId: number | string,
-    ): Product[] {
+    ): IProduct[] {
         // Casteamos el categoryId a string para compararlo con los IDs de las categorías
         const categoryIdStr: string = categoryId.toString();
 
         // Filtramos los productos que tienen al menos una categoría cuyo ID
         // coincide con categoryIdStr
-        return products.filter((prod: Product): boolean =>
-            prod.categorias.some((cat: ICategory | undefined): boolean => {
+        return products.filter((prod: IProduct): boolean =>
+            prod.categories.some((cat: ICategory | undefined): boolean => {
                 if (!cat) return false;
 
                 return cat.id.toString() === categoryIdStr;
@@ -54,8 +54,8 @@ export const productService = {
      * @param products Lista completa de productos disponibles
      * @returns Lista de productos que tienen el estado "eliminado" en false.
      */
-    getActiveProducts(products: Product[]): Product[] {
-        return products.filter((p: Product): boolean => !p.eliminado);
+    getActiveProducts(products: IProduct[]): IProduct[] {
+        return products.filter((p: IProduct): boolean => !p.deleted);
     },
 
     /**
@@ -81,13 +81,13 @@ export const productService = {
         }
 
         // Buscamos el producto para obtener su categoría
-        const product: Product | undefined = PRODUCTS.find(
-            (p: Product): boolean => p.id === productId,
+        const product: IProduct | undefined = PRODUCTS.find(
+            (p: IProduct): boolean => p.id === productId,
         );
 
         // Obtenemos el nombre de la primera categoría del producto, o "food"
         // si no tiene categorías
-        const categoryName: string = product?.categorias[0]?.nombre || "food";
+        const categoryName: string = product?.categories[0]?.name || "food";
 
         // Traducimos el nombre de la categoría al inglés para la API
         const keyword: string = CATEGORY_TRANSLATIONS[categoryName] || "food";
@@ -108,8 +108,8 @@ export const productService = {
      * @param id ID del producto que se desea obtener.
      * @return El producto que coincide con el ID proporcionado, o undefined si no se encuentra.
      */
-    getProductById(id: number): Product | undefined {
-        return PRODUCTS.find((p: Product): boolean => p.id === id);
+    getProductById(id: number): IProduct | undefined {
+        return PRODUCTS.find((p: IProduct): boolean => p.id === id);
     },
 
     /**
@@ -119,22 +119,22 @@ export const productService = {
      * @returns Lista de productos que cumplen con todos los criterios.
      */
     applyFilters(
-        products: Product[],
+        products: IProduct[],
         criteria: { searchTerm: string; categoryId: string },
-    ): Product[] {
+    ): IProduct[] {
         const { searchTerm, categoryId } = criteria;
-        const term = searchTerm.toLowerCase().trim();
+        const term: string = searchTerm.toLowerCase().trim();
 
-        return products.filter((prod: Product): boolean => {
+        return products.filter((prod: IProduct): boolean => {
             // Criterio 1: Coincidencia por nombre
-            const matchesName: boolean = prod.nombre
+            const matchesName: boolean = prod.name
                 .toLowerCase()
                 .includes(term);
 
             // Criterio 2: Coincidencia por categoría
             const matchesCategory: boolean =
                 categoryId === "all" ||
-                prod.categorias.some(
+                prod.categories.some(
                     (cat: ICategory | undefined): boolean =>
                         cat?.id.toString() === categoryId,
                 );

@@ -1,15 +1,15 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.categoria.CategoriaCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.categoria.CategoriaDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.pedido.PedidoCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.pedido.PedidoDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.producto.ProductoCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.producto.ProductoDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.usuario.UsuarioCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.usuario.UsuarioDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.enums.Estado;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.enums.FormaPago;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.category.CategoryCreate;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.category.CategoryDto;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderCreate;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderDto;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductCreate;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductDto;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserCreate;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserDto;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.enums.OrderStatus;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.enums.PaymentMethod;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.service.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -29,10 +29,10 @@ public class SistemaGestionPedidosApplication {
 
     @Bean
     public CommandLineRunner instantiateFromDto(
-            UsuarioService usuarioService,
-            CategoriaService categoriaService,
-            ProductoService productoService,
-            PedidoService pedidoService) {
+            UserService userService,
+            CategoryService categoryService,
+            ProductService productService,
+            OrderService orderService) {
 
         return args -> {
             System.out.println("--- INICIANDO INSTANCIACIÓN DE DATOS REQUERIDOS ---");
@@ -40,14 +40,14 @@ public class SistemaGestionPedidosApplication {
             // ==========================================
             // a) Instanciar 2 Usuarios
             // ==========================================
-            UsuarioDto u1 =
-                    usuarioService.save(
-                            new UsuarioCreate(
+            UserDto u1 =
+                    userService.save(
+                            new UserCreate(
                                     "Juan", "Perez", "juan@gmail.com", "2644111222", "Pass123!"));
 
-            UsuarioDto u2 =
-                    usuarioService.save(
-                            new UsuarioCreate(
+            UserDto u2 =
+                    userService.save(
+                            new UserCreate(
                                     "Maria",
                                     "Gomez",
                                     "maria@gmail.com",
@@ -57,23 +57,23 @@ public class SistemaGestionPedidosApplication {
             // ==========================================
             // c) Instanciar 3 Categorías
             // ==========================================
-            CategoriaDto catComida =
-                    categoriaService.save(
-                            new CategoriaCreate("Comida Rápida", "Hamburguesas y lomos"));
+            CategoryDto catComida =
+                    categoryService.save(
+                            new CategoryCreate("Comida Rápida", "Hamburguesas y lomos"));
 
-            CategoriaDto catBebidas =
-                    categoriaService.save(new CategoriaCreate("Bebidas", "Gaseosas y aguas"));
+            CategoryDto catBebidas =
+                    categoryService.save(new CategoryCreate("Bebidas", "Gaseosas y aguas"));
 
-            CategoriaDto catPostres =
-                    categoriaService.save(new CategoriaCreate("Postres", "Helados y tortas"));
+            CategoryDto catPostres =
+                    categoryService.save(new CategoryCreate("Postres", "Helados y tortas"));
 
             // ==========================================
             // d) Instanciar 10 Productos y asignarles categorías
             // ==========================================
             // Comidas
-            ProductoDto p1 =
-                    productoService.save(
-                            new ProductoCreate(
+            ProductDto p1 =
+                    productService.save(
+                            new ProductCreate(
                                     "Hamburguesa Simple",
                                     new BigDecimal("1500.00"),
                                     "Mediana",
@@ -82,9 +82,9 @@ public class SistemaGestionPedidosApplication {
                                     true,
                                     catComida.id()));
 
-            ProductoDto p2 =
-                    productoService.save(
-                            new ProductoCreate(
+            ProductDto p2 =
+                    productService.save(
+                            new ProductCreate(
                                     "Hamburguesa Doble",
                                     new BigDecimal("2200.00"),
                                     "Con queso",
@@ -93,9 +93,9 @@ public class SistemaGestionPedidosApplication {
                                     true,
                                     catComida.id()));
 
-            ProductoDto p3 =
-                    productoService.save(
-                            new ProductoCreate(
+            ProductDto p3 =
+                    productService.save(
+                            new ProductCreate(
                                     "Lomo Completo",
                                     new BigDecimal("3000.00"),
                                     "Para compartir",
@@ -104,9 +104,9 @@ public class SistemaGestionPedidosApplication {
                                     true,
                                     catComida.id()));
 
-            ProductoDto p4 =
-                    productoService.save(
-                            new ProductoCreate(
+            ProductDto p4 =
+                    productService.save(
+                            new ProductCreate(
                                     "Papas Fritas",
                                     new BigDecimal("800.00"),
                                     "Porción grande",
@@ -116,9 +116,9 @@ public class SistemaGestionPedidosApplication {
                                     catComida.id()));
 
             // Bebidas
-            ProductoDto p5 =
-                    productoService.save(
-                            new ProductoCreate(
+            ProductDto p5 =
+                    productService.save(
+                            new ProductCreate(
                                     "Coca Cola 500ml",
                                     new BigDecimal("600.00"),
                                     "Común",
@@ -127,9 +127,9 @@ public class SistemaGestionPedidosApplication {
                                     true,
                                     catBebidas.id()));
 
-            ProductoDto p6 =
-                    productoService.save(
-                            new ProductoCreate(
+            ProductDto p6 =
+                    productService.save(
+                            new ProductCreate(
                                     "Agua Mineral",
                                     new BigDecimal("500.00"),
                                     "Sin gas",
@@ -138,9 +138,9 @@ public class SistemaGestionPedidosApplication {
                                     true,
                                     catBebidas.id()));
 
-            ProductoDto p7 =
-                    productoService.save(
-                            new ProductoCreate(
+            ProductDto p7 =
+                    productService.save(
+                            new ProductCreate(
                                     "Cerveza Quilmes",
                                     new BigDecimal("1200.00"),
                                     "Lata",
@@ -150,9 +150,9 @@ public class SistemaGestionPedidosApplication {
                                     catBebidas.id()));
 
             // Postres
-            ProductoDto p8 =
-                    productoService.save(
-                            new ProductoCreate(
+            ProductDto p8 =
+                    productService.save(
+                            new ProductCreate(
                                     "Flan con Dulce",
                                     new BigDecimal("700.00"),
                                     "Casero",
@@ -161,9 +161,9 @@ public class SistemaGestionPedidosApplication {
                                     true,
                                     catPostres.id()));
 
-            ProductoDto p9 =
-                    productoService.save(
-                            new ProductoCreate(
+            ProductDto p9 =
+                    productService.save(
+                            new ProductCreate(
                                     "Helado 1/4kg",
                                     new BigDecimal("1100.00"),
                                     "Dos gustos",
@@ -172,9 +172,9 @@ public class SistemaGestionPedidosApplication {
                                     true,
                                     catPostres.id()));
 
-            ProductoDto p10 =
-                    productoService.save(
-                            new ProductoCreate(
+            ProductDto p10 =
+                    productService.save(
+                            new ProductCreate(
                                     "Ensalada de Frutas",
                                     new BigDecimal("650.00"),
                                     "Estación",
@@ -186,40 +186,40 @@ public class SistemaGestionPedidosApplication {
             // ==========================================
             // b) Instanciar 3 Pedidos (con composición de al menos 2 detalles por cada uno)
             // ==========================================
-            PedidoDto ped1 =
-                    pedidoService.save(
-                            new PedidoCreate(
+            OrderDto ped1 =
+                    orderService.save(
+                            new OrderCreate(
                                     LocalDate.now(),
-                                    Estado.PENDIENTE,
+                                    OrderStatus.PENDING,
                                     BigDecimal.ZERO,
-                                    FormaPago.EFECTIVO,
+                                    PaymentMethod.CASH,
                                     u1.id()));
-            pedidoService.addProductToOrder(ped1.id(), 2, p2.id());
-            pedidoService.addProductToOrder(ped1.id(), 2, p5.id());
+            orderService.addProductToOrder(ped1.id(), 2, p2.id());
+            orderService.addProductToOrder(ped1.id(), 2, p5.id());
 
-            PedidoDto ped2 =
-                    pedidoService.save(
-                            new PedidoCreate(
+            OrderDto ped2 =
+                    orderService.save(
+                            new OrderCreate(
                                     LocalDate.now(),
-                                    Estado.PENDIENTE,
+                                    OrderStatus.PENDING,
                                     BigDecimal.ZERO,
-                                    FormaPago.TARJETA,
+                                    PaymentMethod.CARD,
                                     u1.id()));
-            pedidoService.addProductToOrder(ped2.id(), 1, p3.id());
-            pedidoService.addProductToOrder(ped2.id(), 1, p4.id());
-            pedidoService.addProductToOrder(ped2.id(), 2, p7.id());
+            orderService.addProductToOrder(ped2.id(), 1, p3.id());
+            orderService.addProductToOrder(ped2.id(), 1, p4.id());
+            orderService.addProductToOrder(ped2.id(), 2, p7.id());
 
-            PedidoDto ped3 =
-                    pedidoService.save(
-                            new PedidoCreate(
+            OrderDto ped3 =
+                    orderService.save(
+                            new OrderCreate(
                                     LocalDate.now(),
-                                    Estado.TERMINADO,
+                                    OrderStatus.COMPLETED,
                                     BigDecimal.ZERO,
-                                    FormaPago.TRANSFERENCIA,
+                                    PaymentMethod.TRANSFER,
                                     u2.id()));
-            pedidoService.addProductToOrder(ped3.id(), 1, p1.id());
-            pedidoService.addProductToOrder(ped3.id(), 1, p6.id());
-            pedidoService.addProductToOrder(ped3.id(), 1, p8.id());
+            orderService.addProductToOrder(ped3.id(), 1, p1.id());
+            orderService.addProductToOrder(ped3.id(), 1, p6.id());
+            orderService.addProductToOrder(ped3.id(), 1, p8.id());
 
             System.out.println("--- PERSISTENCIA COMPLETADA DE FORMA EXITOSA ---");
         };

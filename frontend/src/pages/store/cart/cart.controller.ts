@@ -1,5 +1,5 @@
 import type { ICartItem } from "@interfaces/ICartItem";
-import type { Product } from "@interfaces/Product";
+import type { IProduct } from "@interfaces/IProduct";
 import { cartService } from "@services/cartService";
 import { productService } from "@services/productService";
 import { updateCartBadge } from "@utils/components";
@@ -16,7 +16,7 @@ import {
  * Función para cargar los productos del carrito en el contenedor principal
  * @param products lista completa de productos
  */
-export const showCart = (products: Product[]): void => {
+export const showCart = (products: IProduct[]): void => {
     const cartProductContainer = document.querySelector<HTMLElement>(
         "#cart-product-container",
     );
@@ -26,11 +26,11 @@ export const showCart = (products: Product[]): void => {
     const fragment: DocumentFragment = document.createDocumentFragment();
 
     // Filtramos los productos activos
-    const activeProducts: Product[] =
+    const activeProducts: IProduct[] =
         productService.getActiveProducts(products);
 
     // Filtramos los productos del carrito
-    const cartItems: Product[] = cartService.getCartItems(activeProducts);
+    const cartItems: IProduct[] = cartService.getCartItems(activeProducts);
 
     // Limpiar el contenedor de productos
     cartProductContainer.innerHTML = "";
@@ -38,25 +38,25 @@ export const showCart = (products: Product[]): void => {
     // Si hay productos en el carrito, los mostramos. De lo contrario,
     // mostramos mensaje de carrito vacío.
     if (cartItems.length > 0) {
-        cartItems.forEach((prod: Product): void => {
+        cartItems.forEach((prod: IProduct): void => {
             const article: HTMLElement = document.createElement("article");
             article.classList.add("card", "cart__product");
             article.dataset.id = prod.id.toString();
-            article.dataset.price = prod.precio.toString();
+            article.dataset.price = prod.price.toString();
 
             const linkedName = wrapWithDetailLink(
                 prod.id,
-                `<h3 class="cart__product-title">${prod.nombre}</h3>`,
+                `<h3 class="cart__product-title">${prod.name}</h3>`,
             );
 
-            const unitPrice: string = formattedPriceHTML(prod.precio);
+            const unitPrice: string = formattedPriceHTML(prod.price);
 
             article.innerHTML = `
                 <div class="cart__product-info">
-                    <img class="cart__product-img" src="" id="img-product-${prod.id}" alt="${prod.nombre}">
+                    <img class="cart__product-img" src="" id="img-product-${prod.id}" alt="${prod.name}">
                     <div class="cart__product-details">
                         ${linkedName}
-                        <p class="cart__product-description">${prod.descripcion}</p>
+                        <p class="cart__product-description">${prod.description}</p>
                         <p class="price cart__product-price">${unitPrice}<span>c/u</span></p>
                     </div>
                 </div>
@@ -98,7 +98,7 @@ export const showCart = (products: Product[]): void => {
             });
 
             // Calcular subtotal de este producto
-            const subtotalValue: number = prod.precio * currentQty;
+            const subtotalValue: number = prod.price * currentQty;
             const subtotalPrice: string = formattedPriceHTML(subtotalValue);
             const subtotalElement = article.querySelector<HTMLParagraphElement>(
                 ".cart__product-price--subtotal",
@@ -137,7 +137,7 @@ export const showCart = (products: Product[]): void => {
                 );
             });
             btnTrash.addEventListener("click", (): void => {
-                if (confirm(`¿Eliminar ${prod.nombre} del carrito?`)) {
+                if (confirm(`¿Eliminar ${prod.name} del carrito?`)) {
                     updateCartItemUI(
                         prod.id,
                         0,
@@ -188,7 +188,7 @@ export const showCart = (products: Product[]): void => {
 export const updateCartItemUI = (
     id: number,
     newQty: number,
-    products: Product[],
+    products: IProduct[],
     cartContainer: HTMLElement,
 ): void => {
     // 1. Buscamos la "fila" específica por su dataset id
@@ -240,9 +240,9 @@ export const updateCartItemUI = (
     }
 
     // 4. Actualizamos el resumen total de forma dinámica
-    const activeProducts: Product[] =
+    const activeProducts: IProduct[] =
         productService.getActiveProducts(products);
-    const updatedCartItems: Product[] =
+    const updatedCartItems: IProduct[] =
         cartService.getCartItems(activeProducts);
     updateCartSummary(updatedCartItems);
 
@@ -255,13 +255,13 @@ export const updateCartItemUI = (
  * @param items lista de productos en el carrito
  * @returns el monto subtotal
  */
-const getSubtotal = (items: Product[]): number => {
+const getSubtotal = (items: IProduct[]): number => {
     const cartData: ICartItem[] = storage.getCartItems();
-    return items.reduce((acc: number, prod: Product): number => {
+    return items.reduce((acc: number, prod: IProduct): number => {
         const qty: number =
             cartData.find((i: ICartItem): boolean => i.id === prod.id)?.qty ||
             0;
-        return acc + prod.precio * qty;
+        return acc + prod.price * qty;
     }, 0);
 };
 
@@ -286,7 +286,7 @@ const renderAmount = (
  * Función para actualizar el resumen del carrito (subtotal, envío, total)
  * @param items lista de productos actualmente en el carrito
  */
-const updateCartSummary = (items: Product[]): void => {
+const updateCartSummary = (items: IProduct[]): void => {
     const subtotal: number = getSubtotal(items);
     const shippingCost: number = subtotal > 0 ? 500 : 0;
 
@@ -299,7 +299,7 @@ const updateCartSummary = (items: Product[]): void => {
  * Función para inicializar los eventos del carrito
  * @param products lista completa de productos
  */
-export const initCartEvents = (products: Product[]): void => {
+export const initCartEvents = (products: IProduct[]): void => {
     const btnClearCart =
         document.querySelector<HTMLButtonElement>("#btn-clear-cart");
     const btnCheckout =
