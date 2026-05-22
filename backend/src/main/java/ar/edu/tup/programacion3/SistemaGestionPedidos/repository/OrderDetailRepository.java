@@ -13,10 +13,4 @@ public interface OrderDetailRepository extends BaseRepository<OrderDetail, Long>
 
     @Query("SELECT c.id FROM Category c JOIN c.products p WHERE p.id = :productId")
     Optional<Long> findCategoryIdByProductId(@Param("productId") Long productId);
-
-    @Query(value = "SELECT * FROM order_details WHERE id = :id", nativeQuery = true)
-    Optional<OrderDetail> findByIdIncludingDeleted(@Param("id") Long id);
-
-    @Query(value = "SELECT * FROM order_details", nativeQuery = true)
-    List<OrderDetail> findAllIncludingDeleted();
 }

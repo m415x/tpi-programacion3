@@ -17,7 +17,16 @@ import org.hibernate.annotations.SQLRestriction;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
-@Table(name = "orders")
+@Table(
+        name = "orders",
+        indexes = {
+            // Índices individuales para estadísticas globales y filtros simples
+            @Index(name = "idx_order_date", columnList = "date"),
+            @Index(name = "idx_order_status", columnList = "order_status"),
+            @Index(name = "idx_order_payment_method", columnList = "payment_method"),
+            // Índice compuesto para filtro de prioridad y fecha
+            @Index(name = "idx_order_status_date", columnList = "order_status, date")
+        })
 @SQLRestriction("deleted = false")
 @Getter
 @Setter
@@ -28,7 +37,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class Order extends Base implements Calculable {
 
     @Column(name = "date", nullable = false)
-    @ValidNotNull(message = "La date")
+    @ValidNotNull(message = "La fecha")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Builder.Default
     protected LocalDate date = LocalDate.now();

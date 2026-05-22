@@ -87,4 +87,22 @@ public class CategoryServiceImpl implements CategoryService {
                 .map(categoryMapper::toDto)
                 .toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CategoryDto findHistoricalCategory(Long id) {
+
+        Category deteledCategory = categoryRepository.findWithDeletedByIdOrThrow(id);
+
+        return categoryMapper.toDto(deteledCategory);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryDto> getHistoricalCategories() {
+
+        List<Category> allHistory = categoryRepository.findWithDeletedBy();
+
+        return allHistory.stream().map(categoryMapper::toDto).toList();
+    }
 }

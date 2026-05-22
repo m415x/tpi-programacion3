@@ -3,6 +3,8 @@ package ar.edu.tup.programacion3.SistemaGestionPedidos.service;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderCreate;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderDto;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderEdit;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 public interface OrderService {
@@ -23,6 +25,10 @@ public interface OrderService {
 
     public Long getQtyItems(Long orderId);
 
-	// Método helper para reconstruir el Record de salida con su userId correspondiente
-	public OrderDto unifyUserId(OrderDto dto, Long userId);
+    OrderDto findHistoricalOrder(Long id);
+
+    List<OrderDto> getHistoricalOrders();
+
+    // Método helper para reconstruir el Record de salida con su userId correspondiente
+    public OrderDto unifyUserId(OrderDto dto, Long userId);
 }

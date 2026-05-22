@@ -11,10 +11,4 @@ import java.util.Optional;
 public interface CategoryRepository extends BaseRepository<Category, Long> {
 
     List<Category> findByNameContainingIgnoreCase(String name);
-
-    @Query(value = "SELECT * FROM categories WHERE id = :id", nativeQuery = true)
-    Optional<Category> findByIdIncludingDeleted(@Param("id") Long id);
-
-    @Query(value = "SELECT * FROM categories", nativeQuery = true)
-    List<Category> findAllIncludingDeleted();
 }

@@ -14,7 +14,10 @@ import org.hibernate.annotations.SQLRestriction;
  * la información personal, credenciales de acceso y el historial de orders asociados al usuario.
  */
 @Entity
-@Table(name = "users")
+@Table(
+        name = "users",
+        // Índice individual para la autenticación por email
+        indexes = {@Index(name = "idx_user_email", columnList = "email")})
 @SQLRestriction("deleted = false")
 @Getter
 @Setter

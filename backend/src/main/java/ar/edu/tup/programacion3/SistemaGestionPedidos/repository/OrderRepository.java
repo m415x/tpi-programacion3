@@ -16,10 +16,4 @@ public interface OrderRepository extends BaseRepository<Order, Long> {
     @Query(
             "SELECT COALESCE(SUM(d.quantity), 0) FROM Order p JOIN p.orderDetails d WHERE p.id = :orderId")
     Long getQtyItems(@Param("orderId") Long orderId);
-
-    @Query(value = "SELECT * FROM orders WHERE id = :id", nativeQuery = true)
-    Optional<Order> findByIdIncludingDeleted(@Param("id") Long id);
-
-    @Query(value = "SELECT * FROM orders", nativeQuery = true)
-    List<Order> findAllIncludingDeleted();
 }

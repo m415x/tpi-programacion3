@@ -17,10 +17,4 @@ public interface UserRepository extends BaseRepository<User, Long> {
 
     @Query("SELECT u FROM User u JOIN u.orders p GROUP BY u.id ORDER BY COUNT(p) DESC LIMIT 1")
     Optional<User> getUserWithMoreOrders();
-
-    @Query(value = "SELECT * FROM users WHERE id = :id", nativeQuery = true)
-    Optional<User> findByIdIncludingDeleted(@Param("id") Long id);
-
-    @Query(value = "SELECT * FROM users", nativeQuery = true)
-    List<User> findAllIncludingDeleted();
 }

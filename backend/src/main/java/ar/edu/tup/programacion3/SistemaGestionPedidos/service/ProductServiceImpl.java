@@ -169,4 +169,23 @@ public class ProductServiceImpl implements ProductService {
                         })
                 .toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProductDto findHistoricalProduct(Long id) {
+
+        Product deletedProduct = productRepository.findWithDeletedByIdOrThrow(id);
+        Long categoryId = productRepository.findCategoryIdByProductId(id).orElse(null);
+
+        return productMapper.toDto(deletedProduct, categoryId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductDto> getHistoricalProducts() {
+
+        List<Product> allHistory = productRepository.findWithDeletedBy();
+
+        return allHistory.stream().map(product -> productMapper.toDto(product, null)).toList();
+    }
 }

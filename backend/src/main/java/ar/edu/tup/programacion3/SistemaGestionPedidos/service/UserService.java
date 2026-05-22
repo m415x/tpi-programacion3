@@ -3,6 +3,8 @@ package ar.edu.tup.programacion3.SistemaGestionPedidos.service;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserCreate;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserDto;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserEdit;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 public interface UserService {
@@ -20,5 +22,9 @@ public interface UserService {
 
     public UserDto findUserByEmail(String email);
 
-	UserDto getUserWithMoreOrders();
+    UserDto getUserWithMoreOrders();
+
+    UserDto findHistoricalUser(Long id);
+
+    List<UserDto> getHistoricalUsers();
 }

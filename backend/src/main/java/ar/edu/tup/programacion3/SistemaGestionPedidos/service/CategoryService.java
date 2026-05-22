@@ -19,4 +19,8 @@ public interface CategoryService {
 
     // Método personalizado
     public List<CategoryDto> findCategoriesByName(String name);
+
+    public CategoryDto findHistoricalCategory(Long id);
+
+    public List<CategoryDto> getHistoricalCategories();
 }

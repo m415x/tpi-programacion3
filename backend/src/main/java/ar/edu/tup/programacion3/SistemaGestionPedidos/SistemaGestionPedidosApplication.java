@@ -11,13 +11,12 @@ import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserDto;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.enums.OrderStatus;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.enums.PaymentMethod;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.service.*;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @SpringBootApplication
 public class SistemaGestionPedidosApplication {
@@ -43,7 +42,11 @@ public class SistemaGestionPedidosApplication {
             UserDto u1 =
                     userService.save(
                             new UserCreate(
-                                    "Juan", "Perez", "juan@gmail.com", "2644111222", "Pass123!"));
+                                    "Juan José",
+                                    "Perez",
+                                    "juan@gmail.com",
+                                    "2644111222",
+                                    "Passwd123!"));
 
             UserDto u2 =
                     userService.save(

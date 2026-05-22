@@ -23,4 +23,8 @@ public interface ProductService {
     public List<ProductDto> findProductsByName(String name);
 
     public List<ProductDto> getLowStockProducts(int limit);
+
+	public ProductDto findHistoricalProduct(Long id);
+
+	public List<ProductDto> getHistoricalProducts();
 }

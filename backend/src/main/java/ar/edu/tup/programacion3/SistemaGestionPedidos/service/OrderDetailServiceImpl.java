@@ -89,4 +89,46 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         detail.setDeleted(true);
         orderDetailRepository.save(detail);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderDetailDto findHistoricalOrderDetail(Long id) {
+
+        OrderDetail detail = orderDetailRepository.findByIdOrThrow(id);
+        Long orderId = orderDetailRepository.findOrderIdByOrderDetailId(id).orElse(null);
+        Long categoryId =
+                (detail.getProduct() != null)
+                        ? orderDetailRepository
+                                .findCategoryIdByProductId(detail.getProduct().getId())
+                                .orElse(null)
+                        : null;
+
+        return orderDetailMapper.toDto(detail, orderId, categoryId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderDetailDto> getHistoricalOrderDetails() {
+
+        List<OrderDetail> allHistory = orderDetailRepository.findWithDeletedBy();
+
+        return allHistory.stream()
+                .map(
+                        detail -> {
+                            Long orderId =
+                                    orderDetailRepository
+                                            .findOrderIdByOrderDetailId(detail.getId())
+                                            .orElse(null);
+                            Long categoryId =
+                                    (detail.getProduct() != null)
+                                            ? orderDetailRepository
+                                                    .findCategoryIdByProductId(
+                                                            detail.getProduct().getId())
+                                                    .orElse(null)
+                                            : null;
+
+                            return orderDetailMapper.toDto(detail, orderId, categoryId);
+                        })
+                .toList();
+    }
 }

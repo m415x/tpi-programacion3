@@ -147,6 +147,33 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.getQtyItems(id);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public OrderDto findHistoricalOrder(Long id) {
+
+        Order deletedOrder = orderRepository.findWithDeletedByIdOrThrow(id);
+        Long userId = orderRepository.findUserIdByOrderId(id).orElse(null);
+
+        return unifyUserId(orderMapper.toDto(deletedOrder), userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderDto> getHistoricalOrders() {
+
+        List<Order> allHistory = orderRepository.findWithDeletedBy();
+
+        return allHistory.stream()
+                .map(
+                        order -> {
+                            Long userId =
+                                    orderRepository.findUserIdByOrderId(order.getId()).orElse(null);
+
+                            return unifyUserId(orderMapper.toDto(order), userId);
+                        })
+                .toList();
+    }
+
     public OrderDto unifyUserId(OrderDto dto, Long userId) {
 
         return new OrderDto(

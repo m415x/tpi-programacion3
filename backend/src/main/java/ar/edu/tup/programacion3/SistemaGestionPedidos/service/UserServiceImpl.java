@@ -116,4 +116,22 @@ public class UserServiceImpl implements UserService {
 
         return userMapper.toDto(user);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserDto findHistoricalUser(Long id) {
+
+        User deletedUser = userRepository.findWithDeletedByIdOrThrow(id);
+
+        return userMapper.toDto(deletedUser);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserDto> getHistoricalUsers() {
+
+        List<User> allHistory = userRepository.findWithDeletedBy();
+
+        return allHistory.stream().map(userMapper::toDto).toList();
+    }
 }
