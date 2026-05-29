@@ -3,7 +3,7 @@ package ar.edu.tup.programacion3.SistemaGestionPedidos.mapper;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductCreate;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductDto;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductEdit;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.entity.Product;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.Product;
 import org.mapstruct.*;
 
 @Mapper(

@@ -3,7 +3,7 @@ package ar.edu.tup.programacion3.SistemaGestionPedidos.mapper;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderCreate;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderDto;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderEdit;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.entity.Order;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.Order;
 import org.mapstruct.*;
 
 @Mapper(

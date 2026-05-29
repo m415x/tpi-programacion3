@@ -1,7 +1,7 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user;
 
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.enums.UserRole;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.UserRole;
 import java.util.Set;
 
 public record UserDto(

@@ -3,7 +3,7 @@ package ar.edu.tup.programacion3.SistemaGestionPedidos.service;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserCreate;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserDto;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserEdit;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.entity.User;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.User;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.mapper.UserMapper;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;

@@ -1,8 +1,8 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order;
 
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.orderDetail.OrderDetailDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.enums.OrderStatus;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.enums.PaymentMethod;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.OrderStatus;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.PaymentMethod;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;

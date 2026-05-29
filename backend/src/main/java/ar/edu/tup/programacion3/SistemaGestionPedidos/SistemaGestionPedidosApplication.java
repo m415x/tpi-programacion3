@@ -8,8 +8,8 @@ import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductCreate;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductDto;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserCreate;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.enums.OrderStatus;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.enums.PaymentMethod;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.OrderStatus;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.PaymentMethod;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.service.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,6 +17,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 
 @SpringBootApplication
 public class SistemaGestionPedidosApplication {
@@ -27,6 +28,7 @@ public class SistemaGestionPedidosApplication {
     }
 
     @Bean
+    @Order(1) // <-- PRIORIDAD 1: Se ejecuta PRIMERO la siembra de datos
     public CommandLineRunner instantiateFromDto(
             UserService userService,
             CategoryService categoryService,
@@ -34,197 +36,213 @@ public class SistemaGestionPedidosApplication {
             OrderService orderService) {
 
         return args -> {
-            System.out.println("--- INICIANDO INSTANCIACIÓN DE DATOS REQUERIDOS ---");
 
-            // ==========================================
-            // a) Instanciar 2 Usuarios
-            // ==========================================
-            UserDto u1 =
-                    userService.save(
-                            new UserCreate(
-                                    "Juan José",
-                                    "Perez",
-                                    "juan@gmail.com",
-                                    "2644111222",
-                                    "Passwd123!"));
+	        // =======================================================================================================
+	        // CONTROL DE IDEMPOTENCIA Y PROTECCIÓN DE DATOS (EVALUACIÓN PARCIAL 2)
+	        // =======================================================================================================
+	        // Se valida si la base de datos ya contiene registros activos antes de ejecutar la siembra (seeding).
+	        // Esto garantiza la idempotencia del arranque: si la DB es persistente (file-based), evita excepciones
+	        // por violación de restricciones únicas (como emails duplicados) en arranques sucesivos, manteniendo
+	        // un estado consistente tanto para el testing de la consola como para el desarrollo del TPI.
+	        // =======================================================================================================
+            if (categoryService.findAll().isEmpty()) {
 
-            UserDto u2 =
-                    userService.save(
-                            new UserCreate(
-                                    "Maria",
-                                    "Gomez",
-                                    "maria@gmail.com",
-                                    "2644333444",
-                                    "Secure456*"));
+                System.out.println(
+                        "--- DB VACÍA: INICIANDO INSTANCIACIÓN DE DATOS REQUERIDOS SEMILLA ---");
 
-            // ==========================================
-            // c) Instanciar 3 Categorías
-            // ==========================================
-            CategoryDto catComida =
-                    categoryService.save(
-                            new CategoryCreate("Comida Rápida", "Hamburguesas y lomos"));
+                // ==========================================
+                // a) Instanciar 2 Usuarios
+                // ==========================================
+                UserDto u1 =
+                        userService.save(
+                                new UserCreate(
+                                        "Juan José",
+                                        "Perez",
+                                        "juan@gmail.com",
+                                        "2644111222",
+                                        "Passwd123!"));
 
-            CategoryDto catBebidas =
-                    categoryService.save(new CategoryCreate("Bebidas", "Gaseosas y aguas"));
+                UserDto u2 =
+                        userService.save(
+                                new UserCreate(
+                                        "Maria",
+                                        "Gomez",
+                                        "maria@gmail.com",
+                                        "2644333444",
+                                        "Secure456*"));
 
-            CategoryDto catPostres =
-                    categoryService.save(new CategoryCreate("Postres", "Helados y tortas"));
+                // ==========================================
+                // c) Instanciar 3 Categorías
+                // ==========================================
+                CategoryDto catComida =
+                        categoryService.save(
+                                new CategoryCreate("Comida Rápida", "Hamburguesas y lomos"));
 
-            // ==========================================
-            // d) Instanciar 10 Productos y asignarles categorías
-            // ==========================================
-            // Comidas
-            ProductDto p1 =
-                    productService.save(
-                            new ProductCreate(
-                                    "Hamburguesa Simple",
-                                    new BigDecimal("1500.00"),
-                                    "Mediana",
-                                    20,
-                                    "img_h1.png",
-                                    true,
-                                    catComida.id()));
+                CategoryDto catBebidas =
+                        categoryService.save(new CategoryCreate("Bebidas", "Gaseosas y aguas"));
 
-            ProductDto p2 =
-                    productService.save(
-                            new ProductCreate(
-                                    "Hamburguesa Doble",
-                                    new BigDecimal("2200.00"),
-                                    "Con queso",
-                                    15,
-                                    "img_h2.png",
-                                    true,
-                                    catComida.id()));
+                CategoryDto catPostres =
+                        categoryService.save(new CategoryCreate("Postres", "Helados y tortas"));
 
-            ProductDto p3 =
-                    productService.save(
-                            new ProductCreate(
-                                    "Lomo Completo",
-                                    new BigDecimal("3000.00"),
-                                    "Para compartir",
-                                    10,
-                                    "img_l1.png",
-                                    true,
-                                    catComida.id()));
+                // ==========================================
+                // d) Instanciar 10 Productos y asignarles categorías
+                // ==========================================
+                // Comidas
+                ProductDto p1 =
+                        productService.save(
+                                new ProductCreate(
+                                        "Hamburguesa Simple",
+                                        new BigDecimal("1500.00"),
+                                        "Mediana",
+                                        20,
+                                        "img_h1.png",
+                                        true,
+                                        catComida.id()));
 
-            ProductDto p4 =
-                    productService.save(
-                            new ProductCreate(
-                                    "Papas Fritas",
-                                    new BigDecimal("800.00"),
-                                    "Porción grande",
-                                    50,
-                                    "img_papas.png",
-                                    true,
-                                    catComida.id()));
+                ProductDto p2 =
+                        productService.save(
+                                new ProductCreate(
+                                        "Hamburguesa Doble",
+                                        new BigDecimal("2200.00"),
+                                        "Con queso",
+                                        15,
+                                        "img_h2.png",
+                                        true,
+                                        catComida.id()));
 
-            // Bebidas
-            ProductDto p5 =
-                    productService.save(
-                            new ProductCreate(
-                                    "Coca Cola 500ml",
-                                    new BigDecimal("600.00"),
-                                    "Común",
-                                    100,
-                                    "coca.png",
-                                    true,
-                                    catBebidas.id()));
+                ProductDto p3 =
+                        productService.save(
+                                new ProductCreate(
+                                        "Lomo Completo",
+                                        new BigDecimal("3000.00"),
+                                        "Para compartir",
+                                        10,
+                                        "img_l1.png",
+                                        true,
+                                        catComida.id()));
 
-            ProductDto p6 =
-                    productService.save(
-                            new ProductCreate(
-                                    "Agua Mineral",
-                                    new BigDecimal("500.00"),
-                                    "Sin gas",
-                                    80,
-                                    "agua.png",
-                                    true,
-                                    catBebidas.id()));
+                ProductDto p4 =
+                        productService.save(
+                                new ProductCreate(
+                                        "Papas Fritas",
+                                        new BigDecimal("800.00"),
+                                        "Porción grande",
+                                        50,
+                                        "img_papas.png",
+                                        true,
+                                        catComida.id()));
 
-            ProductDto p7 =
-                    productService.save(
-                            new ProductCreate(
-                                    "Cerveza Quilmes",
-                                    new BigDecimal("1200.00"),
-                                    "Lata",
-                                    40,
-                                    "quilmes.png",
-                                    true,
-                                    catBebidas.id()));
+                // Bebidas
+                ProductDto p5 =
+                        productService.save(
+                                new ProductCreate(
+                                        "Coca Cola 500ml",
+                                        new BigDecimal("600.00"),
+                                        "Común",
+                                        100,
+                                        "coca.png",
+                                        true,
+                                        catBebidas.id()));
 
-            // Postres
-            ProductDto p8 =
-                    productService.save(
-                            new ProductCreate(
-                                    "Flan con Dulce",
-                                    new BigDecimal("700.00"),
-                                    "Casero",
-                                    12,
-                                    "flan.png",
-                                    true,
-                                    catPostres.id()));
+                ProductDto p6 =
+                        productService.save(
+                                new ProductCreate(
+                                        "Agua Mineral",
+                                        new BigDecimal("500.00"),
+                                        "Sin gas",
+                                        80,
+                                        "agua.png",
+                                        true,
+                                        catBebidas.id()));
 
-            ProductDto p9 =
-                    productService.save(
-                            new ProductCreate(
-                                    "Helado 1/4kg",
-                                    new BigDecimal("1100.00"),
-                                    "Dos gustos",
-                                    25,
-                                    "helado.png",
-                                    true,
-                                    catPostres.id()));
+                ProductDto p7 =
+                        productService.save(
+                                new ProductCreate(
+                                        "Cerveza Quilmes",
+                                        new BigDecimal("1200.00"),
+                                        "Lata",
+                                        40,
+                                        "quilmes.png",
+                                        true,
+                                        catBebidas.id()));
 
-            ProductDto p10 =
-                    productService.save(
-                            new ProductCreate(
-                                    "Ensalada de Frutas",
-                                    new BigDecimal("650.00"),
-                                    "Estación",
-                                    8,
-                                    "frutas.png",
-                                    true,
-                                    catPostres.id()));
+                // Postres
+                ProductDto p8 =
+                        productService.save(
+                                new ProductCreate(
+                                        "Flan con Dulce",
+                                        new BigDecimal("700.00"),
+                                        "Casero",
+                                        12,
+                                        "flan.png",
+                                        true,
+                                        catPostres.id()));
 
-            // ==========================================
-            // b) Instanciar 3 Pedidos (con composición de al menos 2 detalles por cada uno)
-            // ==========================================
-            OrderDto ped1 =
-                    orderService.save(
-                            new OrderCreate(
-                                    LocalDate.now(),
-                                    OrderStatus.PENDING,
-                                    BigDecimal.ZERO,
-                                    PaymentMethod.CASH,
-                                    u1.id()));
-            orderService.addProductToOrder(ped1.id(), 2, p2.id());
-            orderService.addProductToOrder(ped1.id(), 2, p5.id());
+                ProductDto p9 =
+                        productService.save(
+                                new ProductCreate(
+                                        "Helado 1/4kg",
+                                        new BigDecimal("1100.00"),
+                                        "Dos gustos",
+                                        25,
+                                        "helado.png",
+                                        true,
+                                        catPostres.id()));
 
-            OrderDto ped2 =
-                    orderService.save(
-                            new OrderCreate(
-                                    LocalDate.now(),
-                                    OrderStatus.PENDING,
-                                    BigDecimal.ZERO,
-                                    PaymentMethod.CARD,
-                                    u1.id()));
-            orderService.addProductToOrder(ped2.id(), 1, p3.id());
-            orderService.addProductToOrder(ped2.id(), 1, p4.id());
-            orderService.addProductToOrder(ped2.id(), 2, p7.id());
+                ProductDto p10 =
+                        productService.save(
+                                new ProductCreate(
+                                        "Ensalada de Frutas",
+                                        new BigDecimal("650.00"),
+                                        "Estación",
+                                        8,
+                                        "frutas.png",
+                                        true,
+                                        catPostres.id()));
 
-            OrderDto ped3 =
-                    orderService.save(
-                            new OrderCreate(
-                                    LocalDate.now(),
-                                    OrderStatus.COMPLETED,
-                                    BigDecimal.ZERO,
-                                    PaymentMethod.TRANSFER,
-                                    u2.id()));
-            orderService.addProductToOrder(ped3.id(), 1, p1.id());
-            orderService.addProductToOrder(ped3.id(), 1, p6.id());
-            orderService.addProductToOrder(ped3.id(), 1, p8.id());
+                // ==========================================
+                // b) Instanciar 3 Pedidos (con composición de al menos 2 detalles por cada uno)
+                // ==========================================
+                OrderDto ped1 =
+                        orderService.save(
+                                new OrderCreate(
+                                        LocalDate.now(),
+                                        OrderStatus.PENDING,
+                                        BigDecimal.ZERO,
+                                        PaymentMethod.CASH,
+                                        u1.id()));
+                orderService.addProductToOrder(ped1.id(), 2, p2.id());
+                orderService.addProductToOrder(ped1.id(), 2, p5.id());
 
-            System.out.println("--- PERSISTENCIA COMPLETADA DE FORMA EXITOSA ---");
+                OrderDto ped2 =
+                        orderService.save(
+                                new OrderCreate(
+                                        LocalDate.now(),
+                                        OrderStatus.PENDING,
+                                        BigDecimal.ZERO,
+                                        PaymentMethod.CARD,
+                                        u1.id()));
+                orderService.addProductToOrder(ped2.id(), 1, p3.id());
+                orderService.addProductToOrder(ped2.id(), 1, p4.id());
+                orderService.addProductToOrder(ped2.id(), 2, p7.id());
+
+                OrderDto ped3 =
+                        orderService.save(
+                                new OrderCreate(
+                                        LocalDate.now(),
+                                        OrderStatus.COMPLETED,
+                                        BigDecimal.ZERO,
+                                        PaymentMethod.TRANSFER,
+                                        u2.id()));
+                orderService.addProductToOrder(ped3.id(), 1, p1.id());
+                orderService.addProductToOrder(ped3.id(), 1, p6.id());
+                orderService.addProductToOrder(ped3.id(), 1, p8.id());
+
+                System.out.println("--- PERSISTENCIA SEMILLA COMPLETADA CON ÉXITO ---");
+            } else {
+                System.out.println(
+                        "--- DB DETECTADA CON DATOS: Se omite la siembra para evitar duplicados ---");
+            }
         };
     }
 }

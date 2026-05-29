@@ -1,6 +1,6 @@
-package ar.edu.tup.programacion3.SistemaGestionPedidos.entity;
+package ar.edu.tup.programacion3.SistemaGestionPedidos.model;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.enums.UserRole;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.UserRole;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.validator.*;
 import jakarta.persistence.*;
 import java.util.HashSet;

@@ -1,7 +1,7 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.enums.OrderStatus;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.enums.PaymentMethod;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.OrderStatus;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.PaymentMethod;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.validator.ValidAmount;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.validator.ValidNotNull;
 import java.math.BigDecimal;

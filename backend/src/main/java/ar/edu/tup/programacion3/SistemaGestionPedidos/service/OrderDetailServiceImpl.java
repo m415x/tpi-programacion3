@@ -3,7 +3,7 @@ package ar.edu.tup.programacion3.SistemaGestionPedidos.service;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.orderDetail.OrderDetailCreate;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.orderDetail.OrderDetailDto;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.orderDetail.OrderDetailEdit;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.entity.OrderDetail;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.OrderDetail;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.mapper.OrderDetailMapper;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.OrderDetailRepository;
 import org.springframework.stereotype.Service;

@@ -1,8 +1,7 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.repository;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.entity.User;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.User;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;

@@ -1,7 +1,7 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.mapper;
 
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.orderDetail.OrderDetailDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.entity.OrderDetail;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.OrderDetail;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
