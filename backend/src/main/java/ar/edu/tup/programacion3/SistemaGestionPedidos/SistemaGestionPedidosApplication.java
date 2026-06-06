@@ -27,8 +27,9 @@ public class SistemaGestionPedidosApplication {
         SpringApplication.run(SistemaGestionPedidosApplication.class, args);
     }
 
+	/* // COMENTADO PARA EL PARCIAL 2: Se pasa la lógica de siembra al menú interactivo
     @Bean
-    @Order(1) // <-- PRIORIDAD 1: Se ejecuta PRIMERO la siembra de datos
+    @Order(1)
     public CommandLineRunner instantiateFromDto(
             UserService userService,
             CategoryService categoryService,
@@ -245,4 +246,5 @@ public class SistemaGestionPedidosApplication {
             }
         };
     }
+    */
 }
