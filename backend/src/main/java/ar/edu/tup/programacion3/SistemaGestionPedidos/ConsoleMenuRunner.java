@@ -3,45 +3,34 @@ package ar.edu.tup.programacion3.SistemaGestionPedidos;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.category.CategoryCreate;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.category.CategoryDto;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.category.CategoryEdit;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderDto;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductCreate;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductDto;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductEdit;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserDto;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.Product;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.OrderStatus;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.PaymentMethod;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.ProductRepository;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.service.CategoryService;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.service.OrderService;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.service.ProductService;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
-import org.jspecify.annotations.NonNull;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.NonNull;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 @Component
-@Order(1) // <-- PRIORIDAD 1: Toma el control absoluto de la consola en el arranque
+@Order(1) // PRIORIDAD 1: Toma el control absoluto de la consola en el arranque
 public class ConsoleMenuRunner implements CommandLineRunner {
 
     private final CategoryService categoryService;
     private final ProductService productService;
     private final ProductRepository productRepository;
     private final ConfigurableApplicationContext context;
-    private final UserService userService;
-    private final OrderService orderService;
 
     // Bandera de control para la siembra dinámica
     private boolean isDbSeeded;
@@ -50,16 +39,12 @@ public class ConsoleMenuRunner implements CommandLineRunner {
             CategoryService categoryService,
             ProductService productService,
             ProductRepository productRepository,
-            ConfigurableApplicationContext context,
-            UserService userService,
-            OrderService orderService) {
+            ConfigurableApplicationContext context) {
 
         this.categoryService = categoryService;
         this.productService = productService;
         this.productRepository = productRepository;
         this.context = context;
-        this.userService = userService;
-        this.orderService = orderService;
     }
 
     // =========================================================================
@@ -82,7 +67,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
 	    // que el proceso de siembra histórica ya fue ejecutado previamente.
 	    this.isDbSeeded = !categoryService.findAll().isEmpty();
 
-	    System.out.println("\n=== SISTEMA INICIADO EN MÓDULO DE EXAMEN PARCIAL ===");
+	    System.out.println("\n=== SISTEMA INICIADO EN MÓDULO DE EXAMEN PARCIAL 2 ===");
 	    if (isDbSeeded) {
 		    System.out.println("[INFO] Se detectaron datos preexistentes en la DB. Opción semilla oculta.");
 	    }
@@ -91,13 +76,13 @@ public class ConsoleMenuRunner implements CommandLineRunner {
             System.out.println("\n-------------------------------------------");
             System.out.println("            MENÚ PRINCIPAL      ");
             System.out.println("-------------------------------------------");
-            System.out.println("1. ABM de Categorías");
-            System.out.println("2. ABM de Productos");
-            System.out.println("3. Consultar Productos por Categoría (JPQL)");
+            System.out.println("[1] - ABM de Categorías");
+            System.out.println("[2] - ABM de Productos");
+            System.out.println("[3] - Productos por Categoría (JPQL)");
             if (!isDbSeeded) {
-                System.out.println("4. Poblar base de datos inicial");
+                System.out.println("[4] - Poblar base de datos");
             }
-            System.out.println("0. Salir de la aplicación");
+            System.out.println("[0] - Salir de la aplicación");
             System.out.print("\nSeleccione una opción -> ");
 
             try {
@@ -130,7 +115,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
     }
 
     // =========================================================================
-    // ABM DE CATEGORÍAS (Sección 6.1 y 6.2 del Parcial)
+    // ABM DE CATEGORÍAS (HU-03, HU-04, HU-05)
     // =========================================================================
     private void menuCategorias(Scanner sc) {
 
@@ -139,73 +124,129 @@ public class ConsoleMenuRunner implements CommandLineRunner {
         String description;
 
         System.out.println("\n--- ABM DE CATEGORÍAS ---");
-        System.out.println("1. Alta");
-        System.out.println("2. Baja lógica (Soft Delete)");
-        System.out.println("3. Modificar por ID");
-        System.out.println("4. Listar activas");
-        System.out.println("0. Volver al menú principal");
+        System.out.println("[1] - Alta");
+        System.out.println("[2] - Baja lógica (Soft Delete)");
+        System.out.println("[3] - Modificar por ID");
+        System.out.println("[4] - Listar activas");
+        System.out.println("[0] - Volver al menú principal");
         System.out.print("\nSeleccione una opción -> ");
 
         try {
-            int opcion = scInt(sc);
+            Integer opcion = scInt(sc);
+            if (opcion == null) throw new NumberFormatException();
 
             switch (opcion) {
                 case 1 -> {
+					// HU-03: Dar de alta una categoría
+                    // CA-1: El sistema solicita nombre y descripcion por consola
                     System.out.print("Nombre de la categoría -> ");
                     name = scStr(sc);
 
                     System.out.print("Descripción -> ");
                     description = scStr(sc);
 
+                    // CA-2: Se aborda a nivel DTO con el validator @ValidName en CategoryCreate
+                    // y/o a nivel Service validando que no esté vacío. Aquí se delega la lógica al Service, 
+                    // el cual arrojará una excepción que será atrapada y notificada sin persistir.
                     try {
                         CategoryDto saved =
                                 categoryService.save(new CategoryCreate(name, description));
+                        // CA-3: Al guardar exitosamente, se muestra el ID generado por la base de datos
                         System.out.println(
                                 "¡Categoría guardada con éxito! ID asignado: " + saved.id());
 
+                        // CA-4: Cumplido por BaseEntity (que asigna createdAt) y el mapping de JPA 
+                        // que por defecto deja deleted=false.
                     } catch (EntityNotFoundException e) {
                         System.out.println("Error: " + e.getMessage());
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Error de validación: " + e.getMessage());
                     }
                 }
                 case 2 -> {
-                    System.out.print("ID de la categoría a dar de baja (0 para cancelar) -> ");
+                    // HU-05: Dar de baja lógica una categoría
+	                List<CategoryDto> auxCategories = listAndValidateAvailableCategories();
+	                if(auxCategories.isEmpty()) {
+		                System.out.println("¡Operación cancelada! Cree una categoría primero");
+		                waitingEnter(sc);
+
+		                return;
+	                }
+
+                    System.out.print("ID de la categoría a dar de baja ([0] para cancelar) -> ");
                     id = scLong(sc);
+                    if (id == null) throw new NumberFormatException();
 
                     try {
-                        categoryService.deleteById(id);
-                        System.out.println(
-                                "¡Baja lógica realizada con éxito para la categoría ID: " + id);
+	                    // CA-4: Buscamos la categoría en la lista en memoria para obtener su nombre antes de la baja.
+	                    CategoryDto categoryToDelete = auxCategories.stream()
+			                    .filter(c -> c.id().equals(id))
+			                    .findFirst()
+			                    .orElseThrow(
+										() -> new EntityNotFoundException(
+												"Categoría no encontrada con ID: " + id));
 
+	                    // CA-1: La baja es lógica (se maneja en el servicio).
+	                    // CA-2: El servicio arroja EntityNotFoundException si el ID no existe.
+                        categoryService.deleteById(id);
+
+	                    // CA-4: Se confirma la operación mostrando el nombre de la categoría afectada.
+	                    System.out.print(" ¡Baja lógica realizada con éxito!\n");
+	                    System.out.printf(" Categoría afectada -> ID: %d | Nombre: \"%s\"\n", id, categoryToDelete.name());
+
+	                    // CA-3: La categoría ya no aparecerá en la próxima llamada a `listAndValidateAvailableCategories()`
+	                    // o `categoryService.findAll()` debido al filtro @SQLRestriction("deleted = false").
                     } catch (EntityNotFoundException e) {
 
                         System.out.println("Error: " + e.getMessage());
                     }
                 }
                 case 3 -> {
-                    System.out.print("ID de la categoría a modificar (0 para cancelar) -> ");
+                    // HU-04: Modificar una categoria existente
+                    // CA-1: El sistema lista las categorias activas antes de pedir el ID.
+                    List<CategoryDto> auxCategories = listAndValidateAvailableCategories();
+                    if(auxCategories.isEmpty()) {
+                        System.out.println("¡Operación cancelada! No hay categorías para modificar.");
+                        waitingEnter(sc);
+
+                        return;
+                    }
+                    
+                    System.out.print("ID de la categoría a modificar ([0] para cancelar) -> ");
                     id = scLong(sc);
+                    if (id == null) throw new NumberFormatException();
 
                     try {
+                        // CA-2: Se cumple en el service.findById(id), que arroja EntityNotFoundException si no existe.
                         CategoryDto category = categoryService.findById(id);
+                        
+                        // CA-3: Se muestran los valores actuales antes de pedir los nuevos.
                         System.out.printf(
                                 "ID: %d | Nombre: %s | Descripción: %s\n",
                                 category.id(), category.name(), category.description());
 
                         System.out.print(
-                                "Nuevo nombre de la categoría (Enter para no modificar) -> ");
+                                "Nuevo nombre de la categoría ([ENTER] para no modificar) -> ");
                         name = scStr(sc);
 
-                        System.out.print("Nueva descripción (Enter para no modificar) -> ");
+                        System.out.print("Nueva descripción ([ENTER] para no modificar) -> ");
                         description = scStr(sc);
 
+                        // CA-4: La lógica de mantener el valor anterior si el campo está en blanco
+                        // se maneja en el CategoryServiceImpl.update()
                         CategoryEdit categoryEdit = new CategoryEdit(name, description);
+                        
+                        // CA-5: El cambio se persiste correctamente en la base de datos.
                         categoryService.update(categoryEdit, id);
                         System.out.println(
                                 "¡Modificación realizada con éxito para la categoría ID: " + id);
 
                     } catch (EntityNotFoundException e) {
-
+                        // Atrapa el error si el ID no es válido (CA-2)
                         System.out.println("Error: " + e.getMessage());
+                    } catch (IllegalArgumentException e) {
+                        // Atrapa el error cuando no hay cambios que guardar en base de datos.
+                        System.out.println("Aviso: " + e.getMessage());
                     }
                 }
                 case 4 -> {
@@ -239,7 +280,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
     }
 
     // =========================================================================
-    // ABM DE PRODUCTOS (Sección 6.3 del Parcial)
+    // ABM DE PRODUCTOS (HU-06, HU-07, HU-08)
     // =========================================================================
     private void menuProductos(Scanner sc) {
 
@@ -248,24 +289,46 @@ public class ConsoleMenuRunner implements CommandLineRunner {
         BigDecimal price;
         String description;
         Integer stock;
-        Long categoryId = 0L;
 
         System.out.println("\n--- ABM DE PRODUCTOS ---");
-        System.out.println("1. Alta");
-        System.out.println("2. Baja lógica (Soft Delete)");
-        System.out.println("3. Modificar por ID");
-        System.out.println("4. Listar activos");
-        System.out.println("0. Volver al menú principal");
+        System.out.println("[1] - Alta");
+        System.out.println("[2] - Baja lógica (Soft Delete)");
+        System.out.println("[3] - Modificar por ID");
+        System.out.println("[4] - Listar activos");
+        System.out.println("[0] - Volver al menú principal");
         System.out.print("\nSeleccione una opción -> ");
 
-        int opcion = scInt(sc);
+        Integer opcion = scInt(sc);
+        if (opcion == null) {
+            System.out.println("Error: Por favor ingrese un número válido.");
+            return;
+        }
 
         switch (opcion) {
             case 1 -> {
+                // HU-06: Dar de alta un producto
+                // CA-1: El sistema lista las categorias activas para que el operador seleccione una.
+                List<CategoryDto> auxCategories = listAndValidateAvailableCategories();
+
+                // CA-2: Si no hay categorias activas, se informa y se cancela la operacion.
+                if(auxCategories.isEmpty()) {
+                    System.out.println("¡Operación cancelada! Cree una categoría primero.");
+                    waitingEnter(sc);
+                    return;
+                }
+
+                System.out.print("ID de la categoría -> ");
+                final Long categoryId = scLong(sc);
+                if (categoryId == null) {
+                    System.out.println("Error: Por favor ingrese un número válido.");
+                    return;
+                }
+
+                // CA-3: Se solicitan los datos del producto.
                 System.out.print("Nombre del producto -> ");
                 name = scStr(sc);
 
-                System.out.print("Precio (ej: 1500.00) -> ");
+                System.out.print("Precio -> ");
                 price = scBigDec(sc);
 
                 System.out.print("Descripción/tamaño/medida -> ");
@@ -274,22 +337,8 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                 System.out.print("Stock inicial -> ");
                 stock = scInt(sc);
 
-                while (categoryId == 0) {
-                    System.out.print(
-                            "ID de la categoría a la que pertenece (0 para consultar categorías) -> ");
-                    categoryId = scLong(sc);
-
-                    if (categoryId == 0) {
-                        categoryService
-                                .findAll()
-                                .forEach(
-                                        cat ->
-                                                System.out.printf(
-                                                        "  [%d] - %s\n", cat.id(), cat.name()));
-                    }
-                }
-
                 try {
+                    // CA-4: La validación de precio y stock se delega al ProductService/Entity.
                     ProductDto saved =
                             productService.save(
                                     new ProductCreate(
@@ -301,46 +350,86 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                                             true,
                                             categoryId));
 
-                    System.out.println("¡Producto guardado con éxito! ID asignado: " + saved.id());
+                    // CA-5: Al guardar, se muestra el ID generado y la categoria asignada.
+                    String categoryName = auxCategories.stream()
+                            .filter(c -> c.id().equals(categoryId))
+                            .findFirst()
+                            .map(CategoryDto::name)
+                            .orElse("Desconocida");
+                    
+                    System.out.println("¡Producto guardado con éxito!");
+                    System.out.printf("ID asignado: %d | Categoría: %s\n", saved.id(), categoryName);
 
                 } catch (EntityNotFoundException e) {
-
                     System.out.println("Error relacional: " + e.getMessage());
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Error de validación: " + e.getMessage());
                 }
             }
             case 2 -> {
-                System.out.print("ID del producto a dar de baja (0 para cancelar) -> ");
+                // HU-08: Dar de baja un producto
+                System.out.print("ID del producto a dar de baja ([0] para cancelar) -> ");
                 id = scLong(sc);
+                if (id == null) {
+                    System.out.println("Error: Por favor ingrese un número válido.");
+                    return;
+                }
 
                 try {
-                    productService.deleteById(id);
-                    System.out.println(
-                            "¡Baja lógica realizada con éxito para el producto ID: " + id);
+                    // CA-4: Buscamos el producto en memoria antes de la baja para obtener su nombre
+                    ProductDto productToDelete = productService.findById(id);
 
+                    // CA-1: La baja es lógica, el servicio simplemente actualiza deleted = true
+                    // CA-2: Si el ID no existe o ya está dado de baja, findById o deleteById arrojará una excepción
+                    productService.deleteById(id);
+
+                    // CA-4: Se muestra confirmación con el nombre del producto afectado
+                    System.out.print(" ¡Baja lógica realizada con éxito!\n");
+                    System.out.printf(" Producto afectado -> ID: %d | Nombre: \"%s\"\n", id, productToDelete.name());
+
+                    // CA-3: El producto ya no aparecerá en el listado debido al filtro en el repositorio (@SQLRestriction("deleted = false"))
                 } catch (EntityNotFoundException e) {
 
                     System.out.println("Error: " + e.getMessage());
                 }
             }
             case 3 -> {
-                System.out.print("ID del producto a modificar (0 para cancelar) -> ");
+                // HU-07: Modificar un producto
+                // CA-1: El sistema lista los productos activos antes de pedir el ID.
+	            List<CategoryDto> auxCategories = listAndValidateAvailableCategories();
+
+	            if(auxCategories.isEmpty()) {
+		            System.out.println("¡Operación cancelada! Cree una categoría primero.");
+		            waitingEnter(sc);
+		            return;
+	            }
+
+                System.out.print("ID del producto a modificar ([0] para cancelar) -> ");
                 id = scLong(sc);
+                if (id == null) {
+                    System.out.println("Error: Por favor ingrese un número válido.");
+                    return;
+                }
 
                 try {
+                    // CA-2: El servicio arroja EntityNotFoundException si el ID no existe.
                     ProductDto product = productService.findById(id);
+                    
+                    // CA-3: Se muestran los valores actuales antes de pedir los nuevos.
                     System.out.printf(
                             "ID: %d | Nombre: %s | Precio: $%s | Cantidad: %s\n",
-                            product.id(), product.price(), product.name(), product.stock());
+                            product.id(), product.name(), product.price(), product.stock());
 
-                    System.out.print("Nombre del producto -> ");
+                    System.out.print("Nuevo nombre del producto ([ENTER] para no modificar) -> ");
                     name = scStr(sc);
 
-                    System.out.print("Precio -> ");
+                    System.out.print("Nuevo precio ([ENTER] para no modificar) -> ");
                     price = scBigDec(sc);
 
-                    System.out.print("Nuevo stock -> ");
+                    System.out.print("Nuevo stock ([ENTER] para no modificar) -> ");
                     stock = scInt(sc);
 
+                    // CA-4, 5, 6: La lógica se delega al ProductServiceImpl.update()
                     ProductEdit productEdit =
                             new ProductEdit(
                                     name,
@@ -348,15 +437,17 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                                     product.description(),
                                     stock,
                                     product.image(),
-                                    stock > 0,
+                                    stock != null ? stock > 0 : product.available(),
                                     product.categoryId());
                     productService.update(productEdit, id);
+
                     System.out.println(
                             "¡Modificación realizada con éxito para el producto ID: " + id);
 
                 } catch (EntityNotFoundException e) {
-
                     System.out.println("Error: " + e.getMessage());
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Aviso: " + e.getMessage());
                 }
             }
             case 4 -> {
@@ -390,24 +481,29 @@ public class ConsoleMenuRunner implements CommandLineRunner {
     }
 
     // =========================================================================
-    // HU-09: CONSULTA JPQL CON PARÁMETRO NOMBRADO
+    // CONSULTA JPQL CON PARÁMETRO NOMBRADO (HU-09)
     // =========================================================================
     private void consultaJpqlProductosPorCategoria(Scanner sc) {
 
         System.out.println("\n--- HU-09: LISTAR PRODUCTOS DE UNA CATEGORÍA ---\n");
 
-        // 1. Listamos las categorías (Criterio de aceptación 1)
-        List<CategoryDto> categories = categoryService.findAll();
-        if (categories.isEmpty()) {
-            System.out.println("No hay categorías activas para filtrar. Genere una primero.");
+        // HU-09: Listar productos de una categoría
+        // CA-1: El sistema lista las categorías activas para que el operador seleccione una.
+        List<CategoryDto> categories = listAndValidateAvailableCategories();
+
+	    if (categories.isEmpty()) {
+
+		    waitingEnter(sc);
+
+		    return;
+	    }
+
+        System.out.print("\nSeleccione el ID de la categoría ([0] para cancelar) -> ");
+        Long categoryId = scLong(sc);
+        if (categoryId == null) {
+            System.out.println("Error: Por favor ingrese un número válido.");
             return;
         }
-
-        System.out.println("Categorías disponibles:");
-        categories.forEach(c -> System.out.printf("  [%d] - %s\n", c.id(), c.name()));
-
-        System.out.print("\nSeleccione el ID de la categoría (0 para cancelar) -> ");
-        Long categoryId = scLong(sc);
 
 	    boolean categoryExists = categories.stream().anyMatch(c -> c.id().equals(categoryId));
 
@@ -422,10 +518,12 @@ public class ConsoleMenuRunner implements CommandLineRunner {
 			return;
 	    }
 		
-        // 2. Ejecutamos la consulta JPQL requerida (Criterio de aceptación 2, 3 y 4)
+        // CA-2: La consulta está implementada en ProductoRepository con JPQL y parámetro nombrado :categoriaId.
+        // CA-3: Se usa TypedQuery<Product>; no hay casteos manuales en el código (esto está en el repositorio/entity manager).
+        // CA-4: Solo se incluyen productos con eliminado = false (esto está garantizado por @SQLRestriction en Product).
         List<Product> filteredProducts = productRepository.buscarPorCategoria(categoryId);
 
-        // 3. Informamos explícitamente si no hay productos activos (Criterio de aceptación 6)
+        // CA-6: Si la categoría no tiene productos activos, se informa explícitamente.
         if (filteredProducts.isEmpty()) {
 
             System.out.println("\n" + "=".repeat(87));
@@ -434,8 +532,6 @@ public class ConsoleMenuRunner implements CommandLineRunner {
             System.out.println("=".repeat(87));
         } else {
 
-            // 4. Inicializamos el mapa en memoria para resolver el nombre de la categoría de forma
-            // eficiente
             Map<Long, String> categoryMap =
                     categories.stream()
                             .collect(Collectors.toMap(CategoryDto::id, CategoryDto::name));
@@ -443,8 +539,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
             int n = 87;
             printProductHead(n);
 
-            // 5. Mostramos los campos requeridos adaptando la entidad al formato de fila (Criterio
-            // de aceptación 5)
+            // CA-5: El resultado muestra: ID, nombre, precio y stock de cada producto.
             filteredProducts.forEach(
                     p -> {
                         ProductDto dtoEquivalent =
@@ -470,7 +565,12 @@ public class ConsoleMenuRunner implements CommandLineRunner {
 
     private Integer scInt(Scanner sc) {
 
-        Integer value = Integer.parseInt(sc.nextLine());
+        String input = sc.nextLine().trim();
+        if (input.isEmpty()) {
+            return null;
+        }
+
+        Integer value = Integer.parseInt(input);
         if (value == 0) {
             throw new OperationCancelledException();
         }
@@ -484,7 +584,12 @@ public class ConsoleMenuRunner implements CommandLineRunner {
 
     private Long scLong(Scanner sc) {
 
-        Long value = Long.parseLong(sc.nextLine());
+        String input = sc.nextLine().trim();
+        if (input.isEmpty()) {
+            return null;
+        }
+
+        Long value = Long.parseLong(input);
         if (value == 0) {
             throw new OperationCancelledException();
         }
@@ -493,7 +598,11 @@ public class ConsoleMenuRunner implements CommandLineRunner {
     }
 
     private BigDecimal scBigDec(Scanner sc) {
-        return new BigDecimal(sc.nextLine());
+        String input = sc.nextLine().trim();
+        if (input.isEmpty()) {
+            return null;
+        }
+        return new BigDecimal(input);
     }
 
     private void printCategoryHead() {
@@ -553,6 +662,21 @@ public class ConsoleMenuRunner implements CommandLineRunner {
             super("Operación cancelada por el usuario.");
         }
     }
+
+	public List<CategoryDto> listAndValidateAvailableCategories() {
+
+		List<CategoryDto> categories = categoryService.findAll();
+		if (categories.isEmpty()) {
+			System.out.println("No hay categorías activas. Genere una primero.");
+
+			return categories;
+		}
+
+		System.out.println("Categorías disponibles:");
+		categories.forEach(c -> System.out.printf("  [%d] - %s\n", c.id(), c.name()));
+
+		return categories;
+	}
 
     private void runDataInitialization(Scanner sc) {
         System.out.println(

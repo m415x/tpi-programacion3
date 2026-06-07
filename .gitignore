@@ -61,6 +61,7 @@ HELP.md
 
 ### VS Code ###
 .vscode/
+eclipse-formatter.xml
 
 # ==========================================
 # SISTEMA OPERATIVO Y LOGS

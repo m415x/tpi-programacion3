@@ -1,13 +1,12 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.repository;
 
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.Category;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
+import org.springframework.stereotype.Repository;
 
 /**
  * =======================================================================================================
- * REQUERIMIENTO EXIGIDO POR EL PARCIAL 2 (HISTORIA DE USUARIO HU-02)
+ * REQUERIMIENTO EXIGIDO POR EL PARCIAL 2 (HU-02)
  * =======================================================================================================
  * 1. HERENCIA GENÉRICA: Esta interfaz extiende de BaseRepository<Category, Long>, heredando
  * automáticamente todas las capacidades del CRUD genérico y consultas de auditoría sin duplicar

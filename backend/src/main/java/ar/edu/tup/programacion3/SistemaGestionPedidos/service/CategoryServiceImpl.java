@@ -7,6 +7,7 @@ import ar.edu.tup.programacion3.SistemaGestionPedidos.model.Category;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.mapper.CategoryMapper;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.CategoryRepository;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,7 +55,24 @@ public class CategoryServiceImpl implements CategoryService {
 
         Category category = categoryRepository.findByIdOrThrow(id);
 
-        categoryMapper.updateCategoryFromEdit(categoryEdit, category);
+        // Determinar los valores finales, manteniendo los originales si la entrada está en blanco.
+        String finalName = (categoryEdit.name() == null || categoryEdit.name().trim().isEmpty())
+                ? category.getName()
+                : categoryEdit.name();
+        String finalDescription = (categoryEdit.description() == null || categoryEdit.description().trim().isEmpty())
+                ? category.getDescription()
+                : categoryEdit.description();
+
+        // Comprobar si hay cambios reales antes de realizar la escritura en la base de datos.
+        if (Objects.equals(finalName, category.getName()) &&
+            Objects.equals(finalDescription, category.getDescription())) {
+
+            throw new IllegalArgumentException("No se detectaron cambios. La operación de modificación fue cancelada.");
+        }
+
+        // Aplicar los cambios y guardar
+        category.setName(finalName);
+        category.setDescription(finalDescription);
         category = categoryRepository.save(category);
 
         return categoryMapper.toDto(category);
