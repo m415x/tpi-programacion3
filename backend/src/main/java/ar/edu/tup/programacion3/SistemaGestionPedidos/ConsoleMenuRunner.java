@@ -100,7 +100,8 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                     }
                     case 0 -> {
                         System.out.println("Cerrando el sistema... ¡Hasta luego!");
-                        context.close();
+	                    context.close();
+	                    break;
                     }
                     default -> System.out.println("Opción inválida. Intente nuevamente.");
                 }

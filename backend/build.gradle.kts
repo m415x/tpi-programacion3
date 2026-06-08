@@ -58,3 +58,8 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    // Fuerza a Gradle a conectar la entrada estándar del teclado (System.in) con la app de Spring
+    standardInput = System.`in`
+}
