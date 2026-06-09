@@ -14,11 +14,9 @@ spring:
       ddl-auto: update
 
     # Mostrar SQL en consola
-    #show-sql: true
     show-sql: false
     properties:
       hibernate:
-        #format_sql: true
         format_sql: false
 
     # Desactivar el patrón Open Session In View

@@ -318,7 +318,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                     return;
                 }
 
-                System.out.print("ID de la categoría -> ");
+                System.out.print("ID de la categoría a la que se asignará el nuevo producto -> ");
                 final Long categoryId = scLong(sc);
                 if (categoryId == null) {
                     System.out.println("Error: Por favor ingrese un número válido.");
@@ -486,7 +486,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
     // =========================================================================
     private void consultaJpqlProductosPorCategoria(Scanner sc) {
 
-        System.out.println("\n--- HU-09: LISTAR PRODUCTOS DE UNA CATEGORÍA ---\n");
+        System.out.println("\n--- LISTAR PRODUCTOS DE UNA CATEGORÍA ---");
 
         // HU-09: Listar productos de una categoría
         // CA-1: El sistema lista las categorías activas para que el operador seleccione una.
@@ -709,7 +709,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                     productService.save(
                             new ProductCreate(
                                     "Hamburguesa Simple",
-                                    new BigDecimal("1500.00"),
+                                    new BigDecimal("5500.00"),
                                     "Mediana",
                                     20,
                                     "img_h1.png",
@@ -720,7 +720,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                     productService.save(
                             new ProductCreate(
                                     "Hamburguesa Doble",
-                                    new BigDecimal("2200.00"),
+                                    new BigDecimal("13000.00"),
                                     "Con queso",
                                     15,
                                     "img_h2.png",
@@ -731,7 +731,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                     productService.save(
                             new ProductCreate(
                                     "Lomo Completo",
-                                    new BigDecimal("3000.00"),
+                                    new BigDecimal("20800.00"),
                                     "Para compartir",
                                     10,
                                     "img_l1.png",
@@ -742,7 +742,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                     productService.save(
                             new ProductCreate(
                                     "Papas Fritas",
-                                    new BigDecimal("800.00"),
+                                    new BigDecimal("3500.00"),
                                     "Porción grande",
                                     50,
                                     "img_papas.png",
@@ -754,7 +754,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                     productService.save(
                             new ProductCreate(
                                     "Coca Cola 500ml",
-                                    new BigDecimal("600.00"),
+                                    new BigDecimal("1550.00"),
                                     "Común",
                                     100,
                                     "coca.png",
@@ -764,8 +764,8 @@ public class ConsoleMenuRunner implements CommandLineRunner {
             ProductDto p6 =
                     productService.save(
                             new ProductCreate(
-                                    "Agua Mineral",
-                                    new BigDecimal("500.00"),
+                                    "Agua Mineral 500ml",
+                                    new BigDecimal("1890.00"),
                                     "Sin gas",
                                     80,
                                     "agua.png",
@@ -776,7 +776,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                     productService.save(
                             new ProductCreate(
                                     "Cerveza Quilmes",
-                                    new BigDecimal("1200.00"),
+                                    new BigDecimal("1800.00"),
                                     "Lata",
                                     40,
                                     "quilmes.png",
@@ -788,7 +788,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                     productService.save(
                             new ProductCreate(
                                     "Flan con Dulce",
-                                    new BigDecimal("700.00"),
+                                    new BigDecimal("8100.00"),
                                     "Casero",
                                     12,
                                     "flan.png",
@@ -799,7 +799,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                     productService.save(
                             new ProductCreate(
                                     "Helado 1/4kg",
-                                    new BigDecimal("1100.00"),
+                                    new BigDecimal("7300.00"),
                                     "Dos gustos",
                                     25,
                                     "helado.png",
@@ -810,8 +810,8 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                     productService.save(
                             new ProductCreate(
                                     "Ensalada de Frutas",
-                                    new BigDecimal("650.00"),
-                                    "Estación",
+                                    new BigDecimal("5000.00"),
+                                    "Frutas de estación",
                                     8,
                                     "frutas.png",
                                     true,
@@ -821,9 +821,9 @@ public class ConsoleMenuRunner implements CommandLineRunner {
             // bucle
             this.isDbSeeded = true;
 
-            System.out.println("\n ¡Base de datos poblada con éxito de forma segura!");
+            System.out.println("¡Base de datos poblada con éxito de forma segura!");
             System.out.println(
-                    " A partir de este momento, la opción de siembra ha sido deshabilitada.");
+                    "\nA partir de este momento, la opción de siembra ha sido deshabilitada.");
             System.out.println(
                     "=================================================================================");
         } catch (Exception e) {
