@@ -1,13 +1,13 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.service;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductEdit;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.ProductResponseDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.ProductRequestDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.Category;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.Product;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.mapper.ProductMapper;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.CategoryRepository;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -15,38 +15,30 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
+@RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
 
-    public ProductServiceImpl(
-            ProductRepository productRepository,
-            CategoryRepository categoryRepository,
-            ProductMapper productMapper) {
-        this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
-        this.productMapper = productMapper;
-    }
-
-    @Override
+	@Override
     @Transactional
-    public ProductDto save(ProductCreate productCreate) {
+    public ProductResponseDTO save(ProductRequestDTO productRequestDTO) {
 
-        Category category = categoryRepository.findByIdOrThrow(productCreate.categoryId());
-        Product product = productMapper.toEntity(productCreate);
+        Category category = categoryRepository.findByIdOrThrow(productRequestDTO.categoryId());
+        Product product = productMapper.toEntity(productRequestDTO);
 
         category.addProduct(product);
         Product savedProduct = productRepository.save(product);
         categoryRepository.save(category);
 
-        return productMapper.toDto(savedProduct, productCreate.categoryId());
+        return productMapper.toDto(savedProduct, productRequestDTO.categoryId());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ProductDto findById(Long id) {
+    public ProductResponseDTO findById(Long id) {
 
         Product product = productRepository.findByIdOrThrow(id);
 
@@ -57,7 +49,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductDto> findAll() {
+    public List<ProductResponseDTO> findAll() {
 
         return productRepository.findAll().stream()
                 .map(
@@ -74,19 +66,19 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public ProductDto update(ProductEdit productEdit, Long id) {
+    public ProductResponseDTO update(ProductRequestDTO productRequestDTO, Long id) {
 
         Product product = productRepository.findByIdOrThrow(id);
 
         // HU-07 (CA-4): Si el nombre está en blanco, mantenemos el original
-        String finalName = (productEdit.name() == null || productEdit.name().trim().isEmpty())
+        String finalName = (productRequestDTO.name() == null || productRequestDTO.name().trim().isEmpty())
                 ? product.getName()
-                : productEdit.name();
+                : productRequestDTO.name();
 
         // CA-4: En consola, el precio se lee como BigDecimal, pero si el usuario presiona Enter sin tipear nada, 
         // la lectura del BigDecimal suele fallar o mandar null si lo manejamos. Si llega null, conservamos el original.
-        BigDecimal finalPrice = productEdit.price() == null ? product.getPrice() : productEdit.price();
-        Integer finalStock = productEdit.stock() == null ? product.getStock() : productEdit.stock();
+        BigDecimal finalPrice = productRequestDTO.price() == null ? product.getPrice() : productRequestDTO.price();
+        Integer finalStock = productRequestDTO.stock() == null ? product.getStock() : productRequestDTO.stock();
 
         // HU-07: Comprobar si hay cambios reales antes de persistir
         if (Objects.equals(finalName, product.getName()) &&
@@ -96,7 +88,7 @@ public class ProductServiceImpl implements ProductService {
             throw new IllegalArgumentException("No se detectaron cambios. La operación de modificación fue cancelada.");
         }
 
-        if (productEdit.categoryId() != null) {
+        if (productRequestDTO.categoryId() != null) {
 
             Product finalProduct = product;
             productRepository
@@ -104,28 +96,28 @@ public class ProductServiceImpl implements ProductService {
                     .flatMap(categoryRepository::findById)
                     .ifPresent(oldCategory -> oldCategory.getProducts().remove(finalProduct));
 
-            Category newCategory = categoryRepository.findByIdOrThrow(productEdit.categoryId());
+            Category newCategory = categoryRepository.findByIdOrThrow(productRequestDTO.categoryId());
 
             newCategory.addProduct(product);
         }
 
         // Creamos un nuevo ProductEdit con los valores finales procesados
-        ProductEdit cleanEdit = new ProductEdit(
+        ProductRequestDTO cleanEdit = new ProductRequestDTO(
                 finalName,
                 finalPrice,
-                productEdit.description() == null || productEdit.description().trim().isEmpty() ? null : productEdit.description(),
+                productRequestDTO.description() == null || productRequestDTO.description().trim().isEmpty() ? null : productRequestDTO.description(),
                 finalStock,
-                productEdit.image() == null || productEdit.image().trim().isEmpty() ? null : productEdit.image(),
-                productEdit.available(),
-                productEdit.categoryId()
+                productRequestDTO.image() == null || productRequestDTO.image().trim().isEmpty() ? null : productRequestDTO.image(),
+                productRequestDTO.available(),
+                productRequestDTO.categoryId()
         );
 
         productMapper.updateProductFromEdit(cleanEdit, product);
         product = productRepository.saveAndFlush(product);
 
         Long categoryId =
-                productEdit.categoryId() != null
-                        ? productEdit.categoryId()
+                productRequestDTO.categoryId() != null
+                        ? productRequestDTO.categoryId()
                         : productRepository.findCategoryIdByProductId(product.getId()).orElse(null);
 
         return productMapper.toDto(product, categoryId);
@@ -147,7 +139,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductDto> getProductsByAvailability(Boolean available) {
+    public List<ProductResponseDTO> getProductsByAvailability(Boolean available) {
 
         List<Product> products =
                 (available == null)
@@ -169,7 +161,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductDto> findProductsByName(String name) {
+    public List<ProductResponseDTO> findProductsByName(String name) {
 
         return productRepository.findByNameContainingIgnoreCase(name).stream()
                 .map(
@@ -186,7 +178,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductDto> getLowStockProducts(int limit) {
+    public List<ProductResponseDTO> getLowStockProducts(int limit) {
 
         return productRepository.findByStockLessThan(limit).stream()
                 .map(
@@ -203,7 +195,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProductDto findHistoricalProduct(Long id) {
+    public ProductResponseDTO findHistoricalProduct(Long id) {
 
         Product deletedProduct = productRepository.findWithDeletedByIdOrThrow(id);
         Long categoryId = productRepository.findCategoryIdByProductId(id).orElse(null);
@@ -213,7 +205,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductDto> getHistoricalProducts() {
+    public List<ProductResponseDTO> getHistoricalProducts() {
 
         List<Product> allHistory = productRepository.findWithDeletedBy();
 

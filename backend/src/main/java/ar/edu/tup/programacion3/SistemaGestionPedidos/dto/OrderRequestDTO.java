@@ -1,17 +1,16 @@
-package ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order;
+package ar.edu.tup.programacion3.SistemaGestionPedidos.dto;
 
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.OrderStatus;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.PaymentMethod;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.validator.ValidAmount;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.validator.ValidNotNull;
+import org.springframework.format.annotation.DateTimeFormat;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import org.springframework.format.annotation.DateTimeFormat;
 
-public record OrderEdit(
-        @ValidNotNull(message = "La fecha") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-                LocalDate date,
+public record OrderRequestDTO(
+        @ValidNotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
         @ValidNotNull OrderStatus orderStatus,
-        @ValidAmount(message = "total") BigDecimal total,
-        @ValidNotNull(message = "La forma de pago") PaymentMethod paymentMethod,
+        @ValidAmount BigDecimal total,
+        @ValidNotNull PaymentMethod paymentMethod,
         Long userId) {}

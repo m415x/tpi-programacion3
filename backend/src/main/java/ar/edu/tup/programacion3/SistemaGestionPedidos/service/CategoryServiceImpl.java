@@ -1,33 +1,29 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.service;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.category.CategoryCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.category.CategoryDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.category.CategoryEdit;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.CategoryResponseDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.CategoryRequestDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.Category;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.mapper.CategoryMapper;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.CategoryRepository;
 import java.util.List;
 import java.util.Objects;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
-    public CategoryServiceImpl(
-            CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
-        this.categoryRepository = categoryRepository;
-        this.categoryMapper = categoryMapper;
-    }
-
-    @Override
+	@Override
     @Transactional
-    public CategoryDto save(CategoryCreate categoryCreate) {
+    public CategoryResponseDTO save(CategoryRequestDTO categoryRequestDTO) {
 
-        Category category = categoryMapper.toEntity(categoryCreate);
+        Category category = categoryMapper.toEntity(categoryRequestDTO);
         category = categoryRepository.save(category);
 
         return categoryMapper.toDto(category);
@@ -35,7 +31,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public CategoryDto findById(Long id) {
+    public CategoryResponseDTO findById(Long id) {
 
         Category category = categoryRepository.findByIdOrThrow(id);
 
@@ -44,24 +40,24 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CategoryDto> findAll() {
+    public List<CategoryResponseDTO> findAll() {
 
         return categoryRepository.findAll().stream().map(categoryMapper::toDto).toList();
     }
 
     @Override
     @Transactional
-    public CategoryDto update(CategoryEdit categoryEdit, Long id) {
+    public CategoryResponseDTO update(CategoryRequestDTO categoryRequestDTO, Long id) {
 
         Category category = categoryRepository.findByIdOrThrow(id);
 
         // Determinar los valores finales, manteniendo los originales si la entrada está en blanco.
-        String finalName = (categoryEdit.name() == null || categoryEdit.name().trim().isEmpty())
+        String finalName = (categoryRequestDTO.name() == null || categoryRequestDTO.name().trim().isEmpty())
                 ? category.getName()
-                : categoryEdit.name();
-        String finalDescription = (categoryEdit.description() == null || categoryEdit.description().trim().isEmpty())
+                : categoryRequestDTO.name();
+        String finalDescription = (categoryRequestDTO.description() == null || categoryRequestDTO.description().trim().isEmpty())
                 ? category.getDescription()
-                : categoryEdit.description();
+                : categoryRequestDTO.description();
 
         // Comprobar si hay cambios reales antes de realizar la escritura en la base de datos.
         if (Objects.equals(finalName, category.getName()) &&
@@ -99,7 +95,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CategoryDto> findCategoriesByName(String name) {
+    public List<CategoryResponseDTO> findCategoriesByName(String name) {
 
         return categoryRepository.findByNameContainingIgnoreCase(name).stream()
                 .map(categoryMapper::toDto)
@@ -108,7 +104,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public CategoryDto findHistoricalCategory(Long id) {
+    public CategoryResponseDTO findHistoricalCategory(Long id) {
 
         Category deteledCategory = categoryRepository.findWithDeletedByIdOrThrow(id);
 
@@ -117,7 +113,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CategoryDto> getHistoricalCategories() {
+    public List<CategoryResponseDTO> getHistoricalCategories() {
 
         List<Category> allHistory = categoryRepository.findWithDeletedBy();
 

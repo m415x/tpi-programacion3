@@ -1,8 +1,7 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.service;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderEdit;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.OrderRequestDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.OrderResponseDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.Order;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.Product;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.User;
@@ -12,10 +11,13 @@ import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.ProductReposito
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
@@ -23,23 +25,12 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepository productRepository;
     private final OrderMapper orderMapper;
 
-    public OrderServiceImpl(
-            OrderRepository orderRepository,
-            UserRepository userRepository,
-            ProductRepository productRepository,
-            OrderMapper orderMapper) {
-        this.orderRepository = orderRepository;
-        this.userRepository = userRepository;
-        this.productRepository = productRepository;
-        this.orderMapper = orderMapper;
-    }
-
-    @Override
+	@Override
     @Transactional
-    public OrderDto save(OrderCreate orderCreate) {
+    public OrderResponseDTO save(OrderRequestDTO orderRequestDTO) {
 
-        User user = userRepository.findByIdOrThrow(orderCreate.userId());
-        Order order = orderMapper.toEntity(orderCreate);
+        User user = userRepository.findByIdOrThrow(orderRequestDTO.userId());
+        Order order = orderMapper.toEntity(orderRequestDTO);
 
         user.addOrder(order);
         Order savedOrder = orderRepository.saveAndFlush(order);
@@ -50,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public OrderDto findById(Long id) {
+    public OrderResponseDTO findById(Long id) {
 
         Order order = orderRepository.findByIdOrThrow(id);
         Long userId = orderRepository.findUserIdByOrderId(id).orElse(null);
@@ -60,7 +51,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrderDto> findAll() {
+    public List<OrderResponseDTO> findAll() {
 
         List<Order> orders = orderRepository.findAll();
 
@@ -77,11 +68,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDto update(OrderEdit orderEdit, Long id) {
+    public OrderResponseDTO update(OrderRequestDTO orderRequestDTO, Long id) {
 
         Order order = orderRepository.findByIdOrThrow(id);
 
-        orderMapper.updateOrderFromEdit(orderEdit, order);
+        orderMapper.updateOrderFromEdit(orderRequestDTO, order);
         order = orderRepository.saveAndFlush(order);
 
         Long userId = orderRepository.findUserIdByOrderId(id).orElse(null);
@@ -106,7 +97,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDto addProductToOrder(Long orderId, Integer qty, Long productId) {
+    public OrderResponseDTO addProductToOrder(Long orderId, Integer qty, Long productId) {
 
         Order order = orderRepository.findByIdOrThrow(orderId);
 
@@ -122,7 +113,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDto updateQtyItem(Long orderId, Long productId, Integer newQty) {
+    public OrderResponseDTO updateQtyItem(Long orderId, Long productId, Integer newQty) {
 
         Order order = orderRepository.findByIdOrThrow(orderId);
 
@@ -149,7 +140,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public OrderDto findHistoricalOrder(Long id) {
+    public OrderResponseDTO findHistoricalOrder(Long id) {
 
         Order deletedOrder = orderRepository.findWithDeletedByIdOrThrow(id);
         Long userId = orderRepository.findUserIdByOrderId(id).orElse(null);
@@ -159,7 +150,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrderDto> getHistoricalOrders() {
+    public List<OrderResponseDTO> getHistoricalOrders() {
 
         List<Order> allHistory = orderRepository.findWithDeletedBy();
 
@@ -174,9 +165,9 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
-    public OrderDto unifyUserId(OrderDto dto, Long userId) {
+    public OrderResponseDTO unifyUserId(OrderResponseDTO dto, Long userId) {
 
-        return new OrderDto(
+        return new OrderResponseDTO(
                 dto.id(),
                 dto.date(),
                 dto.orderStatus(),

@@ -6,15 +6,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.lang.annotation.*;
 
-@NotBlank(message = "El {message} no puede ser nulo o vacío")
-@Size(min = 2, max = 50, message = "El {message} debe tener entre 2 y 50 caracteres")
+@NotBlank(message = "El campo no puede ser nulo o vacío")
+@Size(min = 2, max = 50, message = "El campo debe tener entre 2 y 50 caracteres")
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Constraint(validatedBy = {})
 public @interface ValidName {
 
-    String message() default "nombre";
+	String message() default "El campo provisto no es válido";
 
     Class<?>[] groups() default {};
 

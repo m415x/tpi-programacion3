@@ -1,30 +1,25 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.service;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.orderDetail.OrderDetailCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.orderDetail.OrderDetailDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.orderDetail.OrderDetailEdit;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.OrderDetailRequestDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.OrderDetailResponseDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.OrderDetail;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.mapper.OrderDetailMapper;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.OrderDetailRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class OrderDetailServiceImpl implements OrderDetailService {
 
     private final OrderDetailRepository orderDetailRepository;
     private final OrderDetailMapper orderDetailMapper;
 
-    public OrderDetailServiceImpl(
-            OrderDetailRepository orderDetailRepository, OrderDetailMapper orderDetailMapper) {
-        this.orderDetailRepository = orderDetailRepository;
-        this.orderDetailMapper = orderDetailMapper;
-    }
-
-    @Override
+	@Override
     @Transactional
-    public OrderDetailDto save(OrderDetailCreate OrderDetailCreate) {
+    public OrderDetailResponseDTO save(OrderDetailRequestDTO OrderDetailRequestDTO) {
 
         throw new UnsupportedOperationException(
                 "Operación no permitida: Para añadir un ítem a un pedido, utilice el servicio de Pedidos.");
@@ -32,7 +27,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     @Transactional(readOnly = true)
-    public OrderDetailDto findById(Long id) {
+    public OrderDetailResponseDTO findById(Long id) {
 
         OrderDetail detail = orderDetailRepository.findByIdOrThrow(id);
         Long orderId = orderDetailRepository.findOrderIdByOrderDetailId(id).orElse(null);
@@ -48,7 +43,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrderDetailDto> findAll() {
+    public List<OrderDetailResponseDTO> findAll() {
 
         List<OrderDetail> details = orderDetailRepository.findAll();
 
@@ -74,7 +69,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     @Transactional
-    public OrderDetailDto update(OrderDetailEdit OrderDetailEdit, Long id) {
+    public OrderDetailResponseDTO update(OrderDetailRequestDTO orderDetailRequestDTO, Long id) {
 
         throw new UnsupportedOperationException(
                 "Operación no permitida: Para modificar un ítem, procese la actualización desde el servicio de Pedidos.");
@@ -92,7 +87,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     @Transactional(readOnly = true)
-    public OrderDetailDto findHistoricalOrderDetail(Long id) {
+    public OrderDetailResponseDTO findHistoricalOrderDetail(Long id) {
 
         OrderDetail detail = orderDetailRepository.findByIdOrThrow(id);
         Long orderId = orderDetailRepository.findOrderIdByOrderDetailId(id).orElse(null);
@@ -108,7 +103,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrderDetailDto> getHistoricalOrderDetails() {
+    public List<OrderDetailResponseDTO> getHistoricalOrderDetails() {
 
         List<OrderDetail> allHistory = orderDetailRepository.findWithDeletedBy();
 

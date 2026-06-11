@@ -18,7 +18,7 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = {})
 public @interface ValidEmail {
 
-    String message() default "Correo electrónico inválido";
+	String message() default "El campo provisto no es válido";
 
     Class<?>[] groups() default {};
 

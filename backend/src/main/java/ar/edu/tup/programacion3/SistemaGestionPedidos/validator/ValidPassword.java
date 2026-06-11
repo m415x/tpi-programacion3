@@ -20,7 +20,7 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = {})
 public @interface ValidPassword {
 
-    String message() default "Contraseña inválida";
+	String message() default "El campo provisto no es válido";
 
     Class<?>[] groups() default {};
 

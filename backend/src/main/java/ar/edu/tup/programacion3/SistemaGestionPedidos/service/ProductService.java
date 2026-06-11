@@ -1,30 +1,29 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.service;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductEdit;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.ProductResponseDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.ProductRequestDTO;
 import java.util.List;
 
 public interface ProductService {
 
-    public ProductDto save(ProductCreate productCreate);
+    public ProductResponseDTO save(ProductRequestDTO productRequestDTO);
 
-    public ProductDto findById(Long id);
+    public ProductResponseDTO findById(Long id);
 
-    public List<ProductDto> findAll();
+    public List<ProductResponseDTO> findAll();
 
-    public ProductDto update(ProductEdit productEdit, Long id);
+    public ProductResponseDTO update(ProductRequestDTO productRequestDTO, Long id);
 
     public void deleteById(Long id);
 
     // Métodos personalizados
-    public List<ProductDto> getProductsByAvailability(Boolean available);
+    public List<ProductResponseDTO> getProductsByAvailability(Boolean available);
 
-    public List<ProductDto> findProductsByName(String name);
+    public List<ProductResponseDTO> findProductsByName(String name);
 
-    public List<ProductDto> getLowStockProducts(int limit);
+    public List<ProductResponseDTO> getLowStockProducts(int limit);
 
-	public ProductDto findHistoricalProduct(Long id);
+	public ProductResponseDTO findHistoricalProduct(Long id);
 
-	public List<ProductDto> getHistoricalProducts();
+	public List<ProductResponseDTO> getHistoricalProducts();
 }

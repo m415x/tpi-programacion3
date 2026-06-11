@@ -7,16 +7,16 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import java.lang.annotation.*;
 
-@NotNull(message = "El {message} no puede ser nulo")
-@DecimalMin(value = "0.0", message = "El {message} debe ser mayor o igual a cero")
-@Digits(integer = 10, fraction = 2, message = "El {message} no tiene un formato válido")
+@NotNull(message = "El monto no puede ser nulo")
+@DecimalMin(value = "0.0", message = "El monto debe ser mayor o igual a cero")
+@Digits(integer = 10, fraction = 2, message = "El monto no tiene un formato válido")
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Constraint(validatedBy = {})
 public @interface ValidAmount {
 
-    String message() default "importe";
+	String message() default "El campo provisto no es válido";
 
     Class<?>[] groups() default {};
 

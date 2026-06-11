@@ -1,6 +1,6 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.mapper;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.orderDetail.OrderDetailDto;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.OrderDetailResponseDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.OrderDetail;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -15,5 +15,5 @@ public interface OrderDetailMapper {
 
     @Mapping(target = "orderId", source = "orderId")
     @Mapping(target = "product.categoryId", source = "categoryId")
-    OrderDetailDto toDto(OrderDetail orderDetail, Long orderId, Long categoryId);
+    OrderDetailResponseDTO toDto(OrderDetail orderDetail, Long orderId, Long categoryId);
 }

@@ -1,14 +1,13 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.mapper;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserEdit;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.UserRequestDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.UserResponseDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.User;
 import org.mapstruct.*;
 
 /**
- * Mapeador de la entidad {@link User} y su DTO {@link UserDto}. También incluye mapeos para las
- * clases {@link UserCreate} y {@link UserEdit}.
+ * Mapeador de la entidad {@link User} y su DTO {@link UserResponseDTO}. También incluye mapeos para las
+ * clases {@link UserRequestDTO} y {@link UserRequestDTO}.
  */
 @Mapper(
         componentModel = MappingConstants.ComponentModel.SPRING,
@@ -16,16 +15,16 @@ import org.mapstruct.*;
 public interface UserMapper {
 
     // Mapeo entre User y UserDto
-    UserDto toDto(User user);
+    UserResponseDTO toDto(User user);
 
     // Mapeo entre UserDto y User
-    User toEntity(UserDto userDto);
+    User toEntity(UserResponseDTO userResponseDTO);
 
-    // Mapeo entre UserCreate y User
-    User toEntity(UserCreate userCreate);
+    // Mapeo entre UserRequestDTO y User
+    User toEntity(UserRequestDTO userRequestDTO);
 
-    // Mapeo entre UserEdit y User
+    // Mapeo entre UserRequestDTO y User
     // Ignora las propiedades nulas para evitar sobrescribir datos existentes con valores null
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateUserFromEdit(UserEdit userEdit, @MappingTarget User user);
+    void updateUserFromEdit(UserRequestDTO userRequestDTO, @MappingTarget User user);
 }

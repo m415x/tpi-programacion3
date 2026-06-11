@@ -1,11 +1,9 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.category.CategoryCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.category.CategoryDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.category.CategoryEdit;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductEdit;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.CategoryResponseDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.CategoryRequestDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.ProductResponseDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.ProductRequestDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.Product;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.ProductRepository;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.service.CategoryService;
@@ -20,11 +18,9 @@ import java.util.stream.Collectors;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 
-@Component
-@Order(1) // PRIORIDAD 1: Toma el control absoluto de la consola en el arranque
+// @Component
+// @Order(1) // PRIORIDAD 1: Toma el control absoluto de la consola en el arranque
 public class ConsoleMenuRunner implements CommandLineRunner {
 
     private final CategoryService categoryService;
@@ -150,8 +146,8 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                     // y/o a nivel Service validando que no esté vacío. Aquí se delega la lógica al Service, 
                     // el cual arrojará una excepción que será atrapada y notificada sin persistir.
                     try {
-                        CategoryDto saved =
-                                categoryService.save(new CategoryCreate(name, description));
+                        CategoryResponseDTO saved =
+                                categoryService.save(new CategoryRequestDTO(name, description));
                         // CA-3: Al guardar exitosamente, se muestra el ID generado por la base de datos
                         System.out.println(
                                 "¡Categoría guardada con éxito! ID asignado: " + saved.id());
@@ -166,7 +162,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                 }
                 case 2 -> {
                     // HU-05: Dar de baja lógica una categoría
-	                List<CategoryDto> auxCategories = listAndValidateAvailableCategories();
+	                List<CategoryResponseDTO> auxCategories = listAndValidateAvailableCategories();
 	                if(auxCategories.isEmpty()) {
 		                System.out.println("¡Operación cancelada! Cree una categoría primero");
 		                waitingEnter(sc);
@@ -180,7 +176,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
 
                     try {
 	                    // CA-4: Buscamos la categoría en la lista en memoria para obtener su nombre antes de la baja.
-	                    CategoryDto categoryToDelete = auxCategories.stream()
+	                    CategoryResponseDTO categoryToDelete = auxCategories.stream()
 			                    .filter(c -> c.id().equals(id))
 			                    .findFirst()
 			                    .orElseThrow(
@@ -205,7 +201,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                 case 3 -> {
                     // HU-04: Modificar una categoria existente
                     // CA-1: El sistema lista las categorias activas antes de pedir el ID.
-                    List<CategoryDto> auxCategories = listAndValidateAvailableCategories();
+                    List<CategoryResponseDTO> auxCategories = listAndValidateAvailableCategories();
                     if(auxCategories.isEmpty()) {
                         System.out.println("¡Operación cancelada! No hay categorías para modificar.");
                         waitingEnter(sc);
@@ -219,7 +215,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
 
                     try {
                         // CA-2: Se cumple en el service.findById(id), que arroja EntityNotFoundException si no existe.
-                        CategoryDto category = categoryService.findById(id);
+                        CategoryResponseDTO category = categoryService.findById(id);
                         
                         // CA-3: Se muestran los valores actuales antes de pedir los nuevos.
                         System.out.printf(
@@ -235,10 +231,10 @@ public class ConsoleMenuRunner implements CommandLineRunner {
 
                         // CA-4: La lógica de mantener el valor anterior si el campo está en blanco
                         // se maneja en el CategoryServiceImpl.update()
-                        CategoryEdit categoryEdit = new CategoryEdit(name, description);
+                        CategoryRequestDTO categoryRequestDTO = new CategoryRequestDTO(name, description);
                         
                         // CA-5: El cambio se persiste correctamente en la base de datos.
-                        categoryService.update(categoryEdit, id);
+                        categoryService.update(categoryRequestDTO, id);
                         System.out.println(
                                 "¡Modificación realizada con éxito para la categoría ID: " + id);
 
@@ -309,7 +305,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
             case 1 -> {
                 // HU-06: Dar de alta un producto
                 // CA-1: El sistema lista las categorias activas para que el operador seleccione una.
-                List<CategoryDto> auxCategories = listAndValidateAvailableCategories();
+                List<CategoryResponseDTO> auxCategories = listAndValidateAvailableCategories();
 
                 // CA-2: Si no hay categorias activas, se informa y se cancela la operacion.
                 if(auxCategories.isEmpty()) {
@@ -340,9 +336,9 @@ public class ConsoleMenuRunner implements CommandLineRunner {
 
                 try {
                     // CA-4: La validación de precio y stock se delega al ProductService/Entity.
-                    ProductDto saved =
+                    ProductResponseDTO saved =
                             productService.save(
-                                    new ProductCreate(
+                                    new ProductRequestDTO(
                                             name,
                                             price,
                                             description,
@@ -355,7 +351,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                     String categoryName = auxCategories.stream()
                             .filter(c -> c.id().equals(categoryId))
                             .findFirst()
-                            .map(CategoryDto::name)
+                            .map(CategoryResponseDTO::name)
                             .orElse("Desconocida");
                     
                     System.out.println("¡Producto guardado con éxito!");
@@ -378,7 +374,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
 
                 try {
                     // CA-4: Buscamos el producto en memoria antes de la baja para obtener su nombre
-                    ProductDto productToDelete = productService.findById(id);
+                    ProductResponseDTO productToDelete = productService.findById(id);
 
                     // CA-1: La baja es lógica, el servicio simplemente actualiza deleted = true
                     // CA-2: Si el ID no existe o ya está dado de baja, findById o deleteById arrojará una excepción
@@ -397,7 +393,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
             case 3 -> {
                 // HU-07: Modificar un producto
                 // CA-1: El sistema lista los productos activos antes de pedir el ID.
-	            List<CategoryDto> auxCategories = listAndValidateAvailableCategories();
+	            List<CategoryResponseDTO> auxCategories = listAndValidateAvailableCategories();
 
 	            if(auxCategories.isEmpty()) {
 		            System.out.println("¡Operación cancelada! Cree una categoría primero.");
@@ -414,7 +410,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
 
                 try {
                     // CA-2: El servicio arroja EntityNotFoundException si el ID no existe.
-                    ProductDto product = productService.findById(id);
+                    ProductResponseDTO product = productService.findById(id);
                     
                     // CA-3: Se muestran los valores actuales antes de pedir los nuevos.
                     System.out.printf(
@@ -431,8 +427,8 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                     stock = scInt(sc);
 
                     // CA-4, 5, 6: La lógica se delega al ProductServiceImpl.update()
-                    ProductEdit productEdit =
-                            new ProductEdit(
+                    ProductRequestDTO productRequestDTO =
+                            new ProductRequestDTO(
                                     name,
                                     price,
                                     product.description(),
@@ -440,7 +436,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                                     product.image(),
                                     stock != null ? stock > 0 : product.available(),
                                     product.categoryId());
-                    productService.update(productEdit, id);
+                    productService.update(productRequestDTO, id);
 
                     System.out.println(
                             "¡Modificación realizada con éxito para el producto ID: " + id);
@@ -454,7 +450,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
             case 4 -> {
                 Map<Long, String> categoryMap =
                         categoryService.findAll().stream()
-                                .collect(Collectors.toMap(CategoryDto::id, CategoryDto::name));
+                                .collect(Collectors.toMap(CategoryResponseDTO::id, CategoryResponseDTO::name));
 
                 int n = 87;
                 printProductHead(n);
@@ -490,7 +486,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
 
         // HU-09: Listar productos de una categoría
         // CA-1: El sistema lista las categorías activas para que el operador seleccione una.
-        List<CategoryDto> categories = listAndValidateAvailableCategories();
+        List<CategoryResponseDTO> categories = listAndValidateAvailableCategories();
 
 	    if (categories.isEmpty()) {
 
@@ -535,7 +531,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
 
             Map<Long, String> categoryMap =
                     categories.stream()
-                            .collect(Collectors.toMap(CategoryDto::id, CategoryDto::name));
+                            .collect(Collectors.toMap(CategoryResponseDTO::id, CategoryResponseDTO::name));
 
             int n = 87;
             printProductHead(n);
@@ -543,8 +539,8 @@ public class ConsoleMenuRunner implements CommandLineRunner {
             // CA-5: El resultado muestra: ID, nombre, precio y stock de cada producto.
             filteredProducts.forEach(
                     p -> {
-                        ProductDto dtoEquivalent =
-                                new ProductDto(
+                        ProductResponseDTO dtoEquivalent =
+                                new ProductResponseDTO(
                                         p.getId(),
                                         p.getName(),
                                         p.getPrice(),
@@ -628,7 +624,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
         System.out.println("-".repeat(n));
     }
 
-    private void printCategoryRow(CategoryDto c) {
+    private void printCategoryRow(CategoryResponseDTO c) {
 
         System.out.printf(
                 "| %-6d | %-25.25s | %-35.35s | %9d |\n",
@@ -638,7 +634,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                 c.products() != null ? c.products().size() : 0);
     }
 
-    private void printProductRow(ProductDto p, java.util.Map<Long, String> categoryMap) {
+    private void printProductRow(ProductResponseDTO p, java.util.Map<Long, String> categoryMap) {
 
         String categoryName = categoryMap.getOrDefault(p.categoryId(), "Sin Categoría");
         System.out.printf(
@@ -664,9 +660,9 @@ public class ConsoleMenuRunner implements CommandLineRunner {
         }
     }
 
-	public List<CategoryDto> listAndValidateAvailableCategories() {
+	public List<CategoryResponseDTO> listAndValidateAvailableCategories() {
 
-		List<CategoryDto> categories = categoryService.findAll();
+		List<CategoryResponseDTO> categories = categoryService.findAll();
 		if (categories.isEmpty()) {
 			System.out.println("No hay categorías activas. Genere una primero.");
 
@@ -691,23 +687,23 @@ public class ConsoleMenuRunner implements CommandLineRunner {
             // ==========================================
             // a) Instanciar 3 Categorías
             // ==========================================
-            CategoryDto catComida =
+            CategoryResponseDTO catComida =
                     categoryService.save(
-                            new CategoryCreate("Comida Rápida", "Hamburguesas y lomos"));
+                            new CategoryRequestDTO("Comida Rápida", "Hamburguesas y lomos"));
 
-            CategoryDto catBebidas =
-                    categoryService.save(new CategoryCreate("Bebidas", "Gaseosas y aguas"));
+            CategoryResponseDTO catBebidas =
+                    categoryService.save(new CategoryRequestDTO("Bebidas", "Gaseosas y aguas"));
 
-            CategoryDto catPostres =
-                    categoryService.save(new CategoryCreate("Postres", "Helados y tortas"));
+            CategoryResponseDTO catPostres =
+                    categoryService.save(new CategoryRequestDTO("Postres", "Helados y tortas"));
 
             // ==========================================
             // b) Instanciar 10 Productos y asignarles categorías
             // ==========================================
             // Comidas
-            ProductDto p1 =
+            ProductResponseDTO p1 =
                     productService.save(
-                            new ProductCreate(
+                            new ProductRequestDTO(
                                     "Hamburguesa Simple",
                                     new BigDecimal("5500.00"),
                                     "Mediana",
@@ -716,9 +712,9 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                                     true,
                                     catComida.id()));
 
-            ProductDto p2 =
+            ProductResponseDTO p2 =
                     productService.save(
-                            new ProductCreate(
+                            new ProductRequestDTO(
                                     "Hamburguesa Doble",
                                     new BigDecimal("13000.00"),
                                     "Con queso",
@@ -727,9 +723,9 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                                     true,
                                     catComida.id()));
 
-            ProductDto p3 =
+            ProductResponseDTO p3 =
                     productService.save(
-                            new ProductCreate(
+                            new ProductRequestDTO(
                                     "Lomo Completo",
                                     new BigDecimal("20800.00"),
                                     "Para compartir",
@@ -738,9 +734,9 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                                     true,
                                     catComida.id()));
 
-            ProductDto p4 =
+            ProductResponseDTO p4 =
                     productService.save(
-                            new ProductCreate(
+                            new ProductRequestDTO(
                                     "Papas Fritas",
                                     new BigDecimal("3500.00"),
                                     "Porción grande",
@@ -750,9 +746,9 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                                     catComida.id()));
 
             // Bebidas
-            ProductDto p5 =
+            ProductResponseDTO p5 =
                     productService.save(
-                            new ProductCreate(
+                            new ProductRequestDTO(
                                     "Coca Cola 500ml",
                                     new BigDecimal("1550.00"),
                                     "Común",
@@ -761,9 +757,9 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                                     true,
                                     catBebidas.id()));
 
-            ProductDto p6 =
+            ProductResponseDTO p6 =
                     productService.save(
-                            new ProductCreate(
+                            new ProductRequestDTO(
                                     "Agua Mineral 500ml",
                                     new BigDecimal("1890.00"),
                                     "Sin gas",
@@ -772,9 +768,9 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                                     true,
                                     catBebidas.id()));
 
-            ProductDto p7 =
+            ProductResponseDTO p7 =
                     productService.save(
-                            new ProductCreate(
+                            new ProductRequestDTO(
                                     "Cerveza Quilmes",
                                     new BigDecimal("1800.00"),
                                     "Lata",
@@ -784,9 +780,9 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                                     catBebidas.id()));
 
             // Postres
-            ProductDto p8 =
+            ProductResponseDTO p8 =
                     productService.save(
-                            new ProductCreate(
+                            new ProductRequestDTO(
                                     "Flan con Dulce",
                                     new BigDecimal("8100.00"),
                                     "Casero",
@@ -795,9 +791,9 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                                     true,
                                     catPostres.id()));
 
-            ProductDto p9 =
+            ProductResponseDTO p9 =
                     productService.save(
-                            new ProductCreate(
+                            new ProductRequestDTO(
                                     "Helado 1/4kg",
                                     new BigDecimal("7300.00"),
                                     "Dos gustos",
@@ -806,9 +802,9 @@ public class ConsoleMenuRunner implements CommandLineRunner {
                                     true,
                                     catPostres.id()));
 
-            ProductDto p10 =
+            ProductResponseDTO p10 =
                     productService.save(
-                            new ProductCreate(
+                            new ProductRequestDTO(
                                     "Ensalada de Frutas",
                                     new BigDecimal("5000.00"),
                                     "Frutas de estación",

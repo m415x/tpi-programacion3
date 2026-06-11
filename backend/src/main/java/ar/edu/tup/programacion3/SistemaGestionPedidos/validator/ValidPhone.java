@@ -14,7 +14,7 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = {})
 public @interface ValidPhone {
 
-    String message() default "Teléfono inválido";
+	String message() default "El campo provisto no es válido";
 
     Class<?>[] groups() default {};
 

@@ -1,8 +1,8 @@
-package ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product;
+package ar.edu.tup.programacion3.SistemaGestionPedidos.dto;
 
 import java.math.BigDecimal;
 
-public record ProductDto(
+public record ProductResponseDTO(
         Long id,
         String name,
         BigDecimal price,

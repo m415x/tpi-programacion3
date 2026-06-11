@@ -1,32 +1,29 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.service;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserEdit;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.UserRequestDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.UserResponseDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.User;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.mapper.UserMapper;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-    }
-
-    @Override
+	@Override
     @Transactional
-    public UserDto save(UserCreate userCreate) {
+    public UserResponseDTO save(UserRequestDTO userRequestDTO) {
 
-        User user = userMapper.toEntity(userCreate);
+        User user = userMapper.toEntity(userRequestDTO);
         user = userRepository.save(user);
 
         return userMapper.toDto(user);
@@ -34,7 +31,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDto findById(Long id) {
+    public UserResponseDTO findById(Long id) {
 
         User user = userRepository.findByIdOrThrow(id);
 
@@ -43,18 +40,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserDto> findAll() {
+    public List<UserResponseDTO> findAll() {
 
         return userRepository.findAll().stream().map(userMapper::toDto).toList();
     }
 
     @Override
     @Transactional
-    public UserDto update(UserEdit userEdit, Long id) {
+    public UserResponseDTO update(UserRequestDTO userRequestDTO, Long id) {
 
         User user = userRepository.findByIdOrThrow(id);
 
-        userMapper.updateUserFromEdit(userEdit, user);
+        userMapper.updateUserFromEdit(userRequestDTO, user);
         user = userRepository.save(user);
 
         return userMapper.toDto(user);
@@ -77,7 +74,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserDto> findUsersByName(String name) {
+    public List<UserResponseDTO> findUsersByName(String name) {
 
         return userRepository
                 .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name)
@@ -88,7 +85,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDto findUserByEmail(String email) {
+    public UserResponseDTO findUserByEmail(String email) {
 
         User user =
                 userRepository
@@ -104,7 +101,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDto getUserWithMoreOrders() {
+    public UserResponseDTO getUserWithMoreOrders() {
 
         User user =
                 userRepository
@@ -119,7 +116,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDto findHistoricalUser(Long id) {
+    public UserResponseDTO findHistoricalUser(Long id) {
 
         User deletedUser = userRepository.findWithDeletedByIdOrThrow(id);
 
@@ -128,7 +125,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserDto> getHistoricalUsers() {
+    public List<UserResponseDTO> getHistoricalUsers() {
 
         List<User> allHistory = userRepository.findWithDeletedBy();
 

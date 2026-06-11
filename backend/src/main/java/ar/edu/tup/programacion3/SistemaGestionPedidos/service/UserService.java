@@ -1,30 +1,28 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.service;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserEdit;
-import org.springframework.transaction.annotation.Transactional;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.UserRequestDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.UserResponseDTO;
 
 import java.util.List;
 
 public interface UserService {
-    public UserDto save(UserCreate userCreate);
+    public UserResponseDTO save(UserRequestDTO userRequestDTO);
 
-    public UserDto findById(Long id);
+    public UserResponseDTO findById(Long id);
 
-    public List<UserDto> findAll();
+    public List<UserResponseDTO> findAll();
 
-    public UserDto update(UserEdit userEdit, Long id);
+    public UserResponseDTO update(UserRequestDTO userRequestDTO, Long id);
 
     public void deleteById(Long id);
 
-    public List<UserDto> findUsersByName(String name);
+    public List<UserResponseDTO> findUsersByName(String name);
 
-    public UserDto findUserByEmail(String email);
+    public UserResponseDTO findUserByEmail(String email);
 
-    UserDto getUserWithMoreOrders();
+    UserResponseDTO getUserWithMoreOrders();
 
-    UserDto findHistoricalUser(Long id);
+    UserResponseDTO findHistoricalUser(Long id);
 
-    List<UserDto> getHistoricalUsers();
+    List<UserResponseDTO> getHistoricalUsers();
 }

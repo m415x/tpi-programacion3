@@ -32,7 +32,7 @@ public class User extends Base {
     private String firstName;
 
     @Column(name = "last_name", nullable = false, length = 50)
-    @ValidName(message = "lastName")
+    @ValidName
     private String lastName;
 
     @Column(name = "email", unique = true, nullable = false, length = 50)

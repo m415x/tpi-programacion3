@@ -1,34 +1,32 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.service;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderEdit;
-import org.springframework.transaction.annotation.Transactional;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.OrderRequestDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.OrderResponseDTO;
 
 import java.util.List;
 
 public interface OrderService {
-    public OrderDto save(OrderCreate orderCreate);
+    public OrderResponseDTO save(OrderRequestDTO orderRequestDTO);
 
-    public OrderDto findById(Long id);
+    public OrderResponseDTO findById(Long id);
 
-    public List<OrderDto> findAll();
+    public List<OrderResponseDTO> findAll();
 
-    public OrderDto update(OrderEdit orderEdit, Long id);
+    public OrderResponseDTO update(OrderRequestDTO orderRequestDTO, Long id);
 
     public void deleteById(Long id);
 
     // Método personalizado
-    public OrderDto addProductToOrder(Long orderId, Integer qty, Long productId);
+    public OrderResponseDTO addProductToOrder(Long orderId, Integer qty, Long productId);
 
-    public OrderDto updateQtyItem(Long orderId, Long productId, Integer newQty);
+    public OrderResponseDTO updateQtyItem(Long orderId, Long productId, Integer newQty);
 
     public Long getQtyItems(Long orderId);
 
-    OrderDto findHistoricalOrder(Long id);
+    OrderResponseDTO findHistoricalOrder(Long id);
 
-    List<OrderDto> getHistoricalOrders();
+    List<OrderResponseDTO> getHistoricalOrders();
 
     // Método helper para reconstruir el Record de salida con su userId correspondiente
-    public OrderDto unifyUserId(OrderDto dto, Long userId);
+    public OrderResponseDTO unifyUserId(OrderResponseDTO dto, Long userId);
 }

@@ -1,13 +1,13 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.category.CategoryCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.category.CategoryDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.product.ProductDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.user.UserDto;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.CategoryRequestDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.CategoryResponseDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.OrderRequestDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.OrderResponseDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.ProductRequestDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.ProductResponseDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.UserRequestDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.UserResponseDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.OrderStatus;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.PaymentMethod;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.service.*;
@@ -27,7 +27,6 @@ public class SistemaGestionPedidosApplication {
         SpringApplication.run(SistemaGestionPedidosApplication.class, args);
     }
 
-	/* // COMENTADO PARA EL PARCIAL 2: Se pasa la lógica de siembra al menú interactivo
     @Bean
     @Order(1)
     public CommandLineRunner instantiateFromDto(
@@ -54,18 +53,18 @@ public class SistemaGestionPedidosApplication {
                 // ==========================================
                 // a) Instanciar 2 Usuarios
                 // ==========================================
-                UserDto u1 =
+                UserResponseDTO u1 =
                         userService.save(
-                                new UserCreate(
+                                new UserRequestDTO(
                                         "Juan José",
                                         "Perez",
                                         "juan@gmail.com",
                                         "2644111222",
                                         "Passwd123!"));
 
-                UserDto u2 =
+                UserResponseDTO u2 =
                         userService.save(
-                                new UserCreate(
+                                new UserRequestDTO(
                                         "Maria",
                                         "Gomez",
                                         "maria@gmail.com",
@@ -75,23 +74,23 @@ public class SistemaGestionPedidosApplication {
                 // ==========================================
                 // c) Instanciar 3 Categorías
                 // ==========================================
-                CategoryDto catComida =
+                CategoryResponseDTO catComida =
                         categoryService.save(
-                                new CategoryCreate("Comida Rápida", "Hamburguesas y lomos"));
+                                new CategoryRequestDTO("Comida Rápida", "Hamburguesas y lomos"));
 
-                CategoryDto catBebidas =
-                        categoryService.save(new CategoryCreate("Bebidas", "Gaseosas y aguas"));
+                CategoryResponseDTO catBebidas =
+                        categoryService.save(new CategoryRequestDTO("Bebidas", "Gaseosas y aguas"));
 
-                CategoryDto catPostres =
-                        categoryService.save(new CategoryCreate("Postres", "Helados y tortas"));
+                CategoryResponseDTO catPostres =
+                        categoryService.save(new CategoryRequestDTO("Postres", "Helados y tortas"));
 
                 // ==========================================
                 // d) Instanciar 10 Productos y asignarles categorías
                 // ==========================================
                 // Comidas
-                ProductDto p1 =
+                ProductResponseDTO p1 =
                         productService.save(
-                                new ProductCreate(
+                                new ProductRequestDTO(
                                         "Hamburguesa Simple",
                                         new BigDecimal("1500.00"),
                                         "Mediana",
@@ -100,9 +99,9 @@ public class SistemaGestionPedidosApplication {
                                         true,
                                         catComida.id()));
 
-                ProductDto p2 =
+                ProductResponseDTO p2 =
                         productService.save(
-                                new ProductCreate(
+                                new ProductRequestDTO(
                                         "Hamburguesa Doble",
                                         new BigDecimal("2200.00"),
                                         "Con queso",
@@ -111,9 +110,9 @@ public class SistemaGestionPedidosApplication {
                                         true,
                                         catComida.id()));
 
-                ProductDto p3 =
+                ProductResponseDTO p3 =
                         productService.save(
-                                new ProductCreate(
+                                new ProductRequestDTO(
                                         "Lomo Completo",
                                         new BigDecimal("3000.00"),
                                         "Para compartir",
@@ -122,9 +121,9 @@ public class SistemaGestionPedidosApplication {
                                         true,
                                         catComida.id()));
 
-                ProductDto p4 =
+                ProductResponseDTO p4 =
                         productService.save(
-                                new ProductCreate(
+                                new ProductRequestDTO(
                                         "Papas Fritas",
                                         new BigDecimal("800.00"),
                                         "Porción grande",
@@ -134,9 +133,9 @@ public class SistemaGestionPedidosApplication {
                                         catComida.id()));
 
                 // Bebidas
-                ProductDto p5 =
+                ProductResponseDTO p5 =
                         productService.save(
-                                new ProductCreate(
+                                new ProductRequestDTO(
                                         "Coca Cola 500ml",
                                         new BigDecimal("600.00"),
                                         "Común",
@@ -145,9 +144,9 @@ public class SistemaGestionPedidosApplication {
                                         true,
                                         catBebidas.id()));
 
-                ProductDto p6 =
+                ProductResponseDTO p6 =
                         productService.save(
-                                new ProductCreate(
+                                new ProductRequestDTO(
                                         "Agua Mineral",
                                         new BigDecimal("500.00"),
                                         "Sin gas",
@@ -156,9 +155,9 @@ public class SistemaGestionPedidosApplication {
                                         true,
                                         catBebidas.id()));
 
-                ProductDto p7 =
+                ProductResponseDTO p7 =
                         productService.save(
-                                new ProductCreate(
+                                new ProductRequestDTO(
                                         "Cerveza Quilmes",
                                         new BigDecimal("1200.00"),
                                         "Lata",
@@ -168,9 +167,9 @@ public class SistemaGestionPedidosApplication {
                                         catBebidas.id()));
 
                 // Postres
-                ProductDto p8 =
+                ProductResponseDTO p8 =
                         productService.save(
-                                new ProductCreate(
+                                new ProductRequestDTO(
                                         "Flan con Dulce",
                                         new BigDecimal("700.00"),
                                         "Casero",
@@ -179,9 +178,9 @@ public class SistemaGestionPedidosApplication {
                                         true,
                                         catPostres.id()));
 
-                ProductDto p9 =
+                ProductResponseDTO p9 =
                         productService.save(
-                                new ProductCreate(
+                                new ProductRequestDTO(
                                         "Helado 1/4kg",
                                         new BigDecimal("1100.00"),
                                         "Dos gustos",
@@ -190,9 +189,9 @@ public class SistemaGestionPedidosApplication {
                                         true,
                                         catPostres.id()));
 
-                ProductDto p10 =
+                ProductResponseDTO p10 =
                         productService.save(
-                                new ProductCreate(
+                                new ProductRequestDTO(
                                         "Ensalada de Frutas",
                                         new BigDecimal("650.00"),
                                         "Estación",
@@ -204,9 +203,9 @@ public class SistemaGestionPedidosApplication {
                 // ==========================================
                 // b) Instanciar 3 Pedidos (con composición de al menos 2 detalles por cada uno)
                 // ==========================================
-                OrderDto ped1 =
+                OrderResponseDTO ped1 =
                         orderService.save(
-                                new OrderCreate(
+                                new OrderRequestDTO(
                                         LocalDate.now(),
                                         OrderStatus.PENDING,
                                         BigDecimal.ZERO,
@@ -215,9 +214,9 @@ public class SistemaGestionPedidosApplication {
                 orderService.addProductToOrder(ped1.id(), 2, p2.id());
                 orderService.addProductToOrder(ped1.id(), 2, p5.id());
 
-                OrderDto ped2 =
+                OrderResponseDTO ped2 =
                         orderService.save(
-                                new OrderCreate(
+                                new OrderRequestDTO(
                                         LocalDate.now(),
                                         OrderStatus.PENDING,
                                         BigDecimal.ZERO,
@@ -227,9 +226,9 @@ public class SistemaGestionPedidosApplication {
                 orderService.addProductToOrder(ped2.id(), 1, p4.id());
                 orderService.addProductToOrder(ped2.id(), 2, p7.id());
 
-                OrderDto ped3 =
+                OrderResponseDTO ped3 =
                         orderService.save(
-                                new OrderCreate(
+                                new OrderRequestDTO(
                                         LocalDate.now(),
                                         OrderStatus.COMPLETED,
                                         BigDecimal.ZERO,
@@ -246,5 +245,4 @@ public class SistemaGestionPedidosApplication {
             }
         };
     }
-    */
 }

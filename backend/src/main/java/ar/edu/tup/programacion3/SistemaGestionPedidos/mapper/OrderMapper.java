@@ -1,8 +1,7 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.mapper;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderCreate;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderDto;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.order.OrderEdit;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.OrderRequestDTO;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.OrderResponseDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.Order;
 import org.mapstruct.*;
 
@@ -12,10 +11,10 @@ import org.mapstruct.*;
 public interface OrderMapper {
 
     @Mapping(target = "userId", ignore = true)
-    OrderDto toDto(Order order);
+    OrderResponseDTO toDto(Order order);
 
-    Order toEntity(OrderCreate orderCreate);
+    Order toEntity(OrderRequestDTO orderRequestDTO);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateOrderFromEdit(OrderEdit orderEdit, @MappingTarget Order order);
+    void updateOrderFromEdit(OrderRequestDTO orderRequestDTO, @MappingTarget Order order);
 }
