@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: SGP
+
+  # DB config
+  datasource:
+    url: jdbc:h2:file:./backend/data/sgp_db
+    username: m415xs
+    password: 123456
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    # Mostrar SQL en consola
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+    # Desactivar el patrón Open Session In View
+    open-in-view: false
+
+# server:
+#  port: 8008
+
+# Documentación de APIs REST con Swagger OpenAPI
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

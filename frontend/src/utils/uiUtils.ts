@@ -1,4 +1,4 @@
-import type { Product } from "@interfaces/Product";
+import type { IProduct } from "@interfaces/IProduct";
 import { cartService } from "@services/cartService";
 import { productService } from "@services/productService";
 import { PATHS } from "@utils/paths";
@@ -146,7 +146,7 @@ export const showCartNotice = (
  * producto está disponible para agregar al carrito y la cantidad actual en el carrito.
  */
 export const getItemAvailability = (
-    product: Product,
+    product: IProduct,
 ): {
     available: number;
     isAvailable: boolean;
@@ -154,7 +154,7 @@ export const getItemAvailability = (
 } => {
     const qtyInCart = cartService.getProductQuantity(product.id);
     const available: number = product.stock - qtyInCart;
-    const isAvailable: boolean = product.disponible && available > 0;
+    const isAvailable: boolean = product.available && available > 0;
 
     return { available, isAvailable, qtyInCart };
 };

@@ -1,30 +1,33 @@
+# ==========================================
+# BASE DE DATOS LOCAL Y METADATOS (H2)
+# ==========================================
+backend/data/
+backend/.idea/dataSources/
+*.db
+*.mv.db
+*.trace.db
+
+# ==========================================
+# FRONTEND & NODE (TypeScript)
+# ==========================================
 # Dependencias
 node_modules/
 pnpm-lock.yaml
 package-lock.json
 
-# Compilación y Salida
+# Salida de producción frontend
 dist/
+
+# ==========================================
+# BACKEND & JAVA (Spring Boot / Gradle)
+# ==========================================
+# Compilación y Salida de Java
 target/
+bin/
+out/
 *.class
 
-# IDEs
-.vscode/
-.idea/
-*.iml
-
-# Sistema
-.DS_Store
-Thumbs.db
-
-# Variables de entorno
-.env
-.env.local
-
-# Archivos de log
-*.log
-
-# Archivos de empaquetado
+# Archivos de empaquetado (Se generan en build)
 *.jar
 *.war
 *.nar
@@ -32,3 +35,41 @@ Thumbs.db
 *.zip
 *.tar.gz
 *.rar
+
+# Sistema de construcción Gradle
+.gradle
+build/
+!backend/gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# Documentación automática que no suma al código fuente
+HELP.md
+
+# ==========================================
+# ENTORNOS DE DESARROLLO (IDEs)
+# ==========================================
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### VS Code ###
+.vscode/
+eclipse-formatter.xml
+
+# ==========================================
+# SISTEMA OPERATIVO Y LOGS
+# ==========================================
+.DS_Store
+Thumbs.db
+*.log
+
+# Variables de entorno con credenciales secretas (Nunca se suben)
+.env
+.env.local

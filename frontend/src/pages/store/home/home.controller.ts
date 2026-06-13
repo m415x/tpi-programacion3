@@ -1,5 +1,5 @@
 import type { ICategory } from "@interfaces/ICategory";
-import type { Product } from "@interfaces/Product";
+import type { IProduct } from "@interfaces/IProduct";
 import { productService } from "@services/productService";
 import { updateCartBadge } from "@utils/components";
 import { storage } from "@utils/storage";
@@ -16,7 +16,7 @@ import {
  * Función para mostrar los productos en el contenedor principal de la tienda
  * @param products el array de productos a mostrar en la interfaz
  */
-export const showProducts = (products: Product[]): void => {
+export const showProducts = (products: IProduct[]): void => {
     const productContainer =
         document.querySelector<HTMLElement>("#product-container");
     if (!productContainer) return;
@@ -33,7 +33,7 @@ export const showProducts = (products: Product[]): void => {
 
     // Filtramos los productos activos (disponibles y con stock) para mostrar la
     // cantidad correcta en el título
-    const activeProducts: Product[] =
+    const activeProducts: IProduct[] =
         productService.getActiveProducts(products);
 
     // Actualizamos el texto de cantidad de productos encontrados
@@ -48,19 +48,19 @@ export const showProducts = (products: Product[]): void => {
     }
 
     if (activeProducts.length > 0) {
-        activeProducts.forEach((prod: Product): void => {
+        activeProducts.forEach((prod: IProduct): void => {
             // Creamos los nodos uno por uno
             const article: HTMLElement = document.createElement("article");
             article.classList.add("card", "product__card");
             article.dataset.id = prod.id.toString();
 
             // Formateamos el precio
-            const unitPrice: string = formattedPriceHTML(prod.precio);
+            const unitPrice: string = formattedPriceHTML(prod.price);
 
             // Obtenemos la categoría principal para mostrar en la card (si tiene)
-            const categoryName =
-                prod.categorias.length > 0 && prod.categorias[0]
-                    ? prod.categorias[0].nombre
+            const categoryName: string =
+                prod.categories.length > 0 && prod.categories[0]
+                    ? prod.categories[0].name
                     : "Sin categoría";
 
             // Obtenemos el estado de disponibilidad para mostrar en la card
@@ -68,15 +68,15 @@ export const showProducts = (products: Product[]): void => {
                 getItemAvailability(prod);
 
             // Creamos el HTML del producto, incluyendo la imagen con carga asíncrona y los enlaces a detalle
-            const linkedImg = wrapWithDetailLink(
+            const linkedImg: string = wrapWithDetailLink(
                 prod.id,
-                `<img class="product__img" src="" id="img-product-${prod.id}" alt="${prod.nombre}">`,
+                `<img class="product__img" src="" id="img-product-${prod.id}" alt="${prod.name}">`,
             );
 
             // El nombre del producto también se envuelve en un enlace a detalle
-            const linkedName = wrapWithDetailLink(
+            const linkedName: string = wrapWithDetailLink(
                 prod.id,
-                `<h3 class="product__name">${prod.nombre}</h3>`,
+                `<h3 class="product__name">${prod.name}</h3>`,
             );
 
             article.innerHTML = `
@@ -86,7 +86,7 @@ export const showProducts = (products: Product[]): void => {
                 <div class="product__body">
                     <p class="product__category">${categoryName}</p>
                     ${linkedName}
-                    <p class="product__description">${prod.descripcion}</p>
+                    <p class="product__description">${prod.description}</p>
                 </div>
                 <div class="product__foot">
                     <p class="price product__price">${unitPrice}</p>
@@ -121,7 +121,7 @@ export const showProducts = (products: Product[]): void => {
                     const searchBar =
                         document.querySelector<HTMLElement>(".search-bar");
                     if (searchBar) {
-                        showCartNotice(searchBar, 1, prod.nombre, "after");
+                        showCartNotice(searchBar, 1, prod.name, "after");
                     }
 
                     if (!status.isAvailable) {
@@ -164,11 +164,11 @@ const updateProductCardUI = (
 
 /**
  * Función para mostrar la barra de búsqueda y el filtro por categorías, y manejar sus eventos
- * @param product el array de productos sobre los cuales realizar la búsqueda
- * @param category el array de categorías para poblar el selector de filtros
+ * @param products el array de productos sobre los cuales realizar la búsqueda
+ * @param categories el array de categorías para poblar el selector de filtros
  */
 export const showSearchBar = (
-    products: Product[],
+    products: IProduct[],
     categories: ICategory[],
 ): void => {
     const inputSearch =
@@ -188,7 +188,7 @@ export const showSearchBar = (
         const categoryId: string = selectCategories.value || "all";
 
         // Delegamos la lógica al servicio
-        const filteredProducts = productService.applyFilters(products, {
+        const filteredProducts: IProduct[] = productService.applyFilters(products, {
             searchTerm,
             categoryId,
         });
@@ -212,7 +212,7 @@ export const showSearchBar = (
         const option: HTMLOptionElement = document.createElement("option");
 
         option.value = c.id.toString();
-        option.textContent = c.nombre;
+        option.textContent = c.name;
         fragment.appendChild(option);
     });
 
@@ -267,7 +267,7 @@ export const syncCategorySelection = (categoryId: string): void => {
 export const showCategoriesInSidebar = (
     containerSelector: string,
     categories: ICategory[],
-    products: Product[],
+    products: IProduct[],
 ): void => {
     const container = document.querySelector<HTMLElement>(containerSelector);
     if (!container) return;
@@ -303,14 +303,14 @@ export const showCategoriesInSidebar = (
     categories.forEach((c: ICategory): void => {
         const li = document.createElement("li") as HTMLLIElement;
         const a = document.createElement("a") as HTMLAnchorElement;
-        a.href = `#${c.nombre.toLocaleLowerCase().replaceAll(" ", "-")}`;
-        a.textContent = c.nombre;
+        a.href = `#${c.name.toLocaleLowerCase().replaceAll(" ", "-")}`;
+        a.textContent = c.name;
         a.dataset.categoryId = c.id.toString();
         a.classList.add("link");
         a.addEventListener("click", (e: Event): void => {
             e.preventDefault();
             syncCategorySelection(c.id.toString());
-            const filteredProducts: Product[] = productService.filterByCategory(
+            const filteredProducts: IProduct[] = productService.filterByCategory(
                 products,
                 c.id,
             );

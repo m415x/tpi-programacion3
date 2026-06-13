@@ -80,11 +80,11 @@ export const renderHeader = (containerSelector: string): void => {
         currentPath.includes(path) ? "link--active" : "";
 
     // Construimos las partes del menú que dependen del rol
-    const adminMenu =
+    const adminMenu: string =
         role === Role.ADMIN
             ? `<li class="menu__item menu__item--admin"><a href="${PATHS.ADMIN.HOME}" class="link ${getActiveClass(PATHS.ADMIN.HOME)}">Admin</a></li>`
             : "";
-    const userAreaMenu =
+    const userAreaMenu: string =
         role === Role.CLIENT
             ? `<li class="menu__item menu__item--client"><a href="${PATHS.CLIENT.HOME}" class="link ${getActiveClass(PATHS.CLIENT.HOME)}">${name}</a></li>`
             : `<li class="menu__item menu__item--client"><a href="${PATHS.ADMIN.HOME}" class="link ${getActiveClass(PATHS.ADMIN.HOME)}">${name}</a></li>`;

@@ -1,8 +1,8 @@
-import { authService } from "@services/authService";
 import type { IUser } from "@interfaces/IUser";
 import { Role } from "@interfaces/Role";
 import { PATHS } from "@utils/paths";
 import { navigate } from "@utils/navigate";
+import { authService } from "@services/authService";
 
 /**
  * Inicializa la lógica del formulario de registro, incluyendo validaciones, encriptación de contraseña y manejo de eventos.

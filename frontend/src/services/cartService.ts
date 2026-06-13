@@ -1,6 +1,6 @@
-import type { ICartItem } from "@interfaces/ICartItem";
-import type { Product } from "@interfaces/Product";
-import { storage } from "@utils/storage";
+import type {ICartItem} from "@interfaces/ICartItem";
+import type {IProduct} from "@interfaces/IProduct";
+import {storage} from "@utils/storage";
 
 /**
  * Servicio para gestionar el carrito de compras, proporcionando funciones para
@@ -15,13 +15,13 @@ export const cartService = {
      * @returns Lista de productos que están en el carrito, basada en los IDs
      * almacenados en el carrito.
      */
-    getCartItems(products: Product[]): Product[] {
-        return products.filter((prod: Product): boolean => {
+    getCartItems(products: IProduct[]): IProduct[] {
+        return products.filter((prod: IProduct): boolean => {
             // Obtenemos los items del carrito desde el almacenamiento local
             const cart: ICartItem[] = storage.getCartItems();
 
             // Verificamos si el producto está en el carrito comparando los IDs
-            return cart.some((item: ICartItem) => item.id === prod.id);
+            return cart.some((item: ICartItem): boolean => item.id === prod.id);
         });
     },
 
@@ -49,8 +49,9 @@ export const cartService = {
     getProductQuantity(productId: number): number {
         // Obtenemos los items del carrito desde el almacenamiento local
         const cart: ICartItem[] = storage.getCartItems();
+
         // Buscamos el item por su ID
-        const item = cart.find((i: ICartItem): boolean => i.id === productId);
+        const item: ICartItem | undefined = cart.find((i: ICartItem): boolean => i.id === productId);
 
         return item ? item.qty : 0;
     },
