@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -28,6 +29,7 @@ import org.springframework.format.annotation.DateTimeFormat;
             @Index(name = "idx_order_status_date", columnList = "order_status, date")
         })
 @SQLRestriction("deleted = false")
+@DynamicUpdate
 @Getter
 @Setter
 @ToString

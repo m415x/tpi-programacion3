@@ -1,12 +1,15 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.validator;
 
+import ar.edu.tup.programacion3.SistemaGestionPedidos.validator.groups.OnCreate;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.validator.groups.OnUpdate;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import jakarta.validation.constraints.*;
 import java.lang.annotation.*;
 
-@NotNull(message = "El campo no puede ser nulo")
-@Min(value = 0, message = "El campo no puede ser negativo")
+@NotNull(message = "El campo no puede ser nulo", groups = OnCreate.class)
+@Min(value = 0, message = "El campo no puede ser negativo",
+		groups = {OnCreate.class, OnUpdate.class})
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

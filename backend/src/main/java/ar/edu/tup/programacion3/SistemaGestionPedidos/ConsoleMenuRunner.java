@@ -518,7 +518,7 @@ public class ConsoleMenuRunner implements CommandLineRunner {
         // CA-2: La consulta está implementada en ProductoRepository con JPQL y parámetro nombrado :categoriaId.
         // CA-3: Se usa TypedQuery<Product>; no hay casteos manuales en el código (esto está en el repositorio/entity manager).
         // CA-4: Solo se incluyen productos con eliminado = false (esto está garantizado por @SQLRestriction en Product).
-        List<Product> filteredProducts = productRepository.buscarPorCategoria(categoryId);
+        List<Product> filteredProducts = productRepository.findByCategoryId(categoryId);
 
         // CA-6: Si la categoría no tiene productos activos, se informa explícitamente.
         if (filteredProducts.isEmpty()) {

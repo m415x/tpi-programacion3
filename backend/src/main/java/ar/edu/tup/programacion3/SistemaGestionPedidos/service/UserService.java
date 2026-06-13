@@ -2,17 +2,18 @@ package ar.edu.tup.programacion3.SistemaGestionPedidos.service;
 
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.UserRequestDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.UserResponseDTO;
-
 import java.util.List;
 
 public interface UserService {
-    public UserResponseDTO save(UserRequestDTO userRequestDTO);
+    public UserResponseDTO save(UserRequestDTO dto);
 
     public UserResponseDTO findById(Long id);
 
     public List<UserResponseDTO> findAll();
 
-    public UserResponseDTO update(UserRequestDTO userRequestDTO, Long id);
+    public UserResponseDTO update(UserRequestDTO dto, Long id);
+
+	public UserResponseDTO partialUpdate(UserRequestDTO dto, Long id);
 
     public void deleteById(Long id);
 
@@ -20,9 +21,9 @@ public interface UserService {
 
     public UserResponseDTO findUserByEmail(String email);
 
-    UserResponseDTO getUserWithMoreOrders();
+    public UserResponseDTO getUserWithMoreOrders();
 
-    UserResponseDTO findHistoricalUser(Long id);
+    public UserResponseDTO findHistoricalUser(Long id);
 
-    List<UserResponseDTO> getHistoricalUsers();
+    public List<UserResponseDTO> getHistoricalUsers();
 }

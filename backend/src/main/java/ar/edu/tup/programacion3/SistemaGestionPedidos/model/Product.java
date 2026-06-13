@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
@@ -20,6 +21,7 @@ import org.hibernate.annotations.SQLRestriction;
             @Index(name = "idx_product_category_price", columnList = "category_id, price"),
         })
 @SQLRestriction("deleted = false")
+@DynamicUpdate
 @Getter
 @Setter
 @ToString(callSuper = true)

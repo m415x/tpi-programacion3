@@ -7,7 +7,6 @@ import ar.edu.tup.programacion3.SistemaGestionPedidos.mapper.UserMapper;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,52 +15,64 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
+    private final UserRepository repository;
+    private final UserMapper mapper;
 
 	@Override
     @Transactional
-    public UserResponseDTO save(UserRequestDTO userRequestDTO) {
+    public UserResponseDTO save(UserRequestDTO dto) {
 
-        User user = userMapper.toEntity(userRequestDTO);
-        user = userRepository.save(user);
+        User user = mapper.toEntity(dto);
+        user = repository.save(user);
 
-        return userMapper.toDto(user);
+        return mapper.toDto(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserResponseDTO findById(Long id) {
 
-        User user = userRepository.findByIdOrThrow(id);
+        User user = repository.findByIdOrThrow(id);
 
-        return userMapper.toDto(user);
+        return mapper.toDto(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<UserResponseDTO> findAll() {
 
-        return userRepository.findAll().stream().map(userMapper::toDto).toList();
+        return repository.findAll().stream().map(mapper::toDto).toList();
     }
 
     @Override
     @Transactional
-    public UserResponseDTO update(UserRequestDTO userRequestDTO, Long id) {
+    public UserResponseDTO update(UserRequestDTO dto, Long id) {
 
-        User user = userRepository.findByIdOrThrow(id);
+        User user = repository.findByIdOrThrow(id);
 
-        userMapper.updateUserFromEdit(userRequestDTO, user);
-        user = userRepository.save(user);
+        mapper.updateUserFromEdit(dto, user);
+        user = repository.save(user);
 
-        return userMapper.toDto(user);
+        return mapper.toDto(user);
     }
+
+	@Override
+	@Transactional
+	public UserResponseDTO partialUpdate(UserRequestDTO dto, Long id) {
+
+		User user = repository.findByIdOrThrow(id);
+
+		mapper.updateUserFromEdit(dto, user);
+		user = repository.save(user);
+
+		return mapper.toDto(user);
+	}
 
     @Override
     @Transactional
     public void deleteById(Long id) {
 
-        User user = userRepository.findByIdOrThrow(id);
+        User user = repository.findByIdOrThrow(id);
 
         user.setDeleted(true);
 
@@ -69,17 +80,17 @@ public class UserServiceImpl implements UserService {
             user.getOrders().forEach(order -> order.setDeleted(true));
         }
 
-        userRepository.save(user);
+        repository.save(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<UserResponseDTO> findUsersByName(String name) {
 
-        return userRepository
+        return repository
                 .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name)
                 .stream()
-                .map(userMapper::toDto)
+                .map(mapper::toDto)
                 .toList();
     }
 
@@ -88,7 +99,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO findUserByEmail(String email) {
 
         User user =
-                userRepository
+                repository
                         .findByEmailIgnoreCase(email)
                         .orElseThrow(
                                 () ->
@@ -96,7 +107,7 @@ public class UserServiceImpl implements UserService {
                                                 "No se encontró un usuario activo con el email:"
                                                         + email));
 
-        return userMapper.toDto(user);
+        return mapper.toDto(user);
     }
 
     @Override
@@ -104,31 +115,31 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO getUserWithMoreOrders() {
 
         User user =
-                userRepository
+                repository
                         .getUserWithMoreOrders()
                         .orElseThrow(
                                 () ->
                                         new EntityNotFoundException(
                                                 "No se encontraron usuarios con orders registrados en el sistema."));
 
-        return userMapper.toDto(user);
+        return mapper.toDto(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserResponseDTO findHistoricalUser(Long id) {
 
-        User deletedUser = userRepository.findWithDeletedByIdOrThrow(id);
+        User deletedUser = repository.findDeletedByIdOrThrow(id);
 
-        return userMapper.toDto(deletedUser);
+        return mapper.toDto(deletedUser);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<UserResponseDTO> getHistoricalUsers() {
 
-        List<User> allHistory = userRepository.findWithDeletedBy();
+        List<User> allHistory = repository.findDeletedAll();
 
-        return allHistory.stream().map(userMapper::toDto).toList();
+        return allHistory.stream().map(mapper::toDto).toList();
     }
 }

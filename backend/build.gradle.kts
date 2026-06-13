@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "ar.edu.tup.programacion3"
-version = "0.0.1-SNAPSHOT"
+version = "1.0.0-beta.1"
 
 java {
     toolchain {
@@ -40,7 +40,6 @@ dependencies {
     // --- Spring Boot & H2 ---
     implementation("org.springframework.boot:spring-boot-h2console")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-//    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-test")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")

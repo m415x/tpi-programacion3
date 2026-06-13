@@ -10,6 +10,9 @@ import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.OrderRepository
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.ProductRepository;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
@@ -23,20 +26,24 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
-    private final OrderMapper orderMapper;
+    private final OrderMapper mapper;
 
 	@Override
     @Transactional
-    public OrderResponseDTO save(OrderRequestDTO orderRequestDTO) {
+    public OrderResponseDTO save(OrderRequestDTO dto) {
 
-        User user = userRepository.findByIdOrThrow(orderRequestDTO.userId());
-        Order order = orderMapper.toEntity(orderRequestDTO);
+        User user = userRepository.findByIdOrThrow(dto.userId());
+        Order order = mapper.toEntity(dto);
+
+		order.setDate(LocalDate.now());
+		order.setTotal(BigDecimal.ZERO);
+		order.setDeleted(false);
 
         user.addOrder(order);
         Order savedOrder = orderRepository.saveAndFlush(order);
         userRepository.save(user);
 
-        return unifyUserId(orderMapper.toDto(savedOrder), user.getId());
+        return unifyUserId(mapper.toDto(savedOrder), user.getId());
     }
 
     @Override
@@ -46,7 +53,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findByIdOrThrow(id);
         Long userId = orderRepository.findUserIdByOrderId(id).orElse(null);
 
-        return unifyUserId(orderMapper.toDto(order), userId);
+        return unifyUserId(mapper.toDto(order), userId);
     }
 
     @Override
@@ -61,24 +68,68 @@ public class OrderServiceImpl implements OrderService {
                             Long userId =
                                     orderRepository.findUserIdByOrderId(order.getId()).orElse(null);
 
-                            return unifyUserId(orderMapper.toDto(order), userId);
+                            return unifyUserId(mapper.toDto(order), userId);
                         })
                 .toList();
     }
 
     @Override
     @Transactional
-    public OrderResponseDTO update(OrderRequestDTO orderRequestDTO, Long id) {
+    public OrderResponseDTO update(OrderRequestDTO dto, Long id) {
 
         Order order = orderRepository.findByIdOrThrow(id);
 
-        orderMapper.updateOrderFromEdit(orderRequestDTO, order);
+	    Long oldUserId = orderRepository.findUserIdByOrderId(id).orElse(null);
+	    Long newUserId = dto.userId();
+
+	    if (newUserId != null && !newUserId.equals(oldUserId)) {
+
+		    if (oldUserId != null) {
+
+			    Order finalOrder = order;
+			    userRepository.findById(oldUserId)
+					    .ifPresent(oldUser -> oldUser.getOrders().remove(finalOrder));
+		    }
+
+		    User newUser = userRepository.findByIdOrThrow(newUserId);
+		    newUser.addOrder(order);
+	    }
+
+        mapper.updateOrderFromEdit(dto, order);
         order = orderRepository.saveAndFlush(order);
+	    Long finalUserId = (newUserId != null) ? newUserId : oldUserId;
 
-        Long userId = orderRepository.findUserIdByOrderId(id).orElse(null);
-
-        return unifyUserId(orderMapper.toDto(order), userId);
+	    return unifyUserId(mapper.toDto(order), finalUserId);
     }
+
+	@Override
+	@Transactional
+	public OrderResponseDTO partialUpdate(OrderRequestDTO dto, Long id) {
+
+		Order order = orderRepository.findByIdOrThrow(id);
+
+		Long oldUserId = orderRepository.findUserIdByOrderId(id).orElse(null);
+		Long newUserId = dto.userId();
+
+		if (newUserId != null && !newUserId.equals(oldUserId)) {
+
+			if (oldUserId != null) {
+
+				Order finalOrder = order;
+				userRepository.findById(oldUserId)
+						.ifPresent(oldUser -> oldUser.getOrders().remove(finalOrder));
+			}
+
+			User newUser = userRepository.findByIdOrThrow(newUserId);
+			newUser.addOrder(order);
+		}
+
+		mapper.updateOrderFromEdit(dto, order);
+		order = orderRepository.saveAndFlush(order);
+		Long finalUserId = (newUserId != null) ? newUserId : oldUserId;
+
+		return unifyUserId(mapper.toDto(order), finalUserId);
+	}
 
     @Override
     @Transactional
@@ -108,7 +159,7 @@ public class OrderServiceImpl implements OrderService {
 
         Long userId = orderRepository.findUserIdByOrderId(order.getId()).orElse(null);
 
-        return unifyUserId(orderMapper.toDto(order), userId);
+        return unifyUserId(mapper.toDto(order), userId);
     }
 
     @Override
@@ -124,7 +175,7 @@ public class OrderServiceImpl implements OrderService {
 
         Long userId = orderRepository.findUserIdByOrderId(order.getId()).orElse(null);
 
-        return unifyUserId(orderMapper.toDto(order), userId);
+        return unifyUserId(mapper.toDto(order), userId);
     }
 
     @Override
@@ -142,17 +193,17 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public OrderResponseDTO findHistoricalOrder(Long id) {
 
-        Order deletedOrder = orderRepository.findWithDeletedByIdOrThrow(id);
+        Order deletedOrder = orderRepository.findDeletedByIdOrThrow(id);
         Long userId = orderRepository.findUserIdByOrderId(id).orElse(null);
 
-        return unifyUserId(orderMapper.toDto(deletedOrder), userId);
+        return unifyUserId(mapper.toDto(deletedOrder), userId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<OrderResponseDTO> getHistoricalOrders() {
 
-        List<Order> allHistory = orderRepository.findWithDeletedBy();
+        List<Order> allHistory = orderRepository.findDeletedAll();
 
         return allHistory.stream()
                 .map(
@@ -160,7 +211,7 @@ public class OrderServiceImpl implements OrderService {
                             Long userId =
                                     orderRepository.findUserIdByOrderId(order.getId()).orElse(null);
 
-                            return unifyUserId(orderMapper.toDto(order), userId);
+                            return unifyUserId(mapper.toDto(order), userId);
                         })
                 .toList();
     }

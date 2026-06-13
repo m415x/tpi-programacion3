@@ -9,8 +9,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record OrderRequestDTO(
-        @ValidNotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
         @ValidNotNull OrderStatus orderStatus,
-        @ValidAmount BigDecimal total,
+        BigDecimal total,
         @ValidNotNull PaymentMethod paymentMethod,
         Long userId) {}

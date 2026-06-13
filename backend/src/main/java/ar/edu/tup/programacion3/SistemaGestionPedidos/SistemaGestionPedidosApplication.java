@@ -37,15 +37,17 @@ public class SistemaGestionPedidosApplication {
 
         return args -> {
 
+			boolean bandera = false;
+
 	        // =======================================================================================================
-	        // CONTROL DE IDEMPOTENCIA Y PROTECCIÓN DE DATOS (EVALUACIÓN PARCIAL 2)
+	        // CONTROL DE IDEMPOTENCIA Y PROTECCIÓN DE DATOS INICIALES
 	        // =======================================================================================================
 	        // Se valida si la base de datos ya contiene registros activos antes de ejecutar la siembra (seeding).
 	        // Esto garantiza la idempotencia del arranque: si la DB es persistente (file-based), evita excepciones
 	        // por violación de restricciones únicas (como emails duplicados) en arranques sucesivos, manteniendo
 	        // un estado consistente tanto para el testing de la consola como para el desarrollo del TPI.
 	        // =======================================================================================================
-            if (categoryService.findAll().isEmpty()) {
+            if (categoryService.findAll().isEmpty() && bandera) {
 
                 System.out.println(
                         "--- DB VACÍA: INICIANDO INSTANCIACIÓN DE DATOS REQUERIDOS SEMILLA ---");

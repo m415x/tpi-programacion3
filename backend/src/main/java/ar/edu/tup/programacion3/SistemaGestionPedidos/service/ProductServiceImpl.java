@@ -10,9 +10,8 @@ import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.ProductReposito
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.math.BigDecimal;
+
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -20,20 +19,20 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-    private final ProductMapper productMapper;
+    private final ProductMapper mapper;
 
-	@Override
+    @Override
     @Transactional
-    public ProductResponseDTO save(ProductRequestDTO productRequestDTO) {
+    public ProductResponseDTO save(ProductRequestDTO dto) {
 
-        Category category = categoryRepository.findByIdOrThrow(productRequestDTO.categoryId());
-        Product product = productMapper.toEntity(productRequestDTO);
+        Category category = categoryRepository.findByIdOrThrow(dto.categoryId());
+        Product product = mapper.toEntity(dto);
 
         category.addProduct(product);
         Product savedProduct = productRepository.save(product);
         categoryRepository.save(category);
 
-        return productMapper.toDto(savedProduct, productRequestDTO.categoryId());
+        return mapper.toDto(savedProduct, dto.categoryId());
     }
 
     @Override
@@ -44,7 +43,7 @@ public class ProductServiceImpl implements ProductService {
 
         Long categoryId = productRepository.findCategoryIdByProductId(id).orElse(null);
 
-        return productMapper.toDto(product, categoryId);
+        return mapper.toDto(product, categoryId);
     }
 
     @Override
@@ -59,69 +58,69 @@ public class ProductServiceImpl implements ProductService {
                                             .findCategoryIdByProductId(product.getId())
                                             .orElse(null);
 
-                            return productMapper.toDto(product, categoryId);
+                            return mapper.toDto(product, categoryId);
                         })
                 .toList();
     }
 
     @Override
     @Transactional
-    public ProductResponseDTO update(ProductRequestDTO productRequestDTO, Long id) {
+    public ProductResponseDTO update(ProductRequestDTO dto, Long id) {
 
         Product product = productRepository.findByIdOrThrow(id);
 
-        // HU-07 (CA-4): Si el nombre está en blanco, mantenemos el original
-        String finalName = (productRequestDTO.name() == null || productRequestDTO.name().trim().isEmpty())
-                ? product.getName()
-                : productRequestDTO.name();
+        Long oldCategoryId = productRepository.findCategoryIdByProductId(id).orElse(null);
+        Long newCategoryId = dto.categoryId();
 
-        // CA-4: En consola, el precio se lee como BigDecimal, pero si el usuario presiona Enter sin tipear nada, 
-        // la lectura del BigDecimal suele fallar o mandar null si lo manejamos. Si llega null, conservamos el original.
-        BigDecimal finalPrice = productRequestDTO.price() == null ? product.getPrice() : productRequestDTO.price();
-        Integer finalStock = productRequestDTO.stock() == null ? product.getStock() : productRequestDTO.stock();
+        if (newCategoryId != null && !newCategoryId.equals(oldCategoryId)) {
 
-        // HU-07: Comprobar si hay cambios reales antes de persistir
-        if (Objects.equals(finalName, product.getName()) &&
-            Objects.equals(finalPrice, product.getPrice()) &&
-            Objects.equals(finalStock, product.getStock())) {
+            if (oldCategoryId != null) {
 
-            throw new IllegalArgumentException("No se detectaron cambios. La operación de modificación fue cancelada.");
-        }
+	            Product finalProduct = product;
+	            categoryRepository
+                        .findById(oldCategoryId)
+                        .ifPresent(oldCategory -> oldCategory.getProducts().remove(finalProduct));
+            }
 
-        if (productRequestDTO.categoryId() != null) {
-
-            Product finalProduct = product;
-            productRepository
-                    .findCategoryIdByProductId(id)
-                    .flatMap(categoryRepository::findById)
-                    .ifPresent(oldCategory -> oldCategory.getProducts().remove(finalProduct));
-
-            Category newCategory = categoryRepository.findByIdOrThrow(productRequestDTO.categoryId());
-
+            Category newCategory = categoryRepository.findByIdOrThrow(newCategoryId);
             newCategory.addProduct(product);
         }
 
-        // Creamos un nuevo ProductEdit con los valores finales procesados
-        ProductRequestDTO cleanEdit = new ProductRequestDTO(
-                finalName,
-                finalPrice,
-                productRequestDTO.description() == null || productRequestDTO.description().trim().isEmpty() ? null : productRequestDTO.description(),
-                finalStock,
-                productRequestDTO.image() == null || productRequestDTO.image().trim().isEmpty() ? null : productRequestDTO.image(),
-                productRequestDTO.available(),
-                productRequestDTO.categoryId()
-        );
-
-        productMapper.updateProductFromEdit(cleanEdit, product);
+        mapper.updateProductFromEdit(dto, product);
         product = productRepository.saveAndFlush(product);
 
-        Long categoryId =
-                productRequestDTO.categoryId() != null
-                        ? productRequestDTO.categoryId()
-                        : productRepository.findCategoryIdByProductId(product.getId()).orElse(null);
-
-        return productMapper.toDto(product, categoryId);
+        return mapper.toDto(product, newCategoryId);
     }
+
+	@Override
+	@Transactional
+	public ProductResponseDTO partialUpdate(ProductRequestDTO dto, Long id) {
+
+		Product product = productRepository.findByIdOrThrow(id);
+
+		Long oldCategoryId = productRepository.findCategoryIdByProductId(id).orElse(null);
+		Long newCategoryId = dto.categoryId();
+
+		if (newCategoryId != null && !newCategoryId.equals(oldCategoryId)) {
+
+			if (oldCategoryId != null) {
+
+				Product finalProduct = product;
+				categoryRepository
+						.findById(oldCategoryId)
+						.ifPresent(oldCategory -> oldCategory.getProducts().remove(finalProduct));
+			}
+
+			Category newCategory = categoryRepository.findByIdOrThrow(newCategoryId);
+			newCategory.addProduct(product);
+		}
+
+		mapper.updateProductFromEdit(dto, product);
+		product = productRepository.saveAndFlush(product);
+		Long finalCategoryId = (newCategoryId != null) ? newCategoryId : oldCategoryId;
+
+		return mapper.toDto(product, finalCategoryId);
+	}
 
     @Override
     @Transactional
@@ -154,7 +153,7 @@ public class ProductServiceImpl implements ProductService {
                                             .findCategoryIdByProductId(product.getId())
                                             .orElse(null);
 
-                            return productMapper.toDto(product, categoryId);
+                            return mapper.toDto(product, categoryId);
                         })
                 .toList();
     }
@@ -171,7 +170,7 @@ public class ProductServiceImpl implements ProductService {
                                             .findCategoryIdByProductId(product.getId())
                                             .orElse(null);
 
-                            return productMapper.toDto(product, categoryId);
+                            return mapper.toDto(product, categoryId);
                         })
                 .toList();
     }
@@ -188,7 +187,7 @@ public class ProductServiceImpl implements ProductService {
                                             .findCategoryIdByProductId(product.getId())
                                             .orElse(null);
 
-                            return productMapper.toDto(product, categoryId);
+                            return mapper.toDto(product, categoryId);
                         })
                 .toList();
     }
@@ -197,18 +196,18 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public ProductResponseDTO findHistoricalProduct(Long id) {
 
-        Product deletedProduct = productRepository.findWithDeletedByIdOrThrow(id);
+        Product deletedProduct = productRepository.findDeletedByIdOrThrow(id);
         Long categoryId = productRepository.findCategoryIdByProductId(id).orElse(null);
 
-        return productMapper.toDto(deletedProduct, categoryId);
+        return mapper.toDto(deletedProduct, categoryId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> getHistoricalProducts() {
 
-        List<Product> allHistory = productRepository.findWithDeletedBy();
+        List<Product> allHistory = productRepository.findDeletedAll();
 
-        return allHistory.stream().map(product -> productMapper.toDto(product, null)).toList();
+        return allHistory.stream().map(product -> mapper.toDto(product, null)).toList();
     }
 }

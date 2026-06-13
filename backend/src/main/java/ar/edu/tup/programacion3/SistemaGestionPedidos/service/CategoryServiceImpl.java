@@ -6,7 +6,6 @@ import ar.edu.tup.programacion3.SistemaGestionPedidos.model.Category;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.mapper.CategoryMapper;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.CategoryRepository;
 import java.util.List;
-import java.util.Objects;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,69 +15,64 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
-    private final CategoryRepository categoryRepository;
-    private final CategoryMapper categoryMapper;
+    private final CategoryRepository repository;
+    private final CategoryMapper mapper;
 
 	@Override
     @Transactional
-    public CategoryResponseDTO save(CategoryRequestDTO categoryRequestDTO) {
+    public CategoryResponseDTO save(CategoryRequestDTO dto) {
 
-        Category category = categoryMapper.toEntity(categoryRequestDTO);
-        category = categoryRepository.save(category);
+        Category category = mapper.toEntity(dto);
+        category = repository.save(category);
 
-        return categoryMapper.toDto(category);
+        return mapper.toDto(category);
     }
 
     @Override
     @Transactional(readOnly = true)
     public CategoryResponseDTO findById(Long id) {
 
-        Category category = categoryRepository.findByIdOrThrow(id);
+        Category category = repository.findByIdOrThrow(id);
 
-        return categoryMapper.toDto(category);
+        return mapper.toDto(category);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<CategoryResponseDTO> findAll() {
 
-        return categoryRepository.findAll().stream().map(categoryMapper::toDto).toList();
+        return repository.findAll().stream().map(mapper::toDto).toList();
     }
 
     @Override
     @Transactional
-    public CategoryResponseDTO update(CategoryRequestDTO categoryRequestDTO, Long id) {
+    public CategoryResponseDTO update(CategoryRequestDTO dto, Long id) {
 
-        Category category = categoryRepository.findByIdOrThrow(id);
+        Category category = repository.findByIdOrThrow(id);
 
-        // Determinar los valores finales, manteniendo los originales si la entrada está en blanco.
-        String finalName = (categoryRequestDTO.name() == null || categoryRequestDTO.name().trim().isEmpty())
-                ? category.getName()
-                : categoryRequestDTO.name();
-        String finalDescription = (categoryRequestDTO.description() == null || categoryRequestDTO.description().trim().isEmpty())
-                ? category.getDescription()
-                : categoryRequestDTO.description();
+        mapper.updateCategoryFromEdit(dto, category);
+        category = repository.save(category);
 
-        // Comprobar si hay cambios reales antes de realizar la escritura en la base de datos.
-        if (Objects.equals(finalName, category.getName()) &&
-            Objects.equals(finalDescription, category.getDescription())) {
-
-            throw new IllegalArgumentException("No se detectaron cambios. La operación de modificación fue cancelada.");
-        }
-
-        // Aplicar los cambios y guardar
-        category.setName(finalName);
-        category.setDescription(finalDescription);
-        category = categoryRepository.save(category);
-
-        return categoryMapper.toDto(category);
+        return mapper.toDto(category);
     }
+
+	@Override
+	@Transactional
+	public CategoryResponseDTO partialUpdate(CategoryRequestDTO dto, Long id) {
+
+		Category category = repository.findByIdOrThrow(id);
+
+		mapper.updateCategoryFromEdit(dto, category);
+		category = repository.save(category);
+
+		return mapper.toDto(category);
+	}
 
     @Override
     @Transactional
     public void deleteById(Long id) {
 
-        Category category = categoryRepository.findByIdOrThrow(id);
+        Category category = repository.findByIdOrThrow(id);
 
         category.setDeleted(true);
 
@@ -90,15 +84,15 @@ public class CategoryServiceImpl implements CategoryService {
                             });
         }
 
-        categoryRepository.save(category);
+        repository.save(category);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<CategoryResponseDTO> findCategoriesByName(String name) {
 
-        return categoryRepository.findByNameContainingIgnoreCase(name).stream()
-                .map(categoryMapper::toDto)
+        return repository.findByNameContainingIgnoreCase(name).stream()
+                .map(mapper::toDto)
                 .toList();
     }
 
@@ -106,17 +100,17 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     public CategoryResponseDTO findHistoricalCategory(Long id) {
 
-        Category deteledCategory = categoryRepository.findWithDeletedByIdOrThrow(id);
+        Category deteledCategory = repository.findDeletedByIdOrThrow(id);
 
-        return categoryMapper.toDto(deteledCategory);
+        return mapper.toDto(deteledCategory);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<CategoryResponseDTO> getHistoricalCategories() {
 
-        List<Category> allHistory = categoryRepository.findWithDeletedBy();
+        List<Category> allHistory = repository.findDeletedAll();
 
-        return allHistory.stream().map(categoryMapper::toDto).toList();
+        return allHistory.stream().map(mapper::toDto).toList();
     }
 }

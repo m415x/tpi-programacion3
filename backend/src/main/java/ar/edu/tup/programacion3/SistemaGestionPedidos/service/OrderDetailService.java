@@ -7,13 +7,15 @@ import java.util.List;
 
 public interface OrderDetailService {
 
-    public OrderDetailResponseDTO save(OrderDetailRequestDTO OrderDetailRequestDTO);
+    public OrderDetailResponseDTO save(OrderDetailRequestDTO dto);
 
     public OrderDetailResponseDTO findById(Long id);
 
     public List<OrderDetailResponseDTO> findAll();
 
-    public OrderDetailResponseDTO update(OrderDetailRequestDTO orderDetailRequestDTO, Long id);
+    public OrderDetailResponseDTO update(OrderDetailRequestDTO dto, Long id);
+
+	public OrderDetailResponseDTO partialUpdate(OrderDetailRequestDTO dto, Long id);
 
     public void deleteById(Long id);
 

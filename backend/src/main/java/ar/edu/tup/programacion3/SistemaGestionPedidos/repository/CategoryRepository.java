@@ -2,24 +2,29 @@ package ar.edu.tup.programacion3.SistemaGestionPedidos.repository;
 
 import ar.edu.tup.programacion3.SistemaGestionPedidos.model.Category;
 import java.util.List;
+import java.util.Optional;
+
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.User;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-/**
- * =======================================================================================================
- * REQUERIMIENTO EXIGIDO POR EL PARCIAL 2 (HU-02)
- * =======================================================================================================
- * 1. HERENCIA GENÉRICA: Esta interfaz extiende de BaseRepository<Category, Long>, heredando
- * automáticamente todas las capacidades del CRUD genérico y consultas de auditoría sin duplicar
- * código.
- * 2. ACLARACIÓN DE CRITERIO DE ACEPTACIÓN 1 (super): La consigna menciona invocar a
- * 'super(Category.class)'. Dado que en el ecosistema moderno de Spring Data JPA los repositorios se
- * definen como INTERFACES y no como clases, no existe un constructor ni soporte para la palabra
- * clave 'super'. Spring Data resuelve esto de forma nativa y superior mediante los tipos genéricos
- * declarados (<Category, Long>), abstrayendo al desarrollador de asociar la clase manualmente.
- * =======================================================================================================
- */
 @Repository
 public interface CategoryRepository extends BaseRepository<Category, Long> {
 
     List<Category> findByNameContainingIgnoreCase(String name);
+
+	// CONSULTAS HISTÓRICAS (Nativas para evadir @SQLRestriction)
+	@Query(value = "SELECT * FROM categories WHERE deleted = true", nativeQuery = true)
+	List<Category> findDeletedAll();
+
+	@Query(value = "SELECT * FROM categories WHERE id = :id AND deleted = true", nativeQuery = true)
+	Optional<Category> findDeletedById(@Param("id") Long id);
+
+	default Category findDeletedByIdOrThrow(Long id) {
+		return findDeletedById(id)
+				.orElseThrow(() -> new EntityNotFoundException(
+						"No se encontró ningún registro histórico de la categoría con ID: " + id));
+	}
 }

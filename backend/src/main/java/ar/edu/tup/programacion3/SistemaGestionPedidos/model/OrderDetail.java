@@ -6,11 +6,13 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "order_details")
 @SQLRestriction("deleted = false")
+@DynamicUpdate
 @Getter
 @Setter
 @ToString

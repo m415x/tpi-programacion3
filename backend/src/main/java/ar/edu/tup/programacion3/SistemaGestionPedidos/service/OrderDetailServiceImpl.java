@@ -14,12 +14,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderDetailServiceImpl implements OrderDetailService {
 
-    private final OrderDetailRepository orderDetailRepository;
-    private final OrderDetailMapper orderDetailMapper;
+    private final OrderDetailRepository repository;
+    private final OrderDetailMapper mapper;
 
 	@Override
     @Transactional
-    public OrderDetailResponseDTO save(OrderDetailRequestDTO OrderDetailRequestDTO) {
+    public OrderDetailResponseDTO save(OrderDetailRequestDTO dto) {
 
         throw new UnsupportedOperationException(
                 "Operación no permitida: Para añadir un ítem a un pedido, utilice el servicio de Pedidos.");
@@ -29,100 +29,106 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     @Transactional(readOnly = true)
     public OrderDetailResponseDTO findById(Long id) {
 
-        OrderDetail detail = orderDetailRepository.findByIdOrThrow(id);
-        Long orderId = orderDetailRepository.findOrderIdByOrderDetailId(id).orElse(null);
+        OrderDetail detail = repository.findByIdOrThrow(id);
+        Long orderId = repository.findOrderIdByOrderDetailId(id).orElse(null);
         Long categoryId =
                 detail.getProduct() != null
-                        ? orderDetailRepository
+                        ? repository
                                 .findCategoryIdByProductId(detail.getProduct().getId())
                                 .orElse(null)
                         : null;
 
-        return orderDetailMapper.toDto(detail, orderId, categoryId);
+        return mapper.toDto(detail, orderId, categoryId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<OrderDetailResponseDTO> findAll() {
 
-        List<OrderDetail> details = orderDetailRepository.findAll();
+        List<OrderDetail> details = repository.findAll();
 
         return details.stream()
                 .map(
                         detail -> {
                             Long orderId =
-                                    orderDetailRepository
+                                    repository
                                             .findOrderIdByOrderDetailId(detail.getId())
                                             .orElse(null);
                             Long categoryId =
                                     detail.getProduct() != null
-                                            ? orderDetailRepository
+                                            ? repository
                                                     .findCategoryIdByProductId(
                                                             detail.getProduct().getId())
                                                     .orElse(null)
                                             : null;
 
-                            return orderDetailMapper.toDto(detail, orderId, categoryId);
+                            return mapper.toDto(detail, orderId, categoryId);
                         })
                 .toList();
     }
 
     @Override
     @Transactional
-    public OrderDetailResponseDTO update(OrderDetailRequestDTO orderDetailRequestDTO, Long id) {
+    public OrderDetailResponseDTO update(OrderDetailRequestDTO dto, Long id) {
 
         throw new UnsupportedOperationException(
                 "Operación no permitida: Para modificar un ítem, procese la actualización desde el servicio de Pedidos.");
     }
 
+	@Override
+	@Transactional
+	public OrderDetailResponseDTO partialUpdate(OrderDetailRequestDTO dto, Long id) {
+
+		throw new UnsupportedOperationException(
+				"Operación no permitida: Para modificar un ítem, procese la actualización desde el servicio de Pedidos.");
+	}
+
     @Override
     @Transactional
     public void deleteById(Long id) {
 
-        OrderDetail detail = orderDetailRepository.findByIdOrThrow(id);
-
-        detail.setDeleted(true);
-        orderDetailRepository.save(detail);
+	    throw new UnsupportedOperationException(
+			    "Operación no permitida: Para eliminar un ítem, hágalo a través del servicio de Pedidos para recalcular los totales.");
     }
 
     @Override
     @Transactional(readOnly = true)
     public OrderDetailResponseDTO findHistoricalOrderDetail(Long id) {
 
-        OrderDetail detail = orderDetailRepository.findByIdOrThrow(id);
-        Long orderId = orderDetailRepository.findOrderIdByOrderDetailId(id).orElse(null);
+        OrderDetail detail = repository.findDeletedByIdOrThrow(id);
+        Long orderId = repository.findOrderIdByOrderDetailId(id).orElse(null);
         Long categoryId =
                 (detail.getProduct() != null)
-                        ? orderDetailRepository
+                        ? repository
                                 .findCategoryIdByProductId(detail.getProduct().getId())
                                 .orElse(null)
                         : null;
 
-        return orderDetailMapper.toDto(detail, orderId, categoryId);
+        return mapper.toDto(detail, orderId, categoryId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<OrderDetailResponseDTO> getHistoricalOrderDetails() {
 
-        List<OrderDetail> allHistory = orderDetailRepository.findWithDeletedBy();
+        List<OrderDetail> allHistory = repository.findDeletedAll();
 
         return allHistory.stream()
                 .map(
                         detail -> {
                             Long orderId =
-                                    orderDetailRepository
+                                    repository
                                             .findOrderIdByOrderDetailId(detail.getId())
                                             .orElse(null);
                             Long categoryId =
                                     (detail.getProduct() != null)
-                                            ? orderDetailRepository
+                                            ? repository
                                                     .findCategoryIdByProductId(
                                                             detail.getProduct().getId())
                                                     .orElse(null)
                                             : null;
 
-                            return orderDetailMapper.toDto(detail, orderId, categoryId);
+                            return mapper.toDto(detail, orderId, categoryId);
                         })
                 .toList();
     }

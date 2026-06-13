@@ -22,5 +22,12 @@ spring:
     # Desactivar el patrón Open Session In View
     open-in-view: false
 
-server:
-  port: 8008
+# server:
+#  port: 8008
+
+# Documentación de APIs REST con Swagger OpenAPI
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

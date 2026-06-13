@@ -7,11 +7,13 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "categories")
 @SQLRestriction("deleted = false")
+@DynamicUpdate
 @Getter
 @Setter
 @ToString

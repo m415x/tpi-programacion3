@@ -6,25 +6,24 @@ import ar.edu.tup.programacion3.SistemaGestionPedidos.model.User;
 import org.mapstruct.*;
 
 /**
- * Mapeador de la entidad {@link User} y su DTO {@link UserResponseDTO}. También incluye mapeos para las
- * clases {@link UserRequestDTO} y {@link UserRequestDTO}.
+ * Mapeador de la entidad {@link User} y su DTO {@link UserResponseDTO}. También incluye mapeo para
+ * la clase {@link UserRequestDTO}.
  */
 @Mapper(
         componentModel = MappingConstants.ComponentModel.SPRING,
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
 
-    // Mapeo entre User y UserDto
+    // Para las salidas (GET, respuestas de POST/PUT/PATCH)
     UserResponseDTO toDto(User user);
 
-    // Mapeo entre UserDto y User
-    User toEntity(UserResponseDTO userResponseDTO);
+    // Para las entradas de creación (POST)
+    User toEntity(UserRequestDTO dto);
 
-    // Mapeo entre UserRequestDTO y User
-    User toEntity(UserRequestDTO userRequestDTO);
-
-    // Mapeo entre UserRequestDTO y User
+    // Para actualización total (PUT) y parcial (PATCH)
     // Ignora las propiedades nulas para evitar sobrescribir datos existentes con valores null
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateUserFromEdit(UserRequestDTO userRequestDTO, @MappingTarget User user);
+    @BeanMapping(
+            nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+            nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+    void updateUserFromEdit(UserRequestDTO dto, @MappingTarget User user);
 }
