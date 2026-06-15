@@ -1,6 +1,7 @@
-import type { ICategory } from "@interfaces/ICategory";
-import type { IProduct } from "@interfaces/IProduct";
-import { productService } from "@services/productService";
+import type { ICategory } from "@/interfaces/Category.interface";
+import type { IProduct } from "@/interfaces/Product.interface";
+import { productService } from "@/services/product.service";
+import { categoryService } from "@/services/category.service";
 import { updateCartBadge } from "@utils/components";
 import { storage } from "@utils/storage";
 import {
@@ -16,14 +17,15 @@ import {
  * Función para mostrar los productos en el contenedor principal de la tienda
  * @param products el array de productos a mostrar en la interfaz
  */
-export const showProducts = (products: IProduct[]): void => {
-    const productContainer =
-        document.querySelector<HTMLElement>("#product-container");
+export const showProducts = async (): Promise<void> => {
+    const productContainer = document.querySelector<HTMLElement>("#product-container");
     if (!productContainer) return;
 
-    const productQty =
-        document.querySelector<HTMLParagraphElement>("#product-qty");
+    const productQty = document.querySelector<HTMLParagraphElement>("#product-qty");
     if (!productQty) return;
+
+    const searchTerm = productContainer.dataset.searchTerm || "";
+    const selectedCategory = productContainer.dataset.categoryId || "all";
 
     // Limpiamos el contenedor antes de mostrar los productos para evitar duplicados
     productContainer.innerHTML = "";
@@ -31,10 +33,22 @@ export const showProducts = (products: IProduct[]): void => {
     // Creamos un fragmento para optimizar la inserción de múltiples elementos en el DOM
     const fragment: DocumentFragment = document.createDocumentFragment();
 
-    // Filtramos los productos activos (disponibles y con stock) para mostrar la
-    // cantidad correcta en el título
-    const activeProducts: IProduct[] =
-        productService.getActiveProducts(products);
+    // Traemos los datos asíncronos en paralelo para máxima velocidad
+    const [allProducts, categories] = await Promise.all([
+        productService.getAll({ name: searchTerm }),
+        categoryService.getAll(),
+    ]);
+
+    // Aplicamos el filtro de categoría sobre los productos ya filtrados por nombre desde el backend
+    let activeProducts = productService.applyFilters(allProducts, {
+        searchTerm: "",
+        categoryId: selectedCategory,
+    });
+
+    // Creamos un mapa indexado por ID para buscar en tiempo de ejecución O(1)
+    const categoryMap = new Map<number, string>(
+        categories.map((cat: { id: number; name: string }) => [cat.id, cat.name]),
+    );
 
     // Actualizamos el texto de cantidad de productos encontrados
     if (productQty) {
@@ -57,15 +71,13 @@ export const showProducts = (products: IProduct[]): void => {
             // Formateamos el precio
             const unitPrice: string = formattedPriceHTML(prod.price);
 
-            // Obtenemos la categoría principal para mostrar en la card (si tiene)
-            const categoryName: string =
-                prod.categories.length > 0 && prod.categories[0]
-                    ? prod.categories[0].name
-                    : "Sin categoría";
+            // Buscamos el nombre usando el ID único del backend
+            const categoryName: string = prod.categoryId
+                ? categoryMap.get(prod.categoryId) || "Sin categoría"
+                : "Sin categoría";
 
             // Obtenemos el estado de disponibilidad para mostrar en la card
-            const { available, isAvailable, qtyInCart } =
-                getItemAvailability(prod);
+            const { available, isAvailable, qtyInCart } = getItemAvailability(prod);
 
             // Creamos el HTML del producto, incluyendo la imagen con carga asíncrona y los enlaces a detalle
             const linkedImg: string = wrapWithDetailLink(
@@ -74,10 +86,7 @@ export const showProducts = (products: IProduct[]): void => {
             );
 
             // El nombre del producto también se envuelve en un enlace a detalle
-            const linkedName: string = wrapWithDetailLink(
-                prod.id,
-                `<h3 class="product__name">${prod.name}</h3>`,
-            );
+            const linkedName: string = wrapWithDetailLink(prod.id, `<h3 class="product__name">${prod.name}</h3>`);
 
             article.innerHTML = `
             ${linkedImg}
@@ -104,8 +113,7 @@ export const showProducts = (products: IProduct[]): void => {
             // Iniciamos la carga de la imagen
             updateProductImageUI(prod.id, article);
 
-            const btnAdd =
-                article.querySelector<HTMLButtonElement>(".btn--add-product");
+            const btnAdd = article.querySelector<HTMLButtonElement>(".btn--add-product");
             if (!btnAdd) return;
 
             btnAdd.addEventListener("click", (): void => {
@@ -118,8 +126,7 @@ export const showProducts = (products: IProduct[]): void => {
                     updateCartBadge();
 
                     // Mostrar el aviso debajo de la searchBar
-                    const searchBar =
-                        document.querySelector<HTMLElement>(".search-bar");
+                    const searchBar = document.querySelector<HTMLElement>(".search-bar");
                     if (searchBar) {
                         showCartNotice(searchBar, 1, prod.name, "after");
                     }
@@ -148,10 +155,7 @@ export const showProducts = (products: IProduct[]): void => {
  * @param container el elemento HTML de la card del producto a actualizar
  * @param isAvailable booleano que indica si el producto está disponible para agregar al carrito
  */
-const updateProductCardUI = (
-    container: HTMLElement,
-    isAvailable: boolean,
-): void => {
+const updateProductCardUI = (container: HTMLElement, isAvailable: boolean): void => {
     // Actualizamos el badge de stock y el botón de agregar al carrito
     updateBaseAvailabilityUI(container, isAvailable, {
         badge: ".product__stock",
@@ -163,62 +167,58 @@ const updateProductCardUI = (
 };
 
 /**
- * Función para mostrar la barra de búsqueda y el filtro por categorías, y manejar sus eventos
- * @param products el array de productos sobre los cuales realizar la búsqueda
- * @param categories el array de categorías para poblar el selector de filtros
+ * Inicializa y gestiona los eventos de la barra de búsqueda y el selector de categorías.
+ * Delega el filtrado de datos a la capa de servicios e impacta los cambios en la UI.
+ * @param categories Lista de categorías activas para poblar el elemento select.
  */
-export const showSearchBar = (
-    products: IProduct[],
-    categories: ICategory[],
-): void => {
-    const inputSearch =
-        document.querySelector<HTMLInputElement>("#input-search");
-    const selectCategories =
-        document.querySelector<HTMLSelectElement>("#select-categories");
+export const showSearchBar = (categories: ICategory[]): void => {
+    const inputSearch = document.querySelector<HTMLInputElement>("#input-search");
+    const selectCategories = document.querySelector<HTMLSelectElement>("#select-categories");
     if (!inputSearch || !selectCategories) return;
 
-    // Variable para manejar el debounce de la búsqueda
+    // Variable para manejar el debounce de la búsqueda (tipado correcto en entorno web)
     let debounceTimer: number;
 
-    // Función para manejar los filtros de búsqueda y categoría, delegando la lógica
-    // al servicio y actualizando la UI
+    /**
+     * Captura los filtros de la interfaz y relanza la renderización de productos.
+     * Pasamos los filtros como un objeto de criterios al estado global o la función de renderizado.
+     */
     const handleFilters = (): void => {
-        // Capturamos los valores actuales de la UI
         const searchTerm: string = inputSearch.value || "";
         const categoryId: string = selectCategories.value || "all";
 
-        // Delegamos la lógica al servicio
-        const filteredProducts: IProduct[] = productService.applyFilters(products, {
-            searchTerm,
-            categoryId,
-        });
+        // Guardamos los filtros en el objeto dataset del contenedor o en una ventana de estado
+        // para que 'showProducts' sepa qué criterios aplicar al invocar productService.getAll()
+        const productContainer = document.querySelector<HTMLElement>("#product-container");
+        if (productContainer) {
+            productContainer.dataset.searchTerm = searchTerm;
+            productContainer.dataset.categoryId = categoryId;
+        }
 
-        showProducts(filteredProducts);
+        // Volvemos a invocar la renderización principal.
+        showProducts();
     };
 
+    // Evento de escucha para la barra de texto con debounce de 300ms
     inputSearch.addEventListener("input", (): void => {
-        // Cancelamos el temporizador anterior si el usuario sigue escribiendo
         clearTimeout(debounceTimer);
-
-        // Esperamos 300ms antes de ejecutar la lógica de búsqueda
         debounceTimer = window.setTimeout((): void => handleFilters(), 300);
     });
 
-    // Creamos un fragmento para optimizar la inserción de múltiples elementos en el DOM
+    // Creamos un fragmento para optimizar la inserción masiva en el DOM
     const fragment: DocumentFragment = document.createDocumentFragment();
 
     categories.forEach((c: ICategory): void => {
-        // Creamos los nodos uno por uno
         const option: HTMLOptionElement = document.createElement("option");
-
         option.value = c.id.toString();
         option.textContent = c.name;
         fragment.appendChild(option);
     });
 
-    // Insertamos todas las opciones al DOM de una sola vez
+    // Insertamos todas las opciones al HTML de una sola vez
     selectCategories.appendChild(fragment);
 
+    // Evento de escucha para el cambio de categoría instantáneo
     selectCategories.addEventListener("change", (): void => handleFilters());
 };
 
@@ -237,8 +237,7 @@ export const showHeadingInSidebar = (title: string): void => {
  */
 export const syncCategorySelection = (categoryId: string): void => {
     // Sincronizar el select
-    const selectCategories =
-        document.querySelector<HTMLSelectElement>("#select-categories");
+    const selectCategories = document.querySelector<HTMLSelectElement>("#select-categories");
 
     // Actualizamos el valor del select
     if (selectCategories && selectCategories.value !== categoryId) {
@@ -246,8 +245,7 @@ export const syncCategorySelection = (categoryId: string): void => {
     }
 
     // Sincronizar los enlaces del sidebar
-    const sidebarLinks =
-        document.querySelectorAll<HTMLAnchorElement>("#category-list a");
+    const sidebarLinks = document.querySelectorAll<HTMLAnchorElement>("#category-list a");
     sidebarLinks.forEach((link: HTMLAnchorElement) => {
         if (link.dataset.categoryId === categoryId) {
             link.classList.add("link--active");
@@ -258,17 +256,12 @@ export const syncCategorySelection = (categoryId: string): void => {
 };
 
 /**
- * Función para mostrar las categorías disponibles en el menú lateral
- * @param containerSelector el selector del elemento contenedor donde se mostrarán las categorías
- * @param categories el array de categorías a mostrar
- * @param products el array completo de productos, necesario para filtrar por categoría
- * al hacer click en cada una de ellas
+ * Renderiza la lista de categorías en la barra lateral y gestiona el evento de filtrado.
+ * Mantiene el desacoplamiento al delegar la actualización de datos a la UI centralizada.
+ * @param containerSelector Selector CSS del contenedor de la Sidebar
+ * @param categories Lista de categorías activas obtenidas del backend
  */
-export const showCategoriesInSidebar = (
-    containerSelector: string,
-    categories: ICategory[],
-    products: IProduct[],
-): void => {
+export const showCategoriesInSidebar = (containerSelector: string, categories: ICategory[]): void => {
     const container = document.querySelector<HTMLElement>(containerSelector);
     if (!container) return;
 
@@ -280,45 +273,64 @@ export const showCategoriesInSidebar = (
         <ul id="category-list" class="sidebar__list">
             <li>
                 <a href="#" class="link link--active" data-category-id="all">Todas</a>
-            </li>
+            </td>
         </ul>
     `;
 
-    const categoryAll = container.querySelector<HTMLLinkElement>(
-        "[data-category-id='all']",
-    );
-    if (!categoryAll) return;
+    const categoryAll = container.querySelector<HTMLLinkElement>("[data-category-id='all']");
+    const categoryList = container.querySelector<HTMLUListElement>("#category-list");
+    if (!categoryAll || !categoryList) return;
 
-    const categoryList =
-        container.querySelector<HTMLUListElement>("#category-list");
-    if (!categoryList) return;
+    /**
+     * Centraliza el cambio de filtro de categoría compartiendo el ID en el DOM
+     * y disparando la recarga asíncrona desde el servidor.
+     */
+    const handleCategoryClick = (categoryId: string): void => {
+        const productContainer = document.querySelector<HTMLElement>("#product-container");
+        const selectCategories = document.querySelector<HTMLSelectElement>("#select-categories");
 
+        // 1. Persistimos el filtro en el dataset para que lo lea 'showProducts'
+        if (productContainer) {
+            productContainer.dataset.categoryId = categoryId;
+        }
+
+        // 2. Sincronizamos el select de la searchbar (si existe en la UI) para evitar desfaces visuales
+        if (selectCategories) {
+            selectCategories.value = categoryId;
+        }
+
+        // 3. Modificamos los estilos activos en los enlaces (función utilitaria de tu UI)
+        syncCategorySelection(categoryId);
+
+        // 4. Gatillamos la recarga reactiva de las tarjetas
+        showProducts();
+    };
+
+    // Manejador para el botón por defecto "Todas"
     categoryAll.addEventListener("click", (e: Event): void => {
         e.preventDefault();
-        syncCategorySelection("all");
-        showProducts(products);
+        handleCategoryClick("all");
     });
 
-    // Iteramos sobre las categorías para crear un enlace por cada una
+    // Iteramos sobre las categorías reales de la base de datos para crear los enlaces
     categories.forEach((c: ICategory): void => {
-        const li = document.createElement("li") as HTMLLIElement;
-        const a = document.createElement("a") as HTMLAnchorElement;
-        a.href = `#${c.name.toLocaleLowerCase().replaceAll(" ", "-")}`;
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+
+        a.href = `#${c.name.toLowerCase().trim().replaceAll(" ", "-")}`;
         a.textContent = c.name;
         a.dataset.categoryId = c.id.toString();
         a.classList.add("link");
+
         a.addEventListener("click", (e: Event): void => {
             e.preventDefault();
-            syncCategorySelection(c.id.toString());
-            const filteredProducts: IProduct[] = productService.filterByCategory(
-                products,
-                c.id,
-            );
-            showProducts(filteredProducts);
+            handleCategoryClick(c.id.toString());
         });
+
         li.appendChild(a);
         fragment.appendChild(li);
     });
+
     categoryList.appendChild(fragment);
 };
 
@@ -335,10 +347,7 @@ export const initStickySearch = (): void => {
     const observer: IntersectionObserver = new IntersectionObserver(
         ([entry]: IntersectionObserverEntry[]) => {
             if (entry) {
-                searchBar.classList.toggle(
-                    "search-bar--is-sticky",
-                    !entry.isIntersecting,
-                );
+                searchBar.classList.toggle("search-bar--is-sticky", !entry.isIntersecting);
             }
         },
         { threshold: [0] },

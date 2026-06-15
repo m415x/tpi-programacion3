@@ -1,5 +1,5 @@
-import type { IUser } from "@interfaces/IUser";
-import { Role } from "@interfaces/Role";
+import type { IUser } from "@/interfaces/User.interface";
+import { UserRole } from "@/interfaces/Enums";
 import { PATHS } from "@utils/paths";
 import { navigate } from "@utils/navigate";
 import { authService } from "@services/authService";
@@ -15,15 +15,9 @@ export const initRegisterLogic = (): void => {
     registerForm.addEventListener("submit", async (e: SubmitEvent) => {
         e.preventDefault();
 
-        const name: string = (
-            registerForm.querySelector("#name") as HTMLInputElement
-        ).value;
-        const email: string = (
-            registerForm.querySelector("#email") as HTMLInputElement
-        ).value;
-        const pass: string = (
-            registerForm.querySelector("#pass") as HTMLInputElement
-        ).value;
+        const name: string = (registerForm.querySelector("#name") as HTMLInputElement).value;
+        const email: string = (registerForm.querySelector("#email") as HTMLInputElement).value;
+        const pass: string = (registerForm.querySelector("#pass") as HTMLInputElement).value;
 
         // Validaciones de formato de email
         if (!authService.validateEmail(email)) {
@@ -33,9 +27,7 @@ export const initRegisterLogic = (): void => {
 
         // Validaciones de contraseña
         if (!authService.validatePasswordStrength(pass)) {
-            alert(
-                "La contraseña debe tener al menos 8 caracteres, una mayúscula y un número.",
-            );
+            alert("La contraseña debe tener al menos 8 caracteres, una mayúscula y un número.");
             return;
         }
 
@@ -50,12 +42,11 @@ export const initRegisterLogic = (): void => {
             name: name,
             email: email,
             password: encryptedPass,
-            role: Role.CLIENT,
+            role: UserRole.CLIENT,
         };
 
         // Intento de Registro
-        const result: { success: boolean; message: string } =
-            authService.register(newUser);
+        const result: { success: boolean; message: string } = authService.register(newUser);
 
         if (result.success) {
             alert(result.message);
@@ -66,8 +57,7 @@ export const initRegisterLogic = (): void => {
         }
     });
 
-    const authLink =
-        document.querySelector<HTMLLinkElement>("#auth-switch-link");
+    const authLink = document.querySelector<HTMLLinkElement>("#auth-switch-link");
     if (!authLink) return;
 
     // Listener para cambiar entre login y registro

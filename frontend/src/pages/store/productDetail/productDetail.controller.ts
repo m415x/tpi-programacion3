@@ -1,4 +1,4 @@
-import type { IProduct } from "@interfaces/IProduct";
+import type { IProduct } from "@/interfaces/Product.interface";
 import { cartService } from "@services/cartService";
 import { updateCartBadge } from "@utils/components";
 import { navigate } from "@utils/navigate";
@@ -22,9 +22,7 @@ export const showProductDetail = (product: IProduct): void => {
     // Actualizamos el título de la página
     setPageTitle(product.name);
 
-    const productDetailContainer = document.querySelector<HTMLElement>(
-        "#product-detail-container",
-    );
+    const productDetailContainer = document.querySelector<HTMLElement>("#product-detail-container");
     if (!productDetailContainer) return;
 
     // Formatear el precio
@@ -64,16 +62,10 @@ export const showProductDetail = (product: IProduct): void => {
     // Iniciamos la carga asíncrona de la imagen
     updateProductImageUI(product.id);
 
-    const inputQty =
-        productDetailContainer.querySelector<HTMLInputElement>(".product-qty");
-    const btnAdd =
-        productDetailContainer.querySelector<HTMLButtonElement>(
-            ".btn--add-product",
-        );
-    const btnPlus =
-        productDetailContainer.querySelector<HTMLButtonElement>(".btn--plus");
-    const btnMinus =
-        productDetailContainer.querySelector<HTMLButtonElement>(".btn--minus");
+    const inputQty = productDetailContainer.querySelector<HTMLInputElement>(".product-qty");
+    const btnAdd = productDetailContainer.querySelector<HTMLButtonElement>(".btn--add-product");
+    const btnPlus = productDetailContainer.querySelector<HTMLButtonElement>(".btn--plus");
+    const btnMinus = productDetailContainer.querySelector<HTMLButtonElement>(".btn--minus");
     if (!inputQty || !btnAdd || !btnPlus || !btnMinus) return;
 
     // Función interna para actualizar el número visual sin tocar el Storage
@@ -108,9 +100,7 @@ export const showProductDetail = (product: IProduct): void => {
     // Evento de agregar al carrito (Intenta actualizar el Storage)
     btnAdd.addEventListener("click", (): void => {
         // Calculamos la nueva cantidad total que se desea tener en el carrito para este producto
-        const currentQtyInCart: number = cartService.getProductQuantity(
-            product.id,
-        );
+        const currentQtyInCart: number = cartService.getProductQuantity(product.id);
         const totalNewQty: number = currentQtyInCart + selectedQty;
 
         if (storage.updateCartItem(product.id, totalNewQty)) {
@@ -118,28 +108,16 @@ export const showProductDetail = (product: IProduct): void => {
             const updated = getItemAvailability(product);
 
             // Actualizamos la UI de stock de forma atómica
-            renderStockStatus(
-                productDetailContainer,
-                updated.available,
-                updated.isAvailable,
-            );
+            renderStockStatus(productDetailContainer, updated.available, updated.isAvailable);
 
             selectedQty = updated.isAvailable ? 1 : 0;
             updateLocalUI();
 
-            const detailsContainer =
-                productDetailContainer.querySelector<HTMLElement>(
-                    ".product-detail__details",
-                );
+            const detailsContainer = productDetailContainer.querySelector<HTMLElement>(".product-detail__details");
 
             // Mostramos el aviso de agregado al carrito
             if (detailsContainer) {
-                showCartNotice(
-                    detailsContainer,
-                    selectedQty,
-                    product.name,
-                    "append",
-                );
+                showCartNotice(detailsContainer, selectedQty, product.name, "append");
             }
 
             // Actualizamos el badge del carrito en el navbar
@@ -150,9 +128,7 @@ export const showProductDetail = (product: IProduct): void => {
     });
 
     // Evento de volver
-    const btnBack = productDetailContainer.querySelector<HTMLButtonElement>(
-        ".product-detail__row .btn--secondary",
-    );
+    const btnBack = productDetailContainer.querySelector<HTMLButtonElement>(".product-detail__row .btn--secondary");
     if (!btnBack) return;
 
     btnBack.addEventListener("click", (): void => {
@@ -171,11 +147,7 @@ export const showProductDetail = (product: IProduct): void => {
  * @param available La cantidad disponible restante del producto.
  * @param isAvailable Un booleano que indica si el producto está disponible para agregar al carrito.
  */
-const renderStockStatus = (
-    container: HTMLElement,
-    available: number,
-    isAvailable: boolean,
-): void => {
+const renderStockStatus = (container: HTMLElement, available: number, isAvailable: boolean): void => {
     // Actualizamos el badge de stock y el botón de agregar al carrito
     updateBaseAvailabilityUI(container, isAvailable, {
         badge: ".stock-badge",
@@ -185,9 +157,7 @@ const renderStockStatus = (
     const badge = container.querySelector<HTMLElement>(".stock-badge");
     if (badge) {
         // Actualizamos el texto y la clase del badge de stock
-        badge.textContent = isAvailable
-            ? `Disponible (Stock ${available})`
-            : "Agotado";
+        badge.textContent = isAvailable ? `Disponible (Stock ${available})` : "Agotado";
     }
 
     const inputQty = container.querySelector<HTMLInputElement>(".product-qty");

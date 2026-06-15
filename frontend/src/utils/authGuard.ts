@@ -1,4 +1,4 @@
-import { Role } from "@interfaces/Role";
+import { UserRole } from "@/interfaces/Enums";
 import { navigateClear } from "@utils/navigate";
 import { PATHS } from "@utils/paths";
 import { storage } from "@utils/storage";
@@ -17,7 +17,7 @@ export const checkAuth = (): void => {
     const isLandingPage: boolean = path === "/" || path.endsWith("index.html");
 
     // Obtener el rol del usuario (si está autenticado)
-    const role: Role | null = storage.getRole();
+    const role: UserRole | null = storage.getRole();
 
     // 1. Si no está autenticado y no está en una página de auth/ o landing -> al login
     if (!storage.isAuthenticated() && !isAuthPage && !isLandingPage) {
@@ -27,19 +27,18 @@ export const checkAuth = (): void => {
 
     // 2. Si está autenticado y está en una página de auth/ o landing -> a su zona
     if (storage.isAuthenticated() && isAuthPage) {
-        const destination: string =
-            role === Role.ADMIN ? PATHS.ADMIN.HOME : PATHS.STORE.HOME;
+        const destination: string = role === UserRole.ADMIN ? PATHS.ADMIN.HOME : PATHS.STORE.HOME;
         navigateClear(destination);
         return;
     }
 
     // 3. Verificar permisos según el rol y la ruta
-    if (path.includes("/admin/") && role !== Role.ADMIN) {
+    if (path.includes("/admin/") && role !== UserRole.ADMIN) {
         // Si un cliente intenta entrar a /admin/ -> a su zona
         navigateClear(PATHS.CLIENT.HOME);
         return;
     }
-    if (path.includes("/client/") && role !== Role.CLIENT) {
+    if (path.includes("/client/") && role !== UserRole.CLIENT) {
         // Si un admin intenta entrar a /client/ -> a su zona
         navigateClear(PATHS.ADMIN.HOME);
         return;

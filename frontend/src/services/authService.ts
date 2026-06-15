@@ -1,4 +1,4 @@
-import type { IUser } from "@interfaces/IUser";
+import type { IUser } from "@/interfaces/User.interface";
 import { storage } from "@utils/storage";
 
 /**
@@ -27,11 +27,7 @@ export const authService = {
      * @returns true si la contraseña cumple con los requisitos de fortaleza.
      */
     validatePasswordStrength(password: string): boolean {
-        return (
-            password.length >= 8 &&
-            /[A-Z]/.test(password) &&
-            /[0-9]/.test(password)
-        );
+        return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password);
     },
 
     /**
@@ -68,8 +64,7 @@ export const authService = {
 
         // Buscamos un usuario que coincida con el email y el hash de la contraseña
         const userFound: IUser | undefined = users.find(
-            (u: IUser): boolean =>
-                u.email === email && u.password === passwordHash,
+            (u: IUser): boolean => u.email === email && u.password === passwordHash,
         );
 
         // Si encontramos un usuario válido, guardamos su sesión en "userData"
@@ -93,9 +88,7 @@ export const authService = {
         const users: IUser[] = storage.getUsers();
 
         // Verificar existencia de email
-        const emailExists: boolean = users.some(
-            (user: IUser): boolean => user.email === newUser.email,
-        );
+        const emailExists: boolean = users.some((user: IUser): boolean => user.email === newUser.email);
 
         // Si el email ya existe, retornamos un mensaje de error sin registrar al usuario
         if (emailExists) {
@@ -107,10 +100,7 @@ export const authService = {
 
         // Asignación de ID autoincremental
         // Buscamos el ID más alto y le sumamos 1. Si no hay usuarios, empezamos en 1.
-        const lastId: number =
-            users.length > 0
-                ? Math.max(...users.map((user: IUser): number => user.id))
-                : 0;
+        const lastId: number = users.length > 0 ? Math.max(...users.map((user: IUser): number => user.id)) : 0;
 
         // Asignamos el nuevo ID
         newUser.id = lastId + 1;

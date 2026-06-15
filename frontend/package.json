@@ -18,6 +18,7 @@
     },
     "devDependencies": {
         "@types/node": "^20.19.39",
-        "vite": "^5.4.21"
+        "vite": "^5.4.21",
+        "axios": "^1.18.0"
     }
 }

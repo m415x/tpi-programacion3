@@ -1,7 +1,7 @@
-import type { ICartItem } from "@interfaces/ICartItem";
-import type { IProduct } from "@interfaces/IProduct";
-import type { IUser } from "@interfaces/IUser";
-import type { Role } from "@interfaces/Role";
+import type { ICartItem } from "@/interfaces/ICartItem";
+import type { IProduct } from "@/interfaces/Product.interface";
+import type { IUser } from "@/interfaces/User.interface";
+import type { UserRole } from "@/interfaces/Enums";
 import { PRODUCTS } from "@/data/data";
 
 /**
@@ -77,7 +77,7 @@ export const storage = {
      * Obtiene el rol del usuario actualmente autenticado.
      * @returns El rol del usuario autenticado o null si no hay sesión activa.
      */
-    getRole(): Role | null {
+    getRole(): UserRole | null {
         const user: IUser | null = this.getUser();
         return user ? user.role : null;
     },
@@ -108,22 +108,13 @@ export const storage = {
         const cartItems: ICartItem[] = this.getCartItems();
 
         // Buscar producto y validar existencia
-        const product: IProduct | undefined = PRODUCTS.find(
-            (p: IProduct): boolean => p.id === id,
-        );
+        const product: IProduct | undefined = PRODUCTS.find((p: IProduct): boolean => p.id === id);
         if (!product) return false;
 
-        const existingItem: ICartItem | undefined = cartItems.find(
-            (i: ICartItem): boolean => i.id === id,
-        );
+        const existingItem: ICartItem | undefined = cartItems.find((i: ICartItem): boolean => i.id === id);
 
         // Si viene fixedQty, se usa esa. Si no, se incrementa la actual + 1.
-        const newQty: number =
-            fixedQty !== undefined
-                ? fixedQty
-                : existingItem
-                  ? existingItem.qty + 1
-                  : 1;
+        const newQty: number = fixedQty !== undefined ? fixedQty : existingItem ? existingItem.qty + 1 : 1;
 
         // Validar contra el stock
         if (newQty > product.stock) {
@@ -149,9 +140,7 @@ export const storage = {
     decreaseCartItem(id: number): void {
         const cartItems: ICartItem[] = this.getCartItems();
 
-        const item: ICartItem | undefined = cartItems.find(
-            (i: ICartItem): boolean => i.id === id,
-        );
+        const item: ICartItem | undefined = cartItems.find((i: ICartItem): boolean => i.id === id);
         if (!item) return;
 
         // Solo disminuimos la cantidad si es mayor a 1 para evitar eliminar el item del carrito

@@ -1,6 +1,6 @@
-import type {ICartItem} from "@interfaces/ICartItem";
-import type {IProduct} from "@interfaces/IProduct";
-import {storage} from "@utils/storage";
+import type { ICartItem } from "@/interfaces/ICartItem";
+import type { IProduct } from "@/interfaces/Product.interface";
+import { storage } from "@utils/storage";
 
 /**
  * Servicio para gestionar el carrito de compras, proporcionando funciones para
@@ -35,10 +35,7 @@ export const cartService = {
         const cart: ICartItem[] = storage.getCartItems();
 
         // Sumamos las cantidades de cada item para obtener el total
-        return cart.reduce(
-            (acc: number, item: ICartItem): number => acc + item.qty,
-            0,
-        );
+        return cart.reduce((acc: number, item: ICartItem): number => acc + item.qty, 0);
     },
 
     /**

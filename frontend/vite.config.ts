@@ -11,9 +11,9 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": resolve(__dirname, "./src"),
+            "@interfaces": resolve(__dirname, "./src/interfaces"),
             "@pages": resolve(__dirname, "./src/pages"),
             "@services": resolve(__dirname, "./src/services"),
-            "@interfaces": resolve(__dirname, "./src/types"),
             "@utils": resolve(__dirname, "./src/utils"),
         },
     },
@@ -21,25 +21,13 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 index: resolve(__dirname, "index.html"),
-                authLogin: resolve(
-                    __dirname,
-                    "src/pages/auth/login/login.html",
-                ),
-                authRegister: resolve(
-                    __dirname,
-                    "src/pages/auth/register/register.html",
-                ),
+                authLogin: resolve(__dirname, "src/pages/auth/login/login.html"),
+                authRegister: resolve(__dirname, "src/pages/auth/register/register.html"),
                 storeHome: resolve(__dirname, "src/pages/store/home/home.html"),
                 storeCart: resolve(__dirname, "src/pages/store/cart/cart.html"),
-                storeProductDetail: resolve(
-                    __dirname,
-                    "src/pages/store/productDetail/productDetail.html",
-                ),
+                storeProductDetail: resolve(__dirname, "src/pages/store/productDetail/productDetail.html"),
                 adminHome: resolve(__dirname, "src/pages/admin/home/home.html"),
-                clientHome: resolve(
-                    __dirname,
-                    "src/pages/client/home/home.html",
-                ),
+                clientHome: resolve(__dirname, "src/pages/client/home/home.html"),
             },
         },
     },

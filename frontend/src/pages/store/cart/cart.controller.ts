@@ -1,33 +1,26 @@
-import type { ICartItem } from "@interfaces/ICartItem";
-import type { IProduct } from "@interfaces/IProduct";
+import type { ICartItem } from "@/interfaces/ICartItem";
+import type { IProduct } from "@/interfaces/Product.interface";
 import { cartService } from "@services/cartService";
-import { productService } from "@services/productService";
+import { productService } from "@/services/product.service";
 import { updateCartBadge } from "@utils/components";
 import { navigate } from "@utils/navigate";
 import { PATHS } from "@utils/paths";
 import { storage } from "@utils/storage";
-import {
-    updateProductImageUI,
-    formattedPriceHTML,
-    wrapWithDetailLink,
-} from "@utils/uiUtils";
+import { updateProductImageUI, formattedPriceHTML, wrapWithDetailLink } from "@utils/uiUtils";
 
 /**
  * Función para cargar los productos del carrito en el contenedor principal
  * @param products lista completa de productos
  */
 export const showCart = (products: IProduct[]): void => {
-    const cartProductContainer = document.querySelector<HTMLElement>(
-        "#cart-product-container",
-    );
+    const cartProductContainer = document.querySelector<HTMLElement>("#cart-product-container");
     if (!cartProductContainer) return;
 
     // Creamos un fragmento para optimizar la inserción de múltiples elementos en el DOM
     const fragment: DocumentFragment = document.createDocumentFragment();
 
     // Filtramos los productos activos
-    const activeProducts: IProduct[] =
-        productService.getActiveProducts(products);
+    const activeProducts: IProduct[] = productService.getActiveProducts(products);
 
     // Filtramos los productos del carrito
     const cartItems: IProduct[] = cartService.getCartItems(activeProducts);
@@ -44,10 +37,7 @@ export const showCart = (products: IProduct[]): void => {
             article.dataset.id = prod.id.toString();
             article.dataset.price = prod.price.toString();
 
-            const linkedName = wrapWithDetailLink(
-                prod.id,
-                `<h3 class="cart__product-title">${prod.name}</h3>`,
-            );
+            const linkedName = wrapWithDetailLink(prod.id, `<h3 class="cart__product-title">${prod.name}</h3>`);
 
             const unitPrice: string = formattedPriceHTML(prod.price);
 
@@ -81,69 +71,43 @@ export const showCart = (products: IProduct[]): void => {
 
             // Obtener la cantidad actual desde el storage para este producto
             const currentQty: number = cartService.getProductQuantity(prod.id);
-            const inputQty =
-                article.querySelector<HTMLInputElement>(".product-qty");
+            const inputQty = article.querySelector<HTMLInputElement>(".product-qty");
             if (!inputQty) return;
 
             // Establecer el máximo en base al stock disponible
             inputQty.value = currentQty.toString();
             inputQty.addEventListener("change", (): void => {
                 const newQty: number = parseInt(inputQty.value, 10) || 1;
-                updateCartItemUI(
-                    prod.id,
-                    newQty,
-                    products,
-                    cartProductContainer,
-                );
+                updateCartItemUI(prod.id, newQty, products, cartProductContainer);
             });
 
             // Calcular subtotal de este producto
             const subtotalValue: number = prod.price * currentQty;
             const subtotalPrice: string = formattedPriceHTML(subtotalValue);
-            const subtotalElement = article.querySelector<HTMLParagraphElement>(
-                ".cart__product-price--subtotal",
-            );
+            const subtotalElement = article.querySelector<HTMLParagraphElement>(".cart__product-price--subtotal");
             if (!subtotalElement) return;
 
             subtotalElement.innerHTML = subtotalPrice;
 
             // Evento de los botones +, - y eliminar
-            const btnMinus =
-                article.querySelector<HTMLButtonElement>(".btn--minus");
-            const btnPlus =
-                article.querySelector<HTMLButtonElement>(".btn--plus");
-            const btnTrash =
-                article.querySelector<HTMLButtonElement>(".btn--trash");
+            const btnMinus = article.querySelector<HTMLButtonElement>(".btn--minus");
+            const btnPlus = article.querySelector<HTMLButtonElement>(".btn--plus");
+            const btnTrash = article.querySelector<HTMLButtonElement>(".btn--trash");
             if (!btnMinus || !btnPlus || !btnTrash) return;
 
             btnMinus.addEventListener("click", (): void => {
                 const currentQty = parseInt(inputQty.value, 10) || 1;
-                updateCartItemUI(
-                    prod.id,
-                    currentQty - 1,
-                    products,
-                    cartProductContainer,
-                );
+                updateCartItemUI(prod.id, currentQty - 1, products, cartProductContainer);
             });
             btnPlus.addEventListener("click", (e: Event): void => {
                 e.preventDefault();
 
                 const currentQty = parseInt(inputQty.value, 10) || 1;
-                updateCartItemUI(
-                    prod.id,
-                    currentQty + 1,
-                    products,
-                    cartProductContainer,
-                );
+                updateCartItemUI(prod.id, currentQty + 1, products, cartProductContainer);
             });
             btnTrash.addEventListener("click", (): void => {
                 if (confirm(`¿Eliminar ${prod.name} del carrito?`)) {
-                    updateCartItemUI(
-                        prod.id,
-                        0,
-                        products,
-                        cartProductContainer,
-                    );
+                    updateCartItemUI(prod.id, 0, products, cartProductContainer);
                 }
             });
         });
@@ -151,9 +115,7 @@ export const showCart = (products: IProduct[]): void => {
     } else {
         const cartEmpty = document.createElement("div") as HTMLDivElement;
         const emptyResult = document.createElement("p") as HTMLParagraphElement;
-        const btnReturnStore = document.createElement(
-            "button",
-        ) as HTMLButtonElement;
+        const btnReturnStore = document.createElement("button") as HTMLButtonElement;
 
         cartEmpty.classList.add("cart__empty");
         emptyResult.classList.add("empty-result");
@@ -192,9 +154,7 @@ export const updateCartItemUI = (
     cartContainer: HTMLElement,
 ): void => {
     // 1. Buscamos la "fila" específica por su dataset id
-    const itemContainer = cartContainer.querySelector<HTMLElement>(
-        `[data-id="${id}"]`,
-    );
+    const itemContainer = cartContainer.querySelector<HTMLElement>(`[data-id="${id}"]`);
     if (!itemContainer) return;
 
     if (newQty <= 0) {
@@ -209,8 +169,7 @@ export const updateCartItemUI = (
             return; // Cortamos el flujo, el propio showCart limpiará todo el DOM
         }
     } else {
-        const input =
-            itemContainer.querySelector<HTMLInputElement>(".product-qty");
+        const input = itemContainer.querySelector<HTMLInputElement>(".product-qty");
 
         // Actualizamos storage y verificamos stock
         const success: boolean = storage.updateCartItem(id, newQty);
@@ -228,10 +187,7 @@ export const updateCartItemUI = (
 
         // 3. Calculamos el nuevo subtotal con data attributes
         const price: number = Number(itemContainer.dataset.price) || 0;
-        const subtotalElement =
-            itemContainer.querySelector<HTMLParagraphElement>(
-                ".cart__product-price--subtotal",
-            );
+        const subtotalElement = itemContainer.querySelector<HTMLParagraphElement>(".cart__product-price--subtotal");
 
         if (subtotalElement) {
             const nuevoSubtotal: number = price * newQty;
@@ -240,10 +196,8 @@ export const updateCartItemUI = (
     }
 
     // 4. Actualizamos el resumen total de forma dinámica
-    const activeProducts: IProduct[] =
-        productService.getActiveProducts(products);
-    const updatedCartItems: IProduct[] =
-        cartService.getCartItems(activeProducts);
+    const activeProducts: IProduct[] = productService.getActiveProducts(products);
+    const updatedCartItems: IProduct[] = cartService.getCartItems(activeProducts);
     updateCartSummary(updatedCartItems);
 
     // Y actualizamos el badge de la barra de navegación superior
@@ -258,9 +212,7 @@ export const updateCartItemUI = (
 const getSubtotal = (items: IProduct[]): number => {
     const cartData: ICartItem[] = storage.getCartItems();
     return items.reduce((acc: number, prod: IProduct): number => {
-        const qty: number =
-            cartData.find((i: ICartItem): boolean => i.id === prod.id)?.qty ||
-            0;
+        const qty: number = cartData.find((i: ICartItem): boolean => i.id === prod.id)?.qty || 0;
         return acc + prod.price * qty;
     }, 0);
 };
@@ -271,11 +223,7 @@ const getSubtotal = (items: IProduct[]): number => {
  * @param amount monto a renderizar
  * @param container contenedor donde buscar el elemento (por defecto, document)
  */
-const renderAmount = (
-    selector: string,
-    amount: number,
-    container: ParentNode = document,
-): void => {
+const renderAmount = (selector: string, amount: number, container: ParentNode = document): void => {
     const element = container.querySelector<HTMLElement>(selector);
     if (element) {
         element.innerHTML = formattedPriceHTML(amount);
@@ -300,10 +248,8 @@ const updateCartSummary = (items: IProduct[]): void => {
  * @param products lista completa de productos
  */
 export const initCartEvents = (products: IProduct[]): void => {
-    const btnClearCart =
-        document.querySelector<HTMLButtonElement>("#btn-clear-cart");
-    const btnCheckout =
-        document.querySelector<HTMLButtonElement>("#btn-checkout");
+    const btnClearCart = document.querySelector<HTMLButtonElement>("#btn-clear-cart");
+    const btnCheckout = document.querySelector<HTMLButtonElement>("#btn-checkout");
 
     // Evento del botón "Vaciar carrito"
     if (btnClearCart) {

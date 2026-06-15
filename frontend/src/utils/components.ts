@@ -1,4 +1,4 @@
-import { Role } from "@interfaces/Role";
+import { UserRole } from "@/interfaces/Enums";
 import { cartService } from "@services/cartService";
 import { logout } from "@utils/authGuard";
 import { PATHS } from "@utils/paths";
@@ -12,22 +12,15 @@ import { APP_VERSION, BRAND_NAME } from "@utils/constants";
  * @param isRegister Booleano que indica si se renderiza el formulario de
  * registro (true) o de login (false)
  */
-export const renderAuthCard = (
-    containerSelector: string,
-    isRegister: boolean,
-): void => {
+export const renderAuthCard = (containerSelector: string, isRegister: boolean): void => {
     const container = document.querySelector<HTMLElement>(containerSelector);
     if (!container) return;
 
     // Definimos los textos dinámicos según el tipo de formulario
     const title: string = isRegister ? "Registrarse" : "Iniciar Sesión";
     const btnText: string = isRegister ? "Registrarse" : "Ingresar";
-    const footerText: string = isRegister
-        ? "¿Ya tienes una cuenta?"
-        : "¿No tienes una cuenta?";
-    const footerLinkText: string = isRegister
-        ? "Ingresa acá"
-        : "Registrate acá";
+    const footerText: string = isRegister ? "¿Ya tienes una cuenta?" : "¿No tienes una cuenta?";
+    const footerLinkText: string = isRegister ? "Ingresa acá" : "Registrate acá";
 
     // Inyectamos el HTML de la card en el contenedor
     container.innerHTML = `
@@ -71,21 +64,20 @@ export const renderHeader = (containerSelector: string): void => {
     if (!container) return;
 
     // Obtenemos el rol y nombre del usuario para personalizar el menú
-    const role: Role | null = storage.getRole();
+    const role: UserRole | null = storage.getRole();
     const name: string | undefined = storage.getUser()?.name;
 
     // Obtenemos la ruta actual para determinar qué enlace está activo
     const currentPath: string = window.location.pathname;
-    const getActiveClass = (path: string): string =>
-        currentPath.includes(path) ? "link--active" : "";
+    const getActiveClass = (path: string): string => (currentPath.includes(path) ? "link--active" : "");
 
     // Construimos las partes del menú que dependen del rol
     const adminMenu: string =
-        role === Role.ADMIN
+        role === UserRole.ADMIN
             ? `<li class="menu__item menu__item--admin"><a href="${PATHS.ADMIN.HOME}" class="link ${getActiveClass(PATHS.ADMIN.HOME)}">Admin</a></li>`
             : "";
     const userAreaMenu: string =
-        role === Role.CLIENT
+        role === UserRole.CLIENT
             ? `<li class="menu__item menu__item--client"><a href="${PATHS.CLIENT.HOME}" class="link ${getActiveClass(PATHS.CLIENT.HOME)}">${name}</a></li>`
             : `<li class="menu__item menu__item--client"><a href="${PATHS.ADMIN.HOME}" class="link ${getActiveClass(PATHS.ADMIN.HOME)}">${name}</a></li>`;
 
@@ -110,8 +102,7 @@ export const renderHeader = (containerSelector: string): void => {
     updateCartBadge();
 
     // Agregamos el listener para el botón de logout
-    const btnLogout =
-        document.querySelector<HTMLButtonElement>("#logoutButton");
+    const btnLogout = document.querySelector<HTMLButtonElement>("#logoutButton");
     if (!btnLogout) return;
 
     btnLogout.addEventListener("click", (): void => logout());
@@ -123,17 +114,14 @@ export const renderHeader = (containerSelector: string): void => {
  * se elimina el badge.
  */
 export const updateCartBadge = (): void => {
-    const cartLink = document.querySelector<HTMLLinkElement>(
-        ".menu__item--cart a",
-    );
+    const cartLink = document.querySelector<HTMLLinkElement>(".menu__item--cart a");
     if (!cartLink) return;
 
     // Obtenemos la cantidad total de items en el carrito
     const totalQty: number = cartService.getTotalQuantity();
 
     // Buscamos el badge existente (si lo hay)
-    let badge =
-        cartLink.parentElement?.querySelector<HTMLElement>(".menu__item-badge");
+    let badge = cartLink.parentElement?.querySelector<HTMLElement>(".menu__item-badge");
 
     // Si hay items, actualizamos el badge
     if (totalQty > 0) {
@@ -155,10 +143,7 @@ export const updateCartBadge = (): void => {
  * @param containerSelector selector del contenedor donde se inyectará el contenido del Aside
  * @param callback Función que inyecta el contenido específico del Aside (opcional)
  */
-export const renderAside = (
-    containerSelector: string,
-    callback?: () => void,
-): void => {
+export const renderAside = (containerSelector: string, callback?: () => void): void => {
     const container = document.querySelector<HTMLElement>(containerSelector);
     if (!container) return;
 
@@ -184,8 +169,7 @@ export const renderFooter = (containerSelector: string): void => {
     const path = window.location.pathname;
 
     // Definimos el contenido del Footer
-    const poweredBy =
-        '<p>Powered by <a href="https://github.com/m415x" target="_blank">Cristian Lahoz</a></p>';
+    const poweredBy = '<p>Powered by <a href="https://github.com/m415x" target="_blank">Cristian Lahoz</a></p>';
 
     // Contenido del Footer según el rol
     const clientInfo = `
@@ -217,8 +201,7 @@ export const initFavicon = (): void => {
     const faviconUri: string =
         "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Roboto, sans-serif' font-size='60' font-weight='bold' fill='%23ff6347'%3EFS%3C/text%3E%3C/svg%3E";
 
-    let link: HTMLLinkElement | null =
-        document.querySelector("link[rel~='icon']");
+    let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
 
     if (!link) {
         link = document.createElement("link") as HTMLLinkElement;

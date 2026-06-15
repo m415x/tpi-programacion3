@@ -1,6 +1,6 @@
-import type { IProduct } from "@interfaces/IProduct";
+import type { IProduct } from "@/interfaces/Product.interface";
 import { cartService } from "@services/cartService";
-import { productService } from "@services/productService";
+import { productService } from "@/services/product.service";
 import { PATHS } from "@utils/paths";
 import { BRAND_NAME } from "@utils/constants";
 
@@ -18,9 +18,7 @@ export const updateProductImageUI = (
     const url: string = productService.getPersistentImage(id);
 
     // Actualizar el src del elemento <img> con el ID específico
-    const imgElement = container.querySelector<HTMLImageElement>(
-        `#img-product-${id}`,
-    );
+    const imgElement = container.querySelector<HTMLImageElement>(`#img-product-${id}`);
 
     if (imgElement) {
         imgElement.src = url;
@@ -65,10 +63,7 @@ export const wrapWithDetailLink = (id: number, content: string): string => {
  * lugar del atributo 'disabled'.
  * @returns Un string con el atributo 'disabled' y/o la clase CSS.
  */
-export const getDisabledState = (
-    isAvailable: boolean,
-    classSelector?: string,
-): string => {
+export const getDisabledState = (isAvailable: boolean, classSelector?: string): string => {
     // Si no está disponible y se pasó una clase CSS, devolvemos esa clase.
     if (!isAvailable && classSelector) {
         return classSelector;
@@ -125,10 +120,7 @@ export const showCartNotice = (
     setTimeout(() => {
         if (document.body.contains(notice)) {
             // En lugar de removerlo de inmediato, disparamos la animación de salida
-            notice.classList.replace(
-                "cart-notice--slide-in",
-                "cart-notice--slide-out",
-            );
+            notice.classList.replace("cart-notice--slide-in", "cart-notice--slide-out");
 
             // Esperamos a que la animación termine para quitarlo del DOM
             setTimeout((): void => {
@@ -154,7 +146,7 @@ export const getItemAvailability = (
 } => {
     const qtyInCart = cartService.getProductQuantity(product.id);
     const available: number = product.stock - qtyInCart;
-    const isAvailable: boolean = product.available && available > 0;
+    const isAvailable: boolean = product.isAvailable && available > 0;
 
     return { available, isAvailable, qtyInCart };
 };
@@ -179,9 +171,7 @@ export const updateBaseAvailabilityUI = (
 
     if (btnAdd) {
         btnAdd.disabled = !isAvailable;
-        btnAdd.textContent = isAvailable
-            ? "Agregar al carrito"
-            : "No disponible";
+        btnAdd.textContent = isAvailable ? "Agregar al carrito" : "No disponible";
     }
 };
 
