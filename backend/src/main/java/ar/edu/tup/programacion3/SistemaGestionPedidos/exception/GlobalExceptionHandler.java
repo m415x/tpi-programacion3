@@ -1,10 +1,8 @@
 package ar.edu.tup.programacion3.SistemaGestionPedidos.exception;
 
-import ar.edu.tup.programacion3.SistemaGestionPedidos.ConsoleMenuRunner;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.ConstraintViolationException;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.ErrorDTO;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,16 +11,16 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.ConsoleMenuRunner;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.ErrorDTO;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Captura los errores de validación de los DTOs (como el 400 Bad Request que te salía antes)
+    // Maneja errores de validación de @Valid en los controladores
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorDTO> handleValidationErrors(
             MethodArgumentNotValidException ex, HttpServletRequest request) {
@@ -42,7 +40,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-    // Maneja errores de ConstraintViolation (en otros contextos)
+    // Maneja errores de validación de anotaciones como @NotNull, @Size, etc. en entidades o DTOs
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorDTO> handleConstraintViolation(
             ConstraintViolationException ex, HttpServletRequest request) {
@@ -62,7 +60,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-    // Maneja IllegalArgumentException (por ejemplo en validaciones manuales)
+    // Maneja errores de argumentos inválidos en métodos de servicio o controladores (como IllegalArgumentException)
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorDTO> handleIllegalArgument(
             IllegalArgumentException ex, HttpServletRequest request) {
@@ -77,7 +75,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-    // Cuando no se encuentra una entidad en la base de datos
+    // Maneja errores de recursos no encontrados (como cuando buscas un pedido que no existe)
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorDTO> handleEntityNotFound(
             EntityNotFoundException ex, HttpServletRequest request) {
@@ -92,7 +90,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
-    // Cuando se manda una letra en vez de un número
+    // Maneja errores de formato numérico inválido (como cuando envías un ID que no es un número)
     @ExceptionHandler(NumberFormatException.class)
     public ResponseEntity<ErrorDTO> handleNumberFormat(
             NumberFormatException ex, HttpServletRequest request) {
@@ -107,6 +105,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
+    // Maneja errores de operaciones no permitidas o canceladas (intentar modificar un pedido cerrado o cancelar desde consola)
 	@ExceptionHandler({
 			UnsupportedOperationException.class,
 			ConsoleMenuRunner.OperationCancelledException.class
@@ -135,6 +134,7 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
 	}
 
+    // Maneja errores de violación de integridad de datos (intentar insertar un email duplicado)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorDTO> handleDataIntegrityViolation(
             DataIntegrityViolationException ex, HttpServletRequest request) {
@@ -159,7 +159,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
-    // Captura excepciones genéricas del sistema (por si explota algo inesperado)
+    // Maneja cualquier otro error no capturado por los manejadores anteriores (error genérico)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDTO> handleGeneric(Exception ex, HttpServletRequest request) {
 
