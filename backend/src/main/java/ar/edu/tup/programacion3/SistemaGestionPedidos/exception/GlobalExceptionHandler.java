@@ -2,7 +2,6 @@ package ar.edu.tup.programacion3.SistemaGestionPedidos.exception;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,8 +9,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import ar.edu.tup.programacion3.SistemaGestionPedidos.ConsoleMenuRunner;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.ErrorDTO;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -105,34 +102,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-    // Maneja errores de operaciones no permitidas o canceladas (intentar modificar un pedido cerrado o cancelar desde consola)
-	@ExceptionHandler({
-			UnsupportedOperationException.class,
-			ConsoleMenuRunner.OperationCancelledException.class
-	})
-	public ResponseEntity<ErrorDTO> handleIllegalOperations(
-			Exception ex, HttpServletRequest request) {
+    // Maneja errores de operaciones no permitidas
+    @ExceptionHandler(UnsupportedOperationException.class)
+    public ResponseEntity<ErrorDTO> handleIllegalOperations(
+		    UnsupportedOperationException ex, HttpServletRequest request) {
 
-		// Si la excepción viene de tus bloqueos en OrderDetail, mandamos un HTTP 400 Bad Request
-		if (ex instanceof UnsupportedOperationException) {
-			ErrorDTO errorResponse = ErrorDTO.simpleOf(
-					HttpStatus.BAD_REQUEST.value(),
-					"Operación no soportada o prohibida",
-					ex.getMessage(),
-					request.getRequestURI()
-			);
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-		}
+	    // Centralizamos el mapeo directo a un HTTP 400 Bad Request
+	    ErrorDTO errorResponse = ErrorDTO.simpleOf(
+			    HttpStatus.BAD_REQUEST.value(),
+			    "Operación no soportada o prohibida",
+			    ex.getMessage(),
+			    request.getRequestURI()
+	    );
 
-		// Si viene del cancelado de consola, mantiene el HTTP 409 Conflict original
-		ErrorDTO errorResponse = ErrorDTO.simpleOf(
-				HttpStatus.CONFLICT.value(),
-				"Operación no permitida",
-				ex.getMessage(),
-				request.getRequestURI());
-
-		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
-	}
+	    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
 
     // Maneja errores de violación de integridad de datos (intentar insertar un email duplicado)
     @ExceptionHandler(DataIntegrityViolationException.class)

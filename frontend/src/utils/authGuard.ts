@@ -1,4 +1,4 @@
-import { UserRole } from "@/interfaces/Enums";
+import { UserRole } from "@interfaces/Enums";
 import { navigateClear } from "@utils/navigate";
 import { PATHS } from "@utils/paths";
 import { storage } from "@utils/storage";

@@ -1,11 +1,11 @@
-import type { ICategory } from "@/interfaces/Category.interface";
+import type { ICategory } from "@interfaces/Category.interface";
 import {
     showCategoriesInSidebar,
     showProducts,
     showSearchBar,
     initStickySearch,
 } from "@pages/store/home/home.controller";
-import { categoryService } from "@/services/category.service";
+import { categoryService } from "@services/category.service";
 import { renderHeader, renderAside, renderFooter } from "@utils/components";
 import { setPageTitle } from "@utils/uiUtils";
 

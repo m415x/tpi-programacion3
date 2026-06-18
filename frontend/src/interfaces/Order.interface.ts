@@ -1,5 +1,5 @@
-import type { OrderStatus, PaymentMethod } from "@/interfaces/Enums";
-import type { IOrderDetail } from "@/interfaces/OrderDetail.interface";
+import type { OrderStatus, PaymentMethod } from "@interfaces/Enums";
+import type { IOrderDetail } from "@interfaces/OrderDetail.interface";
 
 /**
  * Interfaz que define la estructura de una orden de compra

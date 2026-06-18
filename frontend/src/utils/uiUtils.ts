@@ -1,29 +1,7 @@
-import type { IProduct } from "@/interfaces/Product.interface";
-import { cartService } from "@services/cartService";
-import { productService } from "@/services/product.service";
+import type { IProduct } from "@interfaces/Product.interface";
+import { cartService } from "@services/cart.service";
 import { PATHS } from "@utils/paths";
 import { BRAND_NAME } from "@utils/constants";
-
-/**
- * Busca la imagen de un producto aleatorio en la API y la asigna al elemento
- * <img> correspondiente.
- * @param id ID del producto para localizar el elemento en el DOM.
- * @param container Opcional. Contenedor DOM donde buscar (por defecto es el document global).
- */
-export const updateProductImageUI = (
-    id: number,
-    container: Document | HTMLElement | DocumentFragment = document,
-): void => {
-    // Obtener URL de la imagen desde el servicio
-    const url: string = productService.getPersistentImage(id);
-
-    // Actualizar el src del elemento <img> con el ID específico
-    const imgElement = container.querySelector<HTMLImageElement>(`#img-product-${id}`);
-
-    if (imgElement) {
-        imgElement.src = url;
-    }
-};
 
 /**
  * Formatea un precio numérico a un string con formato de moneda argentina, y lo

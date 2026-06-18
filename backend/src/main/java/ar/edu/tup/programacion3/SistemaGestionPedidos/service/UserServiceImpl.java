@@ -110,6 +110,21 @@ public class UserServiceImpl implements UserService {
         return mapper.toDto(user);
     }
 
+	@Override
+	@Transactional
+	public boolean verifyCredentials(String email, String encryptedPasswordFromFront) {
+		// Buscamos la entidad de dominio real (la que tiene el password, no el DTO)
+		User userEntity = repository.findByEmailIgnoreCase(email)
+				.orElse(null);
+
+		if (userEntity == null) {
+			return false;
+		}
+
+		// Comparamos los dos hashes SHA-256. Al ser strings idénticos, calza perfecto.
+		return userEntity.getPassword().equals(encryptedPasswordFromFront);
+	}
+
     @Override
     @Transactional(readOnly = true)
     public UserResponseDTO getUserWithMoreOrders() {

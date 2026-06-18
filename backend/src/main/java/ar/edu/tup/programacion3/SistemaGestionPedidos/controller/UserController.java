@@ -6,6 +6,8 @@ import ar.edu.tup.programacion3.SistemaGestionPedidos.service.UserService;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.validator.groups.OnCreate;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.validator.groups.OnUpdate;
 import java.util.List;
+import java.util.Map;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
+@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -24,6 +27,27 @@ public class UserController {
 
         return service.save(dto);
     }
+
+	@PostMapping("/login")
+	public ResponseEntity<UserResponseDTO> login(@RequestBody Map<String, String> credentials) {
+		String email = credentials.get("email");
+		String password = credentials.get("password");
+
+		if (email == null || password == null) {
+			return ResponseEntity.badRequest().build();
+		}
+
+		// Buscamos al usuario por email en el servicio
+		UserResponseDTO user = service.findUserByEmail(email);
+
+		// Validamos existencia y comparamos el hash SHA-256 enviado por el front
+		if (user != null && service.verifyCredentials(email, password)) {
+			return ResponseEntity.ok(user);
+		}
+
+		// Si las credenciales fallan, devolvemos HTTP 401 Unauthorized
+		return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+	}
 
     @GetMapping("/{id}")
     public UserResponseDTO findUser(@PathVariable Long id) {

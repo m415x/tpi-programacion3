@@ -1,4 +1,4 @@
-import type { IProduct } from "@/interfaces/Product.interface";
+import type { IProduct } from "@interfaces/Product.interface";
 
 /**
  * Interfaz que define la estructura de una orden de compra

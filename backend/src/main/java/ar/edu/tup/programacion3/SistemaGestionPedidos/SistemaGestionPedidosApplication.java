@@ -2,17 +2,14 @@ package ar.edu.tup.programacion3.SistemaGestionPedidos;
 
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.CategoryRequestDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.CategoryResponseDTO;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.OrderRequestDTO;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.OrderResponseDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.ProductRequestDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.ProductResponseDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.UserRequestDTO;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.dto.UserResponseDTO;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.OrderStatus;
-import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.PaymentMethod;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.model.enums.UserRole;
+import ar.edu.tup.programacion3.SistemaGestionPedidos.repository.UserRepository;
 import ar.edu.tup.programacion3.SistemaGestionPedidos.service.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -30,51 +27,53 @@ public class SistemaGestionPedidosApplication {
     @Bean
     @Order(1)
     public CommandLineRunner instantiateFromDto(
-            UserService userService,
             CategoryService categoryService,
             ProductService productService,
-            OrderService orderService) {
+            UserService userService,
+            UserRepository userRepository) {
 
         return args -> {
 
-			boolean bandera = false;
-
-	        // =======================================================================================================
-	        // CONTROL DE IDEMPOTENCIA Y PROTECCIÓN DE DATOS INICIALES
-	        // =======================================================================================================
-	        // Se valida si la base de datos ya contiene registros activos antes de ejecutar la siembra (seeding).
-	        // Esto garantiza la idempotencia del arranque: si la DB es persistente (file-based), evita excepciones
-	        // por violación de restricciones únicas (como emails duplicados) en arranques sucesivos, manteniendo
-	        // un estado consistente tanto para el testing de la consola como para el desarrollo del TPI.
-	        // =======================================================================================================
-            if (categoryService.findAll().isEmpty() && bandera) {
+            // =======================================================================================================
+            // CONTROL DE IDEMPOTENCIA Y PROTECCIÓN DE DATOS INICIALES
+            // =======================================================================================================
+            // Se valida si la base de datos ya contiene registros activos antes de ejecutar la
+            // siembra (seeding).
+            // Esto garantiza la idempotencia del arranque: si la DB es persistente (file-based),
+            // evita excepciones
+            // por violación de restricciones únicas (como emails duplicados) en arranques
+            // sucesivos, manteniendo
+            // un estado consistente tanto para el testing de la consola como para el desarrollo del
+            // TPI.
+            // =======================================================================================================
+            if (categoryService.findAll().isEmpty()) {
 
                 System.out.println(
                         "--- DB VACÍA: INICIANDO INSTANCIACIÓN DE DATOS REQUERIDOS SEMILLA ---");
 
                 // ==========================================
-                // a) Instanciar 2 Usuarios
+                // a) Instanciar Usuario Administrador
                 // ==========================================
-                UserResponseDTO u1 =
+                UserResponseDTO userAdminDto =
                         userService.save(
                                 new UserRequestDTO(
-                                        "Juan José",
-                                        "Perez",
-                                        "juan@gmail.com",
+                                        "Cristian",
+                                        "Lahoz",
+                                        "m415xs@gmail.com",
                                         "2644111222",
-                                        "Passwd123!"));
+                                        "391f671183dc6a85c334a22410450a55bf55808ea16880539705f97208312476"));
 
-                UserResponseDTO u2 =
-                        userService.save(
-                                new UserRequestDTO(
-                                        "Maria",
-                                        "Gomez",
-                                        "maria@gmail.com",
-                                        "2644333444",
-                                        "Secure456*"));
+                // Cambiamos el rol a ADMIN usando el repositorio directamente en la semilla
+                userRepository
+                        .findById(userAdminDto.id())
+                        .ifPresent(
+                                user -> {
+                                    user.setUserRole(UserRole.ADMIN);
+                                    userRepository.save(user);
+                                });
 
                 // ==========================================
-                // c) Instanciar 3 Categorías
+                // b) Instanciar 3 Categorías
                 // ==========================================
                 CategoryResponseDTO catComida =
                         categoryService.save(
@@ -87,7 +86,7 @@ public class SistemaGestionPedidosApplication {
                         categoryService.save(new CategoryRequestDTO("Postres", "Helados y tortas"));
 
                 // ==========================================
-                // d) Instanciar 10 Productos y asignarles categorías
+                // c) Instanciar 10 Productos y asignarles categorías
                 // ==========================================
                 // Comidas
                 ProductResponseDTO p1 =
@@ -97,7 +96,7 @@ public class SistemaGestionPedidosApplication {
                                         new BigDecimal("1500.00"),
                                         "Mediana",
                                         20,
-                                        "img_h1.png",
+                                        "hamburguesa1.jpg",
                                         true,
                                         catComida.id()));
 
@@ -108,7 +107,7 @@ public class SistemaGestionPedidosApplication {
                                         new BigDecimal("2200.00"),
                                         "Con queso",
                                         15,
-                                        "img_h2.png",
+                                        "hamburguesa2.jpg",
                                         true,
                                         catComida.id()));
 
@@ -119,7 +118,7 @@ public class SistemaGestionPedidosApplication {
                                         new BigDecimal("3000.00"),
                                         "Para compartir",
                                         10,
-                                        "img_l1.png",
+                                        "lomo.jpg",
                                         true,
                                         catComida.id()));
 
@@ -130,7 +129,7 @@ public class SistemaGestionPedidosApplication {
                                         new BigDecimal("800.00"),
                                         "Porción grande",
                                         50,
-                                        "img_papas.png",
+                                        "papa.jpg",
                                         true,
                                         catComida.id()));
 
@@ -142,7 +141,7 @@ public class SistemaGestionPedidosApplication {
                                         new BigDecimal("600.00"),
                                         "Común",
                                         100,
-                                        "coca.png",
+                                        "coca.jpg",
                                         true,
                                         catBebidas.id()));
 
@@ -153,7 +152,7 @@ public class SistemaGestionPedidosApplication {
                                         new BigDecimal("500.00"),
                                         "Sin gas",
                                         80,
-                                        "agua.png",
+                                        "agua.jpg",
                                         true,
                                         catBebidas.id()));
 
@@ -164,7 +163,7 @@ public class SistemaGestionPedidosApplication {
                                         new BigDecimal("1200.00"),
                                         "Lata",
                                         40,
-                                        "quilmes.png",
+                                        "cerveza.jpg",
                                         true,
                                         catBebidas.id()));
 
@@ -176,7 +175,7 @@ public class SistemaGestionPedidosApplication {
                                         new BigDecimal("700.00"),
                                         "Casero",
                                         12,
-                                        "flan.png",
+                                        "flan.jpg",
                                         true,
                                         catPostres.id()));
 
@@ -187,7 +186,7 @@ public class SistemaGestionPedidosApplication {
                                         new BigDecimal("1100.00"),
                                         "Dos gustos",
                                         25,
-                                        "helado.png",
+                                        "helado.jpg",
                                         true,
                                         catPostres.id()));
 
@@ -198,47 +197,9 @@ public class SistemaGestionPedidosApplication {
                                         new BigDecimal("650.00"),
                                         "Estación",
                                         8,
-                                        "frutas.png",
+                                        "frutas.jpg",
                                         true,
                                         catPostres.id()));
-
-                // ==========================================
-                // b) Instanciar 3 Pedidos (con composición de al menos 2 detalles por cada uno)
-                // ==========================================
-                OrderResponseDTO ped1 =
-                        orderService.save(
-                                new OrderRequestDTO(
-                                        LocalDate.now(),
-                                        OrderStatus.PENDING,
-                                        BigDecimal.ZERO,
-                                        PaymentMethod.CASH,
-                                        u1.id()));
-                orderService.addProductToOrder(ped1.id(), 2, p2.id());
-                orderService.addProductToOrder(ped1.id(), 2, p5.id());
-
-                OrderResponseDTO ped2 =
-                        orderService.save(
-                                new OrderRequestDTO(
-                                        LocalDate.now(),
-                                        OrderStatus.PENDING,
-                                        BigDecimal.ZERO,
-                                        PaymentMethod.CARD,
-                                        u1.id()));
-                orderService.addProductToOrder(ped2.id(), 1, p3.id());
-                orderService.addProductToOrder(ped2.id(), 1, p4.id());
-                orderService.addProductToOrder(ped2.id(), 2, p7.id());
-
-                OrderResponseDTO ped3 =
-                        orderService.save(
-                                new OrderRequestDTO(
-                                        LocalDate.now(),
-                                        OrderStatus.COMPLETED,
-                                        BigDecimal.ZERO,
-                                        PaymentMethod.TRANSFER,
-                                        u2.id()));
-                orderService.addProductToOrder(ped3.id(), 1, p1.id());
-                orderService.addProductToOrder(ped3.id(), 1, p6.id());
-                orderService.addProductToOrder(ped3.id(), 1, p8.id());
 
                 System.out.println("--- PERSISTENCIA SEMILLA COMPLETADA CON ÉXITO ---");
             } else {

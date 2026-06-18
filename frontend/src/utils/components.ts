@@ -1,5 +1,5 @@
-import { UserRole } from "@/interfaces/Enums";
-import { cartService } from "@services/cartService";
+import { UserRole } from "@interfaces/Enums";
+import { cartService } from "@services/cart.service";
 import { logout } from "@utils/authGuard";
 import { PATHS } from "@utils/paths";
 import { storage } from "@utils/storage";
@@ -32,8 +32,14 @@ export const renderAuthCard = (containerSelector: string, isRegister: boolean): 
             ${
                 isRegister
                     ? `
-            <label for="name">Nombre</label>
-            <input type="text" name="name" id="name" autocomplete="off" placeholder="Ingrese su nombre completo" required>
+            <label for="firstName">Nombre</label>
+            <input type="text" name="firstName" id="firstName" autocomplete="off" placeholder="Ingrese su nombre" required>
+
+            <label for="lastName">Apellido</label>
+            <input type="text" name="lastName" id="lastName" autocomplete="off" placeholder="Ingrese su apellido" required>
+
+            <label for="phone">Teléfono</label>
+            <input type="tel" name="phone" id="phone" autocomplete="off" placeholder="Ingrese su teléfono (opcional)">
             `
                     : ""
             }
@@ -65,7 +71,7 @@ export const renderHeader = (containerSelector: string): void => {
 
     // Obtenemos el rol y nombre del usuario para personalizar el menú
     const role: UserRole | null = storage.getRole();
-    const name: string | undefined = storage.getUser()?.name;
+    const name: string | undefined = storage.getUser()?.firstName;
 
     // Obtenemos la ruta actual para determinar qué enlace está activo
     const currentPath: string = window.location.pathname;

@@ -1,4 +1,4 @@
-import { authService } from "@services/authService";
+import { userService } from "@services/user.service";
 import { navigate } from "@utils/navigate";
 import { PATHS } from "@utils/paths";
 
@@ -13,32 +13,34 @@ export const initLoginLogic = (): void => {
     loginForm.addEventListener("submit", async (e: SubmitEvent) => {
         e.preventDefault();
 
-        const email: string = (
-            loginForm.querySelector("#email") as HTMLInputElement
-        ).value;
-        const pass: string = (
-            loginForm.querySelector("#pass") as HTMLInputElement
-        ).value;
+        const email: string = (loginForm.querySelector("#email") as HTMLInputElement).value;
+        const pass: string = (loginForm.querySelector("#pass") as HTMLInputElement).value;
 
         // Validaciones de formato de email
-        if (!authService.validateEmail(email)) {
+        if (!userService.validateEmail(email)) {
             alert("Por favor, ingresa un email válido.");
             return;
         }
 
-        // Encriptación
-        const encryptedPass: string = await authService.encryptPassword(pass);
+        try {
+            // Encriptación SHA-256 local
+            const encryptedPass: string = await userService.encryptPassword(pass);
 
-        // Intento de Login
-        if (authService.login(email, encryptedPass)) {
-            navigate(PATHS.STORE.HOME);
-        } else {
-            alert("Credenciales incorrectas.");
+            // Intento de Login asíncrono contra Spring Boot
+            const loginSuccess: boolean = await userService.login(email, encryptedPass);
+
+            if (loginSuccess) {
+                navigate(PATHS.STORE.HOME);
+            } else {
+                alert("Credenciales incorrectas o usuario inexistente.");
+            }
+        } catch (error) {
+            console.error("Error en el flujo de autenticación:", error);
+            alert("Error de comunicación con el servidor. Inténtelo más tarde.");
         }
     });
 
-    const authLink =
-        document.querySelector<HTMLLinkElement>("#auth-switch-link");
+    const authLink = document.querySelector<HTMLLinkElement>("#auth-switch-link");
     if (!authLink) return;
 
     // Listener para cambiar entre login y registro

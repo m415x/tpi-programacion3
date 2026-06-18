@@ -1,7 +1,7 @@
-import type { ICategory } from "@/interfaces/Category.interface";
-import type { IProduct } from "@/interfaces/Product.interface";
-import { productService } from "@/services/product.service";
-import { categoryService } from "@/services/category.service";
+import type { ICategory } from "@interfaces/Category.interface";
+import type { IProduct } from "@interfaces/Product.interface";
+import { productService } from "@services/product.service";
+import { categoryService } from "@services/category.service";
 import { updateCartBadge } from "@utils/components";
 import { storage } from "@utils/storage";
 import {
@@ -9,7 +9,6 @@ import {
     getItemAvailability,
     showCartNotice,
     updateBaseAvailabilityUI,
-    updateProductImageUI,
     wrapWithDetailLink,
 } from "@utils/uiUtils";
 
@@ -77,12 +76,12 @@ export const showProducts = async (): Promise<void> => {
                 : "Sin categoría";
 
             // Obtenemos el estado de disponibilidad para mostrar en la card
-            const { available, isAvailable, qtyInCart } = getItemAvailability(prod);
+            const { isAvailable } = getItemAvailability(prod);
 
             // Creamos el HTML del producto, incluyendo la imagen con carga asíncrona y los enlaces a detalle
             const linkedImg: string = wrapWithDetailLink(
                 prod.id,
-                `<img class="product__img" src="" id="img-product-${prod.id}" alt="${prod.name}">`,
+                `<img class="product__img" src="${prod.imageUrl}" id="img-product-${prod.id}" alt="${prod.name}">`,
             );
 
             // El nombre del producto también se envuelve en un enlace a detalle
@@ -110,14 +109,13 @@ export const showProducts = async (): Promise<void> => {
             // Sincronizamos el estado inicial de la card
             updateProductCardUI(article, isAvailable);
 
-            // Iniciamos la carga de la imagen
-            updateProductImageUI(prod.id, article);
-
             const btnAdd = article.querySelector<HTMLButtonElement>(".btn--add-product");
             if (!btnAdd) return;
 
-            btnAdd.addEventListener("click", (): void => {
-                if (storage.updateCartItem(prod.id)) {
+            btnAdd.addEventListener("click", async (): Promise<void> => {
+                const wasUpdated: boolean = await storage.updateCartItem(prod.id);
+
+                if (wasUpdated) {
                     const status = getItemAvailability(prod);
 
                     updateProductCardUI(article, status.isAvailable);

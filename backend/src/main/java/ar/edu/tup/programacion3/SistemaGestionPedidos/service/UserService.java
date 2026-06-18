@@ -21,7 +21,9 @@ public interface UserService {
 
     public UserResponseDTO findUserByEmail(String email);
 
-    public UserResponseDTO getUserWithMoreOrders();
+	public boolean verifyCredentials(String email, String encryptedPasswordFromFront);
+
+	public UserResponseDTO getUserWithMoreOrders();
 
     public UserResponseDTO findHistoricalUser(Long id);
 

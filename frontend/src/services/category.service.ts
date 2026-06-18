@@ -1,4 +1,4 @@
-import type { ICategory } from "@/interfaces/Category.interface";
+import type { ICategory } from "@interfaces/Category.interface";
 import api from "@services/api";
 
 /**
@@ -21,6 +21,8 @@ interface CategoryRequestDTO {
 /**
  * Función de mapeo que convierte un CategoryResponseDTO del backend a la interfaz ICategory del frontend,
  * aplicando las transformaciones necesarias para mantener la compatibilidad con el catálogo.
+ * @param dto Objeto recibido del backend con la estructura CategoryResponseDTO
+ * @returns Objeto mapeado a la interfaz ICategory del frontend
  */
 const mapToDomain = (dto: CategoryResponseDTO): ICategory => ({
     id: dto.id,
@@ -75,5 +77,50 @@ export const categoryService = {
         const response = await api.post<CategoryResponseDTO>("/categories", dto);
 
         return mapToDomain(response.data);
+    },
+
+    /**
+     * Reemplaza por completo una categoría existente en el backend (PUT).
+     * Requiere que se envíen todos los campos obligatorios del contrato del servidor.
+     * @param category Objeto categoría completo del dominio, incluyendo el ID de la categoría a modificar.
+     * @returns Promesa con la categoría actualizada, mapeada a la interfaz ICategory del frontend.
+     */
+    async update(category: ICategory): Promise<ICategory> {
+        const dto: CategoryRequestDTO = {
+            name: category.name,
+            description: category.description,
+        };
+
+        const response = await api.put<CategoryResponseDTO>(`/categories/${category.id}`, dto);
+
+        return mapToDomain(response.data);
+    },
+
+    /**
+     * Aplica una actualización parcial a una categoría en el backend (PATCH).
+     * Permite enviar únicamente las propiedades modificadas a la API.
+     * @param id ID de la categoría a modificar.
+     * @param changes Objeto parcial con las propiedades del dominio que se desean alterar.
+     * @returns Promesa con la categoría actualizada, mapeada a la interfaz ICategory del frontend.
+     */
+    async partialUpdate(id: number, changes: Partial<ICategory>): Promise<ICategory> {
+        // Inicializamos un objeto de payload vacío
+        const dto: Partial<CategoryRequestDTO> = {};
+
+        if (changes.name !== undefined) dto.name = changes.name;
+        if (changes.description !== undefined) dto.description = changes.description;
+
+        const response = await api.patch<CategoryResponseDTO>(`/categories/${id}`, dto);
+
+        return mapToDomain(response.data);
+    },
+
+    /**
+     * Elimina una categoría del backend dado su ID.
+     * @param id ID de la categoría a eliminar.
+     * @returns Promesa que se resuelve cuando la eliminación se ha completado exitosamente.
+     */
+    async delete(id: number): Promise<void> {
+        await api.delete(`/categories/${id}`);
     },
 };

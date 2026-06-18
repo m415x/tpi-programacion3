@@ -1,5 +1,6 @@
-import type { IProduct } from "@/interfaces/Product.interface";
-import { cartService } from "@services/cartService";
+import type { IProduct } from "@interfaces/Product.interface";
+import { cartService } from "@services/cart.service";
+import { productService } from "@services/product.service";
 import { updateCartBadge } from "@utils/components";
 import { navigate } from "@utils/navigate";
 import { PATHS } from "@utils/paths";
@@ -10,33 +11,35 @@ import {
     setPageTitle,
     showCartNotice,
     updateBaseAvailabilityUI,
-    updateProductImageUI,
 } from "@utils/uiUtils";
 
 /**
- * Muestra el detalle de un producto específico, incluyendo su imagen, descripción,
- * precio y opciones para agregar al carrito.
- * @param product El producto del cual se desea mostrar el detalle.
+ * Obtiene un producto específico desde la base de datos de Spring Boot por su ID,
+ * e inyecta toda su información y controles reactivos en el DOM.
+ * @param productId ID del producto a consultar en el servidor
  */
-export const showProductDetail = (product: IProduct): void => {
-    // Actualizamos el título de la página
-    setPageTitle(product.name);
-
+export const showProductDetail = async (productId: number): Promise<void> => {
     const productDetailContainer = document.querySelector<HTMLElement>("#product-detail-container");
     if (!productDetailContainer) return;
+
+    // 1. Buscamos el producto fresco en tiempo real al backend
+    const product: IProduct = await productService.getById(productId);
+
+    // Actualizamos el título de la página
+    setPageTitle(product.name);
 
     // Formatear el precio
     const unitPrice: string = formattedPriceHTML(product.price);
 
     // Calcular disponibilidad
-    const { available, isAvailable, qtyInCart } = getItemAvailability(product);
+    const { available, isAvailable } = getItemAvailability(product);
 
     // Estado inicial: Iniciamos en 1 si hay stock
     let selectedQty: number = isAvailable ? 1 : 0;
 
     productDetailContainer.innerHTML = `
         <div class="card product-detail__img-container">
-            <img class="product-detail__img" src="" id="img-product-${product.id}" alt="${product.name}">
+            <img class="product-detail__img" src="${product.imageUrl}" id="img-product-${product.id}" alt="${product.name}">
         </div>
         <div class="product-detail__details">
             <h4 class="product-detail__title">${product.name}</h4>
@@ -58,9 +61,6 @@ export const showProductDetail = (product: IProduct): void => {
 
     // Renderizamos el estado de stock y disponibilidad
     renderStockStatus(productDetailContainer, available, isAvailable);
-
-    // Iniciamos la carga asíncrona de la imagen
-    updateProductImageUI(product.id);
 
     const inputQty = productDetailContainer.querySelector<HTMLInputElement>(".product-qty");
     const btnAdd = productDetailContainer.querySelector<HTMLButtonElement>(".btn--add-product");
@@ -98,20 +98,19 @@ export const showProductDetail = (product: IProduct): void => {
     });
 
     // Evento de agregar al carrito (Intenta actualizar el Storage)
-    btnAdd.addEventListener("click", (): void => {
+    btnAdd.addEventListener("click", async (): Promise<void> => {
         // Calculamos la nueva cantidad total que se desea tener en el carrito para este producto
         const currentQtyInCart: number = cartService.getProductQuantity(product.id);
         const totalNewQty: number = currentQtyInCart + selectedQty;
 
-        if (storage.updateCartItem(product.id, totalNewQty)) {
+        const wasUpdated: boolean = await storage.updateCartItem(product.id, totalNewQty);
+
+        if (wasUpdated) {
             // Recalculamos disponibilidad actualizada
             const updated = getItemAvailability(product);
 
             // Actualizamos la UI de stock de forma atómica
             renderStockStatus(productDetailContainer, updated.available, updated.isAvailable);
-
-            selectedQty = updated.isAvailable ? 1 : 0;
-            updateLocalUI();
 
             const detailsContainer = productDetailContainer.querySelector<HTMLElement>(".product-detail__details");
 
@@ -119,6 +118,9 @@ export const showProductDetail = (product: IProduct): void => {
             if (detailsContainer) {
                 showCartNotice(detailsContainer, selectedQty, product.name, "append");
             }
+
+            selectedQty = updated.isAvailable ? 1 : 0;
+            updateLocalUI();
 
             // Actualizamos el badge del carrito en el navbar
             updateCartBadge();

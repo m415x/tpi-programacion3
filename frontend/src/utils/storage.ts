@@ -1,8 +1,8 @@
-import type { ICartItem } from "@/interfaces/ICartItem";
-import type { IProduct } from "@/interfaces/Product.interface";
-import type { IUser } from "@/interfaces/User.interface";
-import type { UserRole } from "@/interfaces/Enums";
-import { PRODUCTS } from "@/data/data";
+import type { ICartItem } from "@interfaces/ICartItem";
+import type { IProduct } from "@interfaces/Product.interface";
+import type { IUser } from "@interfaces/User.interface";
+import type { UserRole } from "@interfaces/Enums";
+import { productService } from "@services/product.service";
 
 /**
  * Este objeto contiene un store centralizado para gestionar el estado de la
@@ -11,28 +11,6 @@ import { PRODUCTS } from "@/data/data";
  * carrito, utilizando localStorage como mecanismo de persistencia.
  */
 export const storage = {
-    // --- Funciones para gestionar usuarios ---
-
-    /**
-     * Obtiene la lista completa de usuarios almacenados en localStorage. Si no
-     * hay usuarios.
-     * @returns Un array de objetos IUser o un array vacío si no hay usuarios almacenados.
-     */
-    getUsers(): IUser[] {
-        const users: string | null = localStorage.getItem("users");
-        return users ? JSON.parse(users) : [];
-    },
-
-    /**
-     * Guarda una lista de usuarios en localStorage. Reemplaza cualquier lista
-     * anterior almacenada bajo la clave "users".
-     * @param users Un array de objetos IUser que se desea almacenar.
-     * Este array se convertirá a una cadena JSON antes de guardarse.
-     */
-    saveUsers(users: IUser[]): void {
-        localStorage.setItem("users", JSON.stringify(users));
-    },
-
     // --- Funciones para gestionar la sesión actual ---
 
     /**
@@ -41,6 +19,7 @@ export const storage = {
      */
     getUser(): IUser | null {
         const data: string | null = localStorage.getItem("userData");
+
         return data ? JSON.parse(data) : null;
     },
 
@@ -79,7 +58,8 @@ export const storage = {
      */
     getRole(): UserRole | null {
         const user: IUser | null = this.getUser();
-        return user ? user.role : null;
+
+        return user ? user.userRole : null;
     },
 
     // --- Funciones para gestionar carrito ---
@@ -91,6 +71,7 @@ export const storage = {
      */
     getCartItems(): ICartItem[] {
         const cartItems: string | null = localStorage.getItem("cartItems");
+
         return cartItems ? JSON.parse(cartItems) : [];
     },
 
@@ -104,11 +85,11 @@ export const storage = {
      * @returns true si el producto se agregó o actualizó exitosamente en el carrito,
      * false si no se pudo agregar o actualizar debido a restricciones de stock o si el producto no existe.
      */
-    updateCartItem(id: number, fixedQty?: number): boolean {
+    async updateCartItem(id: number, fixedQty?: number): Promise<boolean> {
         const cartItems: ICartItem[] = this.getCartItems();
 
         // Buscar producto y validar existencia
-        const product: IProduct | undefined = PRODUCTS.find((p: IProduct): boolean => p.id === id);
+        const product: IProduct = await productService.getById(id);
         if (!product) return false;
 
         const existingItem: ICartItem | undefined = cartItems.find((i: ICartItem): boolean => i.id === id);
@@ -129,6 +110,7 @@ export const storage = {
         }
 
         localStorage.setItem("cartItems", JSON.stringify(cartItems));
+
         return true;
     },
 

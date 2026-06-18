@@ -18,15 +18,16 @@
     <main class="main main--store">
       <section class="card search-bar">
         <form action="" method="post">
-          <input type="text" name="search" id="input-search" autocomplete="off" placeholder="Buscar products...">
-          <select name="order" id="select-order">
+          <input type="text" name="search" id="input-search" aria-label="Buscar productos" autocomplete="off"
+            placeholder="Buscar productos...">
+          <select name="order" id="select-order" aria-label="Ordenar productos">
             <option value="default" selected disabled>Ordenar por</option>
             <option value="name-asc">Nombre: A-Z</option>
             <option value="name-desc">Nombre: Z-A</option>
             <option value="price-asc">Precio: Menor a Mayor</option>
             <option value="price-desc">Precio: Mayor a Menor</option>
           </select>
-          <select name="categories" id="select-categories">
+          <select name="categories" id="select-categories" aria-label="Filtrar por categoría">
             <option value="all">Todas</option>
             <!-- Inyección dinámica de categorías -->
           </select>

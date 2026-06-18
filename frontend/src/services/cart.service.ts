@@ -1,5 +1,5 @@
-import type { ICartItem } from "@/interfaces/ICartItem";
-import type { IProduct } from "@/interfaces/Product.interface";
+import type { ICartItem } from "@interfaces/ICartItem";
+import type { IProduct } from "@interfaces/Product.interface";
 import { storage } from "@utils/storage";
 
 /**

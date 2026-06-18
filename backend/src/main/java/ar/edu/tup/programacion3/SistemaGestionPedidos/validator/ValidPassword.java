@@ -11,16 +11,15 @@ import java.lang.annotation.*;
 
 @NotBlank(message = "La contraseña es obligatoria", groups = OnCreate.class)
 @Size(
-        min = 6,
-        max = 64,
-        message = "La contraseña debe tener entre 6 y 64 caracteres",
-        groups = {OnCreate.class, OnUpdate.class})
+		min = 60,
+		max = 64,
+		message = "La contraseña encriptada debe tener entre 60 y 64 caracteres",
+		groups = {OnCreate.class, OnUpdate.class})
 @Pattern(
-        regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,64}$",
-        message =
-                "La contraseña debe tener entre 6 y 64 caracteres, al menos una letra mayúscula, una minúscula, un "
-                        + "número y un carácter especial",
-        groups = {OnCreate.class, OnUpdate.class})
+		// Expresión regular para Hexadecimal puro de 64 caracteres (SHA-256)
+		regexp = "^[a-f0-9]{64}$",
+		message = "La contraseña provista no posee un formato de encriptación SHA-256 válido",
+		groups = {OnCreate.class, OnUpdate.class})
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

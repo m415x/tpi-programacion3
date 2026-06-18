@@ -1,14 +1,15 @@
-import type { IProduct } from "@/interfaces/Product.interface";
+import type { IProduct } from "@interfaces/Product.interface";
 import { showProductDetail } from "@pages/store/productDetail/productDetail.controller";
-import { productService } from "@/services/product.service";
+import { productService } from "@services/product.service";
 import { renderHeader, renderFooter } from "@utils/components";
 import { navigate } from "@utils/navigate";
 import { PATHS } from "@utils/paths";
+import axios from "axios";
 
 /**
  * Función principal para inicializar la página de detalle del producto.
  */
-const initProductDetail = (): void => {
+const initProductDetail = async (): Promise<void> => {
     // Renderizar componentes base
     renderHeader("#header");
     renderFooter("#footer");
@@ -19,16 +20,42 @@ const initProductDetail = (): void => {
     // Validar y convertir el ID a número
     const productId: number = parseInt(urlParams.get("id") || "0", 10);
 
-    // Buscar el producto por su id
-    const product: IProduct | undefined = productService.getProductById(productId);
-
-    // Si el producto existe, mostrar su detalle
-    if (product) {
-        showProductDetail(product);
-    } else {
-        // Si el ID no existe o es inválido, redirigimos a la tienda
-        alert("Producto no encontrado.");
+    // Si el ID es inválido de entrada, volvemos a la tienda
+    if (productId <= 0) {
         navigate(PATHS.STORE.HOME);
+
+        return;
+    }
+
+    try {
+        // Disparamos la renderización y consulta asíncrona al backend
+        await showProductDetail(productId);
+    } catch (error) {
+        // Evaluamos si es un error de respuesta de Axios controlado por el backend
+        if (axios.isAxiosError(error) && error.response) {
+            const status: number = error.response.status;
+
+            // Si el backend retorna 404 (o el 500 de entidad no encontrada)
+            if (status === 404 || status === 500) {
+                alert("El producto seleccionado no existe en nuestro catálogo.");
+                navigate(PATHS.STORE.HOME);
+
+                return;
+            }
+        }
+
+        // Si no fue un error controlado de entidad, asumimos caída de red del servidor
+        console.error("Error catastrófico de infraestructura:", error);
+
+        const productContainer = document.querySelector<HTMLElement>("#product-detail-container");
+        if (productContainer) {
+            productContainer.innerHTML = `
+                <p class="empty-result">
+                    No se pudo conectar con el servicio de gestión de pedidos.
+                    Por favor, verifique que el servidor backend esté en ejecución.
+                </p>
+            `;
+        }
     }
 };
 
