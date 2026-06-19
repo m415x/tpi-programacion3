@@ -8,7 +8,7 @@ import { storage } from "@utils/storage";
  * devuelve, manteniendo una capa de transformación limpia hacia la interfaz IUser del Frontend.
  */
 interface UserResponseDTO {
-    id: number;
+    id: string;
     createdAt: string;
     isDeleted: boolean;
     firstName: string;
@@ -152,7 +152,7 @@ export const userService = {
      * @param id ID del usuario a consultar
      * @return Promesa que resuelve con el usuario encontrado mapeado a la interfaz IUser del frontend, o null si no se encuentra.
      */
-    async getById(id: number): Promise<IUser> {
+    async getById(id: string): Promise<IUser> {
         const response: { data: UserResponseDTO } = await api.get<UserResponseDTO>(`/users/${id}`);
         const domainUser: IUser = mapToDomain(response.data);
 

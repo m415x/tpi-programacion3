@@ -6,7 +6,7 @@ import api from "@services/api";
  * devuelve, manteniendo una capa de transformación limpia hacia la interfaz IProduct del Frontend.
  */
 interface ProductResponseDTO {
-    id: number;
+    id: string;
     deleted: boolean;
     createdAt: string;
     name: string;
@@ -15,7 +15,7 @@ interface ProductResponseDTO {
     stock: number;
     image: string;
     available: boolean;
-    categoryId: number | null;
+    categoryId: string | null;
 }
 
 interface ProductRequestDTO {
@@ -25,7 +25,7 @@ interface ProductRequestDTO {
     stock: number;
     image: string;
     available: boolean;
-    categoryId: number;
+    categoryId: string;
 }
 
 /**
@@ -99,7 +99,7 @@ export const productService = {
      * Recupera un único producto de la base de datos dado su ID.
      * @param id ID del producto
      */
-    async getById(id: number): Promise<IProduct> {
+    async getById(id: string): Promise<IProduct> {
         const response = await api.get<ProductResponseDTO>(`/products/${id}`);
 
         return mapToDomain(response.data);
@@ -121,7 +121,7 @@ export const productService = {
             stock: product.stock,
             image: product.imageFileName,
             available: product.isAvailable,
-            categoryId: product.categoryId || 0,
+            categoryId: product.categoryId || "",
         };
 
         const response = await api.post<ProductResponseDTO>("/products", dto);
@@ -144,7 +144,7 @@ export const productService = {
             stock: product.stock,
             image: product.imageFileName,
             available: product.isAvailable || product.stock > 0, // Si el producto tiene stock, lo consideramos disponible
-            categoryId: product.categoryId || 0,
+            categoryId: product.categoryId || "",
         };
 
         const response = await api.put<ProductResponseDTO>(`/products/${product.id}`, dto);
@@ -159,7 +159,7 @@ export const productService = {
      * @param changes Objeto parcial con las propiedades del dominio que se desean alterar.
      * @returns Promesa con el producto modificado mapeado al dominio del Front.
      */
-    async partialUpdate(id: number, changes: Partial<IProduct & { imageFileName: string }>): Promise<IProduct> {
+    async partialUpdate(id: string, changes: Partial<IProduct & { imageFileName: string }>): Promise<IProduct> {
         // Inicializamos un objeto de payload vacío
         const dto: Partial<ProductRequestDTO> = {};
 
@@ -170,7 +170,7 @@ export const productService = {
         if (changes.stock !== undefined) dto.stock = changes.stock;
         if (changes.imageFileName !== undefined) dto.image = changes.imageFileName;
         if (changes.isAvailable !== undefined) dto.available = changes.isAvailable;
-        if (changes.categoryId !== undefined) dto.categoryId = changes.categoryId || 0;
+        if (changes.categoryId !== undefined) dto.categoryId = changes.categoryId || "";
 
         const response = await api.patch<ProductResponseDTO>(`/products/${id}`, dto);
 
@@ -183,7 +183,7 @@ export const productService = {
      * @param id ID del producto a eliminar.
      * @returns Promesa que se resuelve cuando la eliminación se ha completado exitosamente.
      */
-    async delete(id: number): Promise<void> {
+    async delete(id: string): Promise<void> {
         await api.delete(`/products/${id}`);
     },
 
@@ -193,7 +193,7 @@ export const productService = {
      * @param categoryId ID de la categoría seleccionada
      * @returns Lista de productos que pertenecen a la categoría especificada.
      */
-    filterByCategory(products: IProduct[], categoryId: number | string): IProduct[] {
+    filterByCategory(products: IProduct[], categoryId: string | string): IProduct[] {
         const categoryIdStr = categoryId.toString();
 
         return products.filter((prod: IProduct): boolean => prod.categoryId?.toString() === categoryIdStr);

@@ -18,10 +18,10 @@ const initProductDetail = async (): Promise<void> => {
     const urlParams: URLSearchParams = new URLSearchParams(window.location.search);
 
     // Validar y convertir el ID a número
-    const productId: number = parseInt(urlParams.get("id") || "0", 10);
+    const productId: string = urlParams.get("id") || "";
 
     // Si el ID es inválido de entrada, volvemos a la tienda
-    if (productId <= 0) {
+    if (!productId) {
         navigate(PATHS.STORE.HOME);
 
         return;

@@ -85,7 +85,7 @@ export const storage = {
      * @returns true si el producto se agregó o actualizó exitosamente en el carrito,
      * false si no se pudo agregar o actualizar debido a restricciones de stock o si el producto no existe.
      */
-    async updateCartItem(id: number, fixedQty?: number): Promise<boolean> {
+    async updateCartItem(id: string, fixedQty?: number): Promise<boolean> {
         const cartItems: ICartItem[] = this.getCartItems();
 
         // Buscar producto y validar existencia
@@ -119,7 +119,7 @@ export const storage = {
      * cantidad actual es mayor a 1.
      * @param id El ID del producto cuya cantidad se desea disminuir en el carrito.
      */
-    decreaseCartItem(id: number): void {
+    decreaseCartItem(id: string): void {
         const cartItems: ICartItem[] = this.getCartItems();
 
         const item: ICartItem | undefined = cartItems.find((i: ICartItem): boolean => i.id === id);
@@ -136,7 +136,7 @@ export const storage = {
      * Elimina completamente un producto del carrito, sin importar su cantidad actual.
      * @param id El ID del producto que se desea eliminar del carrito.
      */
-    removeCartItem(id: number): void {
+    removeCartItem(id: string): void {
         const cartItems: ICartItem[] = this.getCartItems();
         // Creamos un nuevo array sin el producto a eliminar
         const updatedCart: ICartItem[] = cartItems.filter((i: ICartItem): boolean => i.id !== id);

@@ -1,1 +1,1 @@
-rootProject.name = "SistemaGestionPedidos"
+rootProject.name = "SGP"

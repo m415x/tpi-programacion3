@@ -45,8 +45,8 @@ export const showProducts = async (): Promise<void> => {
     });
 
     // Creamos un mapa indexado por ID para buscar en tiempo de ejecución O(1)
-    const categoryMap = new Map<number, string>(
-        categories.map((cat: { id: number; name: string }) => [cat.id, cat.name]),
+    const categoryMap = new Map<string, string>(
+        categories.map((cat: { id: string; name: string }) => [cat.id, cat.name]),
     );
 
     // Actualizamos el texto de cantidad de productos encontrados

@@ -1,79 +1,128 @@
-# Proyecto: Food Store
+# Food Store - Sistema de Gestión de Pedidos
 
-## Descripción
+Este repositorio contiene el ecosistema completo para **Food Store**, una plataforma e-commerce integrada de punta a punta. El proyecto unifica una interfaz de usuario web reactiva y moderna con una API REST robusta de persistencia relacional automatizada.
 
-Este es un proyecto de demostración creado con fines educativos para ilustrar el desarrollo de un frontend para un E-commerce de comida utilizando **Vite**, **TypeScript Vanilla** (manipulación directa del DOM) y CSS puro.
-
-El objetivo es mostrar la implementación de funcionalidades típicas de una tienda en línea (catálogo de productos, filtrado, búsqueda, carrito de compras) combinadas con un mecanismo básico de protección de rutas según el rol del usuario (`ADMIN` o `CLIENT`).
+Desarrollado con fines educativos bajo los estándares de la cátedra de **Programación III**, el ecosistema demuestra el flujo real de datos desde la manipulación del DOM en el cliente hasta el almacenamiento en disco mediante un motor de base de datos.
 
 ---
 
-## ¡Importante! Nivel de Seguridad
+## Arquitectura General del Ecosistema
 
-La protección de rutas y la gestión de sesiones implementadas en este proyecto **NO SON SEGURAS** y no deben utilizarse en un entorno de producción.
+El proyecto se encuentra dividido en dos módulos core perfectamente desacoplados que se comunican mediante solicitudes HTTP:
 
-- **Razón**: La lógica de autenticación, almacenamiento de usuarios y estado del carrito se basan completamente en datos guardados en el `localStorage` del navegador del usuario.
-- **Riesgo**: Cualquier usuario con conocimientos técnicos básicos puede abrir las herramientas de desarrollador del navegador para inspeccionar, modificar o eliminar los datos de `localStorage` (como forzar el rol a `ADMIN`), obteniendo acceso no autorizado a rutas protegidas.
+```text
+┌─────────────────────────┐  Peticiones HTTP (JSON)  ┌─────────────────────────────────┐
+│ FRONTEND (Puerto 5173)  │ ───────────────────────> │      BACKEND (Puerto 8008)      │
+│ Vite + TypeScript + CSS │ <─────────────────────── │ Spring Boot + Gradle + JPA + H2 │
+└─────────────────────────┘  Respuestas REST (DTOs)  └─────────────────────────────────┘
+```
 
-Este enfoque es útil únicamente para fines de aprendizaje, lógica de estado frontend y creación de prototipos de bajo riesgo. La seguridad y persistencia real deben implementarse en un **backend** con base de datos y tokens seguros.
+1. **Frontend (`/frontend`):** Una aplicación Single Page (SPA) construida con **Vite**, **TypeScript Vanilla** (manipulación directa del DOM) y CSS puro. Implementa un catálogo dinámico, gestión asíncrona de cantidades en carrito con validación perimetral y un panel de administración (Dashboard) protegido por roles.
+2. **Backend (`/backend`):** Una API REST robusta construida con **Spring Boot**, **Java 21** y **Gradle**. Centraliza la lógica de negocio, validaciones estrictas de Bean Validation (JPA Groups) mediante anotaciones personalizadas, control transaccional (`@Transactional`) y un motor de base de datos relacional **H2** persistido de forma local en disco.
 
 ---
 
-## Instalación y Uso
+## Decisiones Técnicas Destacadas
 
-Se recomienda usar `pnpm` como gestor de paquetes para mayor eficiencia en el manejo de dependencias.
+### Frontend (Frontera Defensiva)
 
-### 1. Instalar pnpm
+- **Enfoque Asíncrono de Autoabastecimiento:** Los controladores de la UI (como `productDetail` o `cart`) son 100% autónomos. No arrastran estados globales cableados; consultan de forma directa y asíncrona al backend mediante Axios ante recargas de pantalla (`F5`), garantizando la frescura de los datos.
+- **Criptografía en el Cliente (SHA-256):** Las contraseñas se rompen mediante un algoritmo de hashing unidireccional nativo (`crypto.subtle.digest`) en el navegador. **Las contraseñas nunca viajan en texto plano por la red**. El backend almacena directamente el hash hexadecimal estable de 64 caracteres.
+- **Validación Anticipada de Stock:** El carrito consulta en tiempo real al almacenamiento y al servicio HTTP del servidor antes de permitir un incremento, bloqueando interacciones inválidas mediante alertas atómicas.
 
-Si no tienes `pnpm` instalado, puedes hacerlo fácilmente a través de `npm` (que viene con Node.js) ejecutando el siguiente comando en tu terminal:
+### Backend (API Core y Persistencia)
+
+- **Inversión de Control (IoC):** Se prescindió del uso manual de utilidades estáticas. Se delegó el ciclo de vida completo de las conexiones, el `EntityManagerFactory` y los contextos transaccionales en el contenedor de Spring Boot.
+- **Estrategia Antiduplicación en Semilla:** El sistema detecta dinámicamente el estado de la base de datos en disco durante el arranque. Si ya existen registros históricos o el usuario administrador inicial, la siembra de datos semilla (`Data Seeding`) se gestiona de forma idempotente para mitigar excepciones por violación de restricciones de unicidad (`SQLState: 23505`).
+- **Optimización de Consultas (Caché en RAM):** En los mapeos tabulares se implementó una indexación al vuelo en 
+  memoria RAM (`Map<UUID, String>`) para resolver el nombre de las categorías en tiempo constante $O(1)$, mitigando de 
+  raíz el problema clásico de rendimiento conocido como _Query N+1_.
+- **Arquitectura de Validación Avanzada:** Implementación de la anotación personalizada `@ValidPassword` coordinada con interfaces de grupo (`OnCreate.class`, `OnUpdate.class`) para verificar que los datos enviados a los endpoints cumplan estrictamente con el patrón hexadecimal `^[a-f0-9]{64}$` antes del _persist time_ de Hibernate.
+
+---
+
+## Estructura del Repositorio
+
+```text
+/
+├── backend/                         # Código de la API de Spring Boot (Java)
+│   ├── data/                        # Base de datos H2 persistida en disco
+│   ├── src/
+│   │   └── main/
+|   │       ├── java/.../
+│   │       │   ├── config/          # Configuracion de OpenAPI y Swagger
+│   │       │   ├── controller/      # Endpoints REST (Product, Category, User)
+│   │       │   ├── dto/             # Objetos de Transferencia de Datos (Records)
+│   │       │   ├── exception/       # Excepciones personalizadas
+│   │       │   ├── mapper/          # Mapeos de Dominio a DTO
+│   │       │   ├── model/           # Entidades de Dominio de JPA / Hibernate
+│   │       │   ├── repository/      # Repositorios heredados de JpaRepository
+│   │       │   ├── service/         # Lógica de negocio e implementaciones
+│   │       │   ├── validator/       # Anotaciones de validación y regex de hash
+│   │       │   └── SGPApp.java      # Clase principal de la aplicación Spring Boot
+|   │       └── resources/
+│   │           └── application.yaml # Configuración de Spring Boot
+│   └── build.gradle                 # Configuración del motor de construcción Gradle
+│
+└── frontend/                        # Código de la Interfaz Gráfica (TypeScript)
+    ├── public/img/products          # Imágenes de productos
+    ├── src/
+    │   ├── interfaces/              # Contratos de tipado de dominio del front
+    │   ├── pages/                   # Controladores y vistas HTML dinámicas (Login, Admin, Store)
+    │   ├── services/                # Capa HTTP (Axios) y mappers de DTO a Dominio
+    │   └── utils/                   # Estado de sesión (Storage), Router (Navigate) y UI utils
+    ├── package.json                 # Scripts de automatización del ecosistema
+    ├── start-ecosystem.js           # Script orquestador multiplataforma de subida
+    ├── tsconfig.json                # Configuración del compilador de TypeScript
+    └── vite.config.ts               # Configuración del compilador de Vite
+```
+
+---
+
+## Instalación y Uso Automático (Un Solo Comando)
+
+El entorno cuenta con un script orquestador en Node.js que levanta el servidor de Spring Boot (Gradle), el servidor de desarrollo de Vite y **abre el navegador de forma automática** en la pantalla de la tienda.
+
+### Requisitos Previos
+
+- **Java Development Kit (JDK):** Versión 21 instalado y configurado en las variables de entorno.
+- **Node.js:** Versión 18 o superior.
+- **Gestor de paquetes:** `pnpm` (Recomendado por su eficiencia extrema con enlaces duros).
+
+### Pasos para iniciar todo el ecosistema
+
+1.**Instalar pnpm de forma global (si no lo tienes):**
 
 ```bash
 npm install -g pnpm
 ```
 
-### 2. Instalar Dependencias del Proyecto
-
-Una vez en la carpeta `frontend` del proyecto, instala las dependencias necesarias con `pnpm`:
+2.**Posicionarse en la carpeta del Frontend e instalar las dependencias:**
 
 ```bash
+cd frontend
 pnpm install
 ```
 
-### 3. Ejecutar el Proyecto
-
-Para iniciar el servidor de desarrollo de Vite, ejecuta:
+3.**Ejecutar el comando de Orquestación Unificada:**
 
 ```bash
-pnpm dev
+pnpm run dev:all
 ```
 
-La aplicación estará disponible en la URL que aparezca en la terminal (generalmente `http://localhost:5173`).
+#### ¿Qué ocurrirá por detrás?
+
+- El script detectará tu sistema operativo (Windows/Linux/Mac) y lanzará el comando nativo de Gradle (`gradlew.bat bootRun` o `./gradlew bootRun`) en segundo plano dentro de la carpeta `/backend`.
+- En paralelo, levantará el compilador en frío de Vite en el puerto `5173`.
+- Tras 15 segundos (permitiendo a Spring Boot inicializar el contexto de Hibernate y verificar la semilla de datos de categorías, productos y el usuario administrador), **se abrirá una pestaña automática en tu navegador** en `http://localhost:5173/`.
+- **Cierre Limpio:** Al presionar `Ctrl + C` una sola vez en la terminal, el script enviará señales de apagado (`SIGINT`) matando ambos procesos de forma segura sin dejar puertos colgados en memoria.
 
 ---
 
-## ¿Cómo Funciona la Arquitectura?
+## Datos de Acceso de la Semilla (Modo Administrador)
 
-El proyecto utiliza una arquitectura basada en servicios y utilidades para separar la lógica de negocio de la interfaz gráfica:
+Para probar las pantallas del **Panel de Administración (CRUD de Categorías, Productos y Dashboard de Métricas)** sin necesidad de registrar una cuenta desde cero, la semilla de datos autoinyecta las credenciales del perfil Administrador Principal:
 
-1. **Gestión de Estado (`src/utils/storage.ts`)**: Centraliza el acceso a `localStorage` para manejar los usuarios registrados, la sesión actual y los ítems del carrito de compras.
-2. **Servicios (`src/services/`)**: Contienen la lógica de negocio pura, como la encriptación de contraseñas (`auth.service.ts`), la lógica de suma/resta del carrito (`cart.service.ts`) y el filtrado de productos (`product.service.ts`).
-3. **Protección de Rutas (`src/utils/authGuard.ts`)**: Cada vez que se intenta cargar una página, se ejecuta `checkAuth()`. Esta función comprueba el rol guardado en `localStorage` y redirige al usuario si no tiene los permisos necesarios para la ruta actual.
-4. **Renderizado Dinámico**: Las páginas (ej. `home.controller.ts` o `productDetail.controller.ts`) leen los datos y construyen los elementos HTML (`document.createElement`) de forma dinámica, inyectándolos en el DOM.
-
----
-
-## 📁 Estructura del Proyecto
-
-```text
-/src
-├── data/         # Datos simulados (Mock data de productos)
-├── pages/        # Controladores y vistas de la aplicación
-│   ├── admin/    # Panel de control (Solo administradores)
-│   ├── auth/     # Páginas de Login y Registro
-│   ├── client/   # Área personal del cliente
-│   └── store/    # Tienda (Home, Detalle de Producto, Carrito)
-├── services/     # Lógica de negocio separada de la UI
-├── types/        # Definición de tipos de TypeScript (Product, IUser, ICartItem, Role)
-├── utils/        # Utilidades compartidas (storage, authGuard, componentes de UI)
-└── style.css     # Estilos globales y variables CSS
-```
+- **Email:** `em@il.com`
+- **Contraseña:** `Passwd123!` _(El sistema procesará el hash SHA-256 `391f6711...` de forma automática en el Login)_
+- **Rol asignado:** `ADMIN`

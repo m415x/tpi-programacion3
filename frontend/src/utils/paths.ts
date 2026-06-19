@@ -8,8 +8,7 @@ export const PATHS = {
     STORE: {
         HOME: "/src/pages/store/home/home.html",
         CART: "/src/pages/store/cart/cart.html",
-        DETAIL: (id: number) =>
-            `/src/pages/store/productDetail/productDetail.html?id=${id}`,
+        DETAIL: (id: string) => `/src/pages/store/productDetail/productDetail.html?id=${id}`,
     },
     AUTH: {
         LOGIN: "/src/pages/auth/login/login.html",

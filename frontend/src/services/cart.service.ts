@@ -43,7 +43,7 @@ export const cartService = {
      * @param productId ID del producto.
      * @returns Cantidad del producto en el carrito, o 0 si no está presente.
      */
-    getProductQuantity(productId: number): number {
+    getProductQuantity(productId: string): number {
         // Obtenemos los items del carrito desde el almacenamiento local
         const cart: ICartItem[] = storage.getCartItems();
 

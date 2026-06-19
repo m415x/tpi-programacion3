@@ -7,7 +7,8 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "vite",
         "build": "tsc && vite build",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "dev:all": "node start-ecosystem.js"
     },
     "keywords": [],
     "author": "",
@@ -17,8 +18,8 @@
         "typescript": "^6.0.2"
     },
     "devDependencies": {
-        "@types/node": "^20.19.39",
-        "vite": "^5.4.21",
+        "@types/node": "^24.13.2",
+        "vite": "^7.3.5",
         "axios": "^1.18.0"
     }
 }

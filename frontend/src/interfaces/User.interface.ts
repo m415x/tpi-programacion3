@@ -4,7 +4,7 @@ import { UserRole } from "@interfaces/Enums";
  * Interfaz que define la estructura de un usuario en el sistema
  */
 export interface IUser {
-    id: number;
+    id: string;
     isDeleted: boolean;
     createdAt: string;
     firstName: string;

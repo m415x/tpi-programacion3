@@ -18,7 +18,7 @@ import {
  * e inyecta toda su información y controles reactivos en el DOM.
  * @param productId ID del producto a consultar en el servidor
  */
-export const showProductDetail = async (productId: number): Promise<void> => {
+export const showProductDetail = async (productId: string): Promise<void> => {
     const productDetailContainer = document.querySelector<HTMLElement>("#product-detail-container");
     if (!productDetailContainer) return;
 

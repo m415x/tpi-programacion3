@@ -30,7 +30,7 @@ export const formattedPriceHTML = (price: number): string => {
  * @param content Contenido HTML a envolver.
  * @returns String HTML del enlace.
  */
-export const wrapWithDetailLink = (id: number, content: string): string => {
+export const wrapWithDetailLink = (id: string, content: string): string => {
     return `<a href="${PATHS.STORE.DETAIL(id)}" class="link">${content}</a>`;
 };
 

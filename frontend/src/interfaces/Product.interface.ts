@@ -2,7 +2,7 @@
  * Interfaz que define la estructura de un producto en el sistema
  */
 export interface IProduct {
-    id: number;
+    id: string;
     isDeleted: boolean;
     createdAt: string;
     name: string;
@@ -11,5 +11,5 @@ export interface IProduct {
     stock: number;
     imageUrl: string;
     isAvailable: boolean;
-    categoryId: number | null;
+    categoryId: string | null;
 }

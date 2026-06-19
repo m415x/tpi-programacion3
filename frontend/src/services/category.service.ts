@@ -6,7 +6,7 @@ import api from "@services/api";
  * devuelve, manteniendo una capa de transformación limpia hacia la interfaz ICategory del Frontend.
  */
 interface CategoryResponseDTO {
-    id: number;
+    id: string;
     deleted: boolean;
     createdAt: string;
     name: string;
@@ -57,7 +57,7 @@ export const categoryService = {
      * Recupera un único categoría de la base de datos dado su ID.
      * @param id ID del categoría
      */
-    async getById(id: number): Promise<ICategory> {
+    async getById(id: string): Promise<ICategory> {
         const response = await api.get<CategoryResponseDTO>(`/categories/${id}`);
 
         return mapToDomain(response.data);
@@ -103,7 +103,7 @@ export const categoryService = {
      * @param changes Objeto parcial con las propiedades del dominio que se desean alterar.
      * @returns Promesa con la categoría actualizada, mapeada a la interfaz ICategory del frontend.
      */
-    async partialUpdate(id: number, changes: Partial<ICategory>): Promise<ICategory> {
+    async partialUpdate(id: string, changes: Partial<ICategory>): Promise<ICategory> {
         // Inicializamos un objeto de payload vacío
         const dto: Partial<CategoryRequestDTO> = {};
 
@@ -120,7 +120,7 @@ export const categoryService = {
      * @param id ID de la categoría a eliminar.
      * @returns Promesa que se resuelve cuando la eliminación se ha completado exitosamente.
      */
-    async delete(id: number): Promise<void> {
+    async delete(id: string): Promise<void> {
         await api.delete(`/categories/${id}`);
     },
 };

@@ -154,7 +154,7 @@ const renderEmptyCartUI = (container: HTMLElement): void => {
  * del carrito después de la actualización
  * @param cartContainer El elemento HTML que contiene los productos del carrito
  */
-export const updateCartItemUI = async (id: number, newQty: number, cartContainer: HTMLElement): Promise<void> => {
+export const updateCartItemUI = async (id: string, newQty: number, cartContainer: HTMLElement): Promise<void> => {
     // 1. Buscamos la "fila" específica por su dataset id
     const itemContainer = cartContainer.querySelector<HTMLElement>(`[data-id="${id}"]`);
     if (!itemContainer) return;
