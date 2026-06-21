@@ -1,6 +1,4 @@
-import type { IProduct } from "@interfaces/Product.interface";
 import { showProductDetail } from "@pages/store/productDetail/productDetail.controller";
-import { productService } from "@services/product.service";
 import { renderHeader, renderFooter } from "@utils/components";
 import { navigate } from "@utils/navigate";
 import { PATHS } from "@utils/paths";

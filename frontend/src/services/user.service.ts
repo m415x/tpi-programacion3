@@ -184,4 +184,26 @@ export const userService = {
 
         return domainUsers;
     },
+
+    /**
+     * Recupera el usuario con mayor cantidad de pedidos en el sistema.
+     * Conecta directamente con la consulta nativa optimizada del backend.
+     * @returns Promesa con el objeto del usuario estrella mapeado al dominio.
+     */
+    async getTopCustomer(): Promise<IUser> {
+        // Recorremos el storage local para extraer las credenciales activas del Administrador logueado
+        const currentUser = storage.getUser();
+
+        // Configuramos los headers perimetrales requeridos de forma manual para evitar el filtro 400
+        const config = {
+            headers: {
+                "X-User-Id": currentUser?.id || "",
+                "X-User-Email": currentUser?.email || "",
+            },
+        };
+
+        const response = await api.get<UserResponseDTO>("/users/top-customer", config);
+
+        return mapToDomain(response.data);
+    },
 };

@@ -3,7 +3,9 @@ package ar.edu.tup.programacion3.SGP.model;
 import ar.edu.tup.programacion3.SGP.model.enums.OrderStatus;
 import ar.edu.tup.programacion3.SGP.model.enums.PaymentMethod;
 import ar.edu.tup.programacion3.SGP.validator.ValidAmount;
+import ar.edu.tup.programacion3.SGP.validator.ValidLongText;
 import ar.edu.tup.programacion3.SGP.validator.ValidNotNull;
+import ar.edu.tup.programacion3.SGP.validator.ValidPhone;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -59,6 +61,18 @@ public class Order extends Base implements Calculable {
     @ValidNotNull(message = "La forma de pago")
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+
+    @Column(name = "customer_phone")
+    @ValidPhone(message = "El teléfono de entrega")
+    private String customerPhone;
+
+    @Column(name = "shipping_address")
+    @ValidNotNull(message = "La dirección de entrega")
+    private String shippingAddress;
+
+    @Column(name = "customer_notes")
+    @ValidLongText(message = "Las notas del cliente")
+    private String customerNotes;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "order_id")

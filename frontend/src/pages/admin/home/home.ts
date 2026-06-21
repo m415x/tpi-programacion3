@@ -1,3 +1,4 @@
+import { adminController } from "@pages/admin/home/home.controller";
 import { renderHeader, renderAside, renderFooter } from "@utils/components";
 import { setPageTitle } from "@utils/uiUtils";
 
@@ -10,8 +11,11 @@ const initAdmin = (): void => {
 
     // Renderizar componentes base
     renderHeader("#header");
-    renderAside("#sidebar");
+    renderAside("#sidebar", (): void => adminController.showControlPanelInSidebar("#sidebar"));
     renderFooter("#footer");
 };
 
-initAdmin();
+// Aseguramos que corra una vez que el ciclo de scripts de Vite esté asentado
+document.addEventListener("DOMContentLoaded", () => {
+    initAdmin();
+});

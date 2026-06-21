@@ -226,6 +226,9 @@ public class OrderServiceImpl implements OrderService {
                 dto.total(),
                 dto.paymentMethod(),
                 userId,
+	            dto.customerPhone(),
+			    dto.shippingAddress(),
+			    dto.customerNotes(),
                 dto.orderDetails());
     }
 }

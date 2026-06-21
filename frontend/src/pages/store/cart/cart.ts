@@ -1,6 +1,4 @@
-import type { IProduct } from "@interfaces/Product.interface";
 import { initCartEvents, showCart } from "@pages/store/cart/cart.controller";
-import { productService } from "@services/product.service";
 import { renderHeader, renderFooter } from "@utils/components";
 import { setPageTitle } from "@utils/uiUtils";
 

@@ -100,6 +100,25 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/top-customer")
+    @AdminRequired
+    public ResponseEntity<UserResponseDTO> getTopCustomer() {
+        try {
+            UserResponseDTO topUser = service.getUserWithMoreOrders();
+
+            if (topUser == null) {
+                // Si no hay órdenes históricas aún, devolvemos un estado vacío exitoso (204) en vez de romper con 400
+                return ResponseEntity.noContent().build();
+            }
+
+            return ResponseEntity.ok(topUser);
+
+        } catch (Exception e) {
+            // Previene caídas bruscas del servidor
+            return ResponseEntity.noContent().build();
+        }
+    }
+
     // ENDPOINTS HISTÓRICOS (Separados para proteger el flujo principal)
     @GetMapping("/history")
     @AdminRequired

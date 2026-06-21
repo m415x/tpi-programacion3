@@ -143,7 +143,7 @@ export const productService = {
             description: product.description,
             stock: product.stock,
             image: product.imageFileName,
-            available: product.isAvailable || product.stock > 0, // Si el producto tiene stock, lo consideramos disponible
+            available: product.isAvailable,
             categoryId: product.categoryId || "",
         };
 

@@ -6,12 +6,13 @@ import type { IOrderDetail } from "@interfaces/OrderDetail.interface";
  */
 export interface IOrder {
     id: string;
-    deleted: boolean;
     createdAt: string;
-    date: string;
-    orderStatus: OrderStatus;
-    total: number;
-    paymentMethod: PaymentMethod;
-    userId: string;
-    orderDetails: IOrderDetail[];
+    isDeleted: boolean;
+    totalPrice: number;
+    status: any;
+    paymentMethod: string;
+    customerPhone: string;
+    shippingAddress: string;
+    customerNotes: string;
+    user: { id: string; name: string; email: string } | null;
 }

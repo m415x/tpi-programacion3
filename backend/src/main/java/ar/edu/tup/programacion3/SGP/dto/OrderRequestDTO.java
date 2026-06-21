@@ -13,4 +13,7 @@ public record OrderRequestDTO(
         @ValidNotNull OrderStatus orderStatus,
         BigDecimal total,
         @ValidNotNull PaymentMethod paymentMethod,
-        UUID userId) {}
+        UUID userId,
+        String customerPhone,
+        String shippingAddress,
+        String customerNotes) {}

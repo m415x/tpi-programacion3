@@ -1,5 +1,7 @@
+import { UserRole } from "@interfaces/Enums";
 import { userService } from "@services/user.service";
-import { navigate } from "@utils/navigate";
+import { navigate as navigateClear } from "@utils/navigate";
+import { storage } from "@utils/storage";
 import { PATHS } from "@utils/paths";
 
 /**
@@ -19,6 +21,7 @@ export const initLoginLogic = (): void => {
         // Validaciones de formato de email
         if (!userService.validateEmail(email)) {
             alert("Por favor, ingresa un email válido.");
+
             return;
         }
 
@@ -30,7 +33,14 @@ export const initLoginLogic = (): void => {
             const loginSuccess: boolean = await userService.login(email, encryptedPass);
 
             if (loginSuccess) {
-                navigate(PATHS.STORE.HOME);
+                // Evaluamos el rol real persistido en la sesión
+                const role = storage.getRole();
+
+                if (role === UserRole.ADMIN) {
+                    navigateClear(PATHS.ADMIN.HOME); // Redirección estandarizada al panel
+                } else {
+                    navigateClear(PATHS.STORE.HOME); // Clientes van a la tienda
+                }
             } else {
                 alert("Credenciales incorrectas o usuario inexistente.");
             }
@@ -46,6 +56,6 @@ export const initLoginLogic = (): void => {
     // Listener para cambiar entre login y registro
     authLink.addEventListener("click", (e: MouseEvent) => {
         e.preventDefault();
-        navigate(PATHS.AUTH.REGISTER);
+        navigateClear(PATHS.AUTH.REGISTER);
     });
 };

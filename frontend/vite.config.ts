@@ -21,12 +21,17 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 index: resolve(__dirname, "index.html"),
+                // Auth pages
                 authLogin: resolve(__dirname, "src/pages/auth/login/login.html"),
                 authRegister: resolve(__dirname, "src/pages/auth/register/register.html"),
+                // Store pages
                 storeHome: resolve(__dirname, "src/pages/store/home/home.html"),
                 storeCart: resolve(__dirname, "src/pages/store/cart/cart.html"),
                 storeProductDetail: resolve(__dirname, "src/pages/store/productDetail/productDetail.html"),
+                // Admin pages
                 adminHome: resolve(__dirname, "src/pages/admin/home/home.html"),
+                adminProducts: resolve(__dirname, "src/pages/admin/products/products.html"),
+                // Client pages
                 clientHome: resolve(__dirname, "src/pages/client/home/home.html"),
             },
         },

@@ -1,10 +1,5 @@
 import type { ICategory } from "@interfaces/Category.interface";
-import {
-    showCategoriesInSidebar,
-    showProducts,
-    showSearchBar,
-    initStickySearch,
-} from "@pages/store/home/home.controller";
+import { homeController } from "@pages/store/home/home.controller";
 import { categoryService } from "@services/category.service";
 import { renderHeader, renderAside, renderFooter } from "@utils/components";
 import { setPageTitle } from "@utils/uiUtils";
@@ -26,17 +21,17 @@ const initStore = async (): Promise<void> => {
 
         renderAside("#sidebar", (): void =>
             // Inyectar las categorías dinámicas en el sidebar lateral
-            showCategoriesInSidebar("#sidebar", activeCategories),
+            homeController.showCategoriesInSidebar("#sidebar", activeCategories),
         );
 
         renderFooter("#footer");
 
         // Invocar controladores de UI (Ambos leen los datos reales del back de manera reactiva)
-        await showProducts();
-        showSearchBar(activeCategories);
+        await homeController.showProducts();
+        homeController.showSearchBar(activeCategories);
 
         // Inicializar la funcionalidad de búsqueda sticky al hacer scroll
-        initStickySearch();
+        homeController.initStickySearch();
     } catch (error) {
         console.error("Error catastrófico al inicializar la tienda:", error);
 

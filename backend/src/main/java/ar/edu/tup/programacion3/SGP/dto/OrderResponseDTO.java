@@ -14,4 +14,7 @@ public record OrderResponseDTO(
         BigDecimal total,
         PaymentMethod paymentMethod,
         UUID userId,
+        String customerPhone,
+        String shippingAddress,
+        String customerNotes,
         Set<OrderDetailResponseDTO> orderDetails) {}
