@@ -30,9 +30,10 @@ export default defineConfig({
                 storeProductDetail: resolve(__dirname, "src/pages/store/productDetail/productDetail.html"),
                 // Admin pages
                 adminHome: resolve(__dirname, "src/pages/admin/home/home.html"),
-                adminProducts: resolve(__dirname, "src/pages/admin/products/products.html"),
+                adminProfiles: resolve(__dirname, "src/pages/admin/profiles/profiles.html"),
                 // Client pages
-                clientHome: resolve(__dirname, "src/pages/client/home/home.html"),
+                clientOrders: resolve(__dirname, "src/pages/client/orders/orders.html"),
+                clientProfiles: resolve(__dirname, "src/pages/client/profiles/profiles.html"),
             },
         },
     },

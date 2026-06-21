@@ -78,14 +78,15 @@ export const renderHeader = (containerSelector: string): void => {
     const getActiveClass = (path: string): string => (currentPath.includes(path) ? "link--active" : "");
 
     // Construimos las partes del menú que dependen del rol
-    const adminMenu: string =
+    const dedicatedArea: string =
         role === UserRole.ADMIN
-            ? `<li class="menu__item menu__item--admin"><a href="${PATHS.ADMIN.HOME}" class="link ${getActiveClass(PATHS.ADMIN.HOME)}">Admin</a></li>`
-            : "";
+            ? `<li class="menu__item"><a href="${PATHS.ADMIN.HOME}" class="link ${getActiveClass(PATHS.ADMIN.HOME)}">Panel Admin</a></li>`
+            : `<li class="menu__item"><a href="${PATHS.CLIENT.ORDERS}" class="link ${getActiveClass(PATHS.CLIENT.ORDERS)}">Mis Pedidos</a></li>`;
     const userAreaMenu: string =
         role === UserRole.CLIENT
-            ? `<li class="menu__item menu__item--client"><a href="${PATHS.CLIENT.HOME}" class="link ${getActiveClass(PATHS.CLIENT.HOME)}">${name}</a></li>`
-            : `<li class="menu__item menu__item--client"><a href="${PATHS.ADMIN.HOME}" class="link ${getActiveClass(PATHS.ADMIN.HOME)}">${name}</a></li>`;
+            ? `<li class="menu__item menu__item--cart"><a href="${PATHS.STORE.CART}" class="link ${getActiveClass(PATHS.STORE.CART)}">Carrito</a></li>
+               <li class="menu__item"><a href="${PATHS.CLIENT.PROFILE}" class="link ${getActiveClass(PATHS.CLIENT.PROFILE)}">${name}</a></li>`
+            : `<li class="menu__item"><a href="${PATHS.ADMIN.PROFILE}" class="link ${getActiveClass(PATHS.ADMIN.PROFILE)}">${name}</a></li>`;
 
     // Inyectamos el HTML del Header en el contenedor
     container.innerHTML = `
@@ -94,9 +95,7 @@ export const renderHeader = (containerSelector: string): void => {
         <nav class="menu">
         <ul class="menu__list">
             <li class="menu__item"><a href="${PATHS.STORE.HOME}" class="link ${getActiveClass(PATHS.STORE.HOME)}">Tienda</a></li>
-            <li class="menu__item"><a href="#" class="link ${getActiveClass("#")}">Mis Pedidos</a></li>
-            ${adminMenu}
-            <li class="menu__item menu__item--cart"><a href="${PATHS.STORE.CART}" class="link ${getActiveClass(PATHS.STORE.CART)}">Carrito</a></li>
+            ${dedicatedArea}
             ${userAreaMenu}
         </ul>
         <button id="logoutButton" class="btn btn--secondary">Cerrar Sesión</button>

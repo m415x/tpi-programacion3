@@ -36,7 +36,7 @@ export const productsController = {
         targetContainer.innerHTML = `
           <div class="admin-header-row">
             <h2>Gestión de Productos</h2>
-            <button id="btn-open-add-modal" class="btn btn--success">+ Nuevo Producto</button>
+            <button id="btn-open-add-modal" class="btn btn--tertiary">+ Nuevo Producto</button>
           </div>
 
           <div class="table-responsive">
@@ -103,8 +103,8 @@ export const productsController = {
                 </div>
 
                 <div class="form-actions">
-                  <button type="submit" class="btn btn--success" id="btn-submit">Guardar Producto</button>
-                  <button type="button" class="btn btn--secondary" id="btn-cancel">Cancelar</button>
+                  <button type="submit" class="btn btn btn--tertiary" id="btn-submit">Guardar Producto</button>
+                  <button type="button" class="btn btn btn--secondary" id="btn-cancel">Cancelar</button>
                 </div>
               </form>
             </div>
@@ -184,17 +184,17 @@ export const productsController = {
                 </td>
                 <td class="text-center">${availabilityBadge}</td> <td>
                     <div class="actions-wrapper">
-                        <button class="btn-action btn-action--edit">Editar</button>
-                        <button class="btn-action btn-action--delete">Eliminar</button>
+                        <button class="btn--action btn-secondary">Editar</button>
+                        <button class="btn--action btn-quaternary">Eliminar</button>
                     </div>
                 </td>
             `;
 
-            tr.querySelector(".btn-action--edit")?.addEventListener("click", (e: Event): void => {
+            tr.querySelector(".btn-secondary")?.addEventListener("click", (e: Event): void => {
                 e.preventDefault();
                 this.fillFormForEdit(product);
             });
-            tr.querySelector(".btn-action--delete")?.addEventListener(
+            tr.querySelector(".btn-quaternary")?.addEventListener(
                 "click",
                 (): Promise<void> => this.fireDeleteProcess(product.id, product.name),
             );
@@ -242,7 +242,7 @@ export const productsController = {
         dom.inputId.value = "";
         dom.formTitle.textContent = "Agregar Nuevo Producto";
         dom.btnSubmit.textContent = "Guardar Producto";
-        dom.btnSubmit.className = "btn btn--success";
+        dom.btnSubmit.className = "btn btn--tertiary";
 
         // Dejamos el checkbox tildado por defecto al limpiar para nuevos registros
         dom.inputDisponible.checked = true;

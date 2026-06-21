@@ -15,9 +15,11 @@ export const PATHS = {
         REGISTER: "/src/pages/auth/register/register.html",
     },
     CLIENT: {
-        HOME: "/src/pages/client/home/home.html",
+        ORDERS: "/src/pages/client/orders/orders.html",
+        PROFILE: "/src/pages/client/profile/profile.html",
     },
     ADMIN: {
         HOME: "/src/pages/admin/home/home.html",
+        PROFILE: "/src/pages/admin/profile/profile.html",
     },
 } as const;

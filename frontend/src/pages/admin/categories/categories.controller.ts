@@ -27,7 +27,7 @@ export const categoriesController = {
         targetContainer.innerHTML = `
           <div class="admin-header-row">
             <h2>Gestión de Categorías</h2>
-            <button id="btn-open-category-modal" class="btn btn--success">+ Nueva Categoría</button>
+            <button id="btn-open-category-modal" class="btn btn--tertiary">+ Nueva Categoría</button>
           </div>
 
           <div class="table-responsive">
@@ -63,7 +63,7 @@ export const categoriesController = {
                 </div>
 
                 <div class="form-actions">
-                  <button type="submit" class="btn btn--success" id="btn-submit">Guardar Categoría</button>
+                  <button type="submit" class="btn btn--tertiary" id="btn-submit">Guardar Categoría</button>
                   <button type="button" class="btn btn--secondary" id="btn-cancel">Cancelar</button>
                 </div>
               </form>
@@ -107,19 +107,19 @@ export const categoriesController = {
                     <td class="desc-cell">${category.description || "Sin descripción asociada."}</td>
                     <td>
                         <div class="actions-wrapper">
-                            <button class="btn-action btn-action--edit">Editar</button>
-                            <button class="btn-action btn-action--delete">Eliminar</button>
+                            <button class="btn btn--action btn-secondary">Editar</button>
+                            <button class="btn btn--action btn-quaternary">Eliminar</button>
                         </div>
                     </td>
                 `;
 
                 // Escuchadores de eventos para los botones de acción usando preventDefault preventivo
-                tr.querySelector(".btn-action--edit")?.addEventListener("click", (e: Event): void => {
+                tr.querySelector(".btn-secondary")?.addEventListener("click", (e: Event): void => {
                     e.preventDefault();
                     this.fillFormForEdit(category);
                 });
 
-                tr.querySelector(".btn-action--delete")?.addEventListener(
+                tr.querySelector(".btn-quaternary")?.addEventListener(
                     "click",
                     (): Promise<void> => this.fireDeleteProcess(category.id, category.name),
                 );
@@ -163,7 +163,7 @@ export const categoriesController = {
         dom.inputId.value = "";
         dom.formTitle.textContent = "Agregar Nueva Categoría";
         dom.btnSubmit.textContent = "Guardar Categoría";
-        dom.btnSubmit.className = "btn btn--success";
+        dom.btnSubmit.className = "btn btn--tertiary";
 
         dom.modalContainer.classList.add("hidden");
     },
