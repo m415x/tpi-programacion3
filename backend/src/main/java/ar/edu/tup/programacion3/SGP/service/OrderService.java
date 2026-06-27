@@ -2,6 +2,7 @@ package ar.edu.tup.programacion3.SGP.service;
 
 import ar.edu.tup.programacion3.SGP.dto.OrderRequestDTO;
 import ar.edu.tup.programacion3.SGP.dto.OrderResponseDTO;
+import ar.edu.tup.programacion3.SGP.model.enums.OrderStatus;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +26,8 @@ public interface OrderService {
     public OrderResponseDTO updateQtyItem(UUID orderId, UUID productId, Integer newQty);
 
     public UUID getQtyItems(UUID orderId);
+
+	OrderResponseDTO updateStatus(UUID id, OrderStatus newStatus);
 
     OrderResponseDTO findHistoricalOrder(UUID id);
 

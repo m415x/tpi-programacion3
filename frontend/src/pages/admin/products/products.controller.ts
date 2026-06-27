@@ -359,7 +359,7 @@ export const productsController = {
             try {
                 const imgName = dom.inputImagen.value.trim() || "default-food.jpg";
 
-                // 🚀 Capturamos el estado real del checkbox en vivo
+                // Capturamos el estado real del checkbox en vivo
                 const isCheckedAvailability = dom.inputDisponible.checked;
 
                 if (isEditingMode) {

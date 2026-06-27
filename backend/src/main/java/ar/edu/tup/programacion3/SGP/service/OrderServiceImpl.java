@@ -6,6 +6,7 @@ import ar.edu.tup.programacion3.SGP.model.Order;
 import ar.edu.tup.programacion3.SGP.model.Product;
 import ar.edu.tup.programacion3.SGP.model.User;
 import ar.edu.tup.programacion3.SGP.mapper.OrderMapper;
+import ar.edu.tup.programacion3.SGP.model.enums.OrderStatus;
 import ar.edu.tup.programacion3.SGP.repository.OrderRepository;
 import ar.edu.tup.programacion3.SGP.repository.ProductRepository;
 import ar.edu.tup.programacion3.SGP.repository.UserRepository;
@@ -190,7 +191,20 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.getQtyItems(id);
     }
 
-    @Override
+	@Override
+	@Transactional
+	public OrderResponseDTO updateStatus(UUID id, OrderStatus newStatus) {
+
+		Order order = orderRepository.findByIdOrThrow(id);
+		order.setOrderStatus(newStatus);
+
+		Order updatedOrder = orderRepository.saveAndFlush(order);
+		UUID userId = orderRepository.findUserIdByOrderId(id).orElse(null);
+
+		return unifyUserId(mapper.toDto(updatedOrder), userId);
+	}
+
+	@Override
     @Transactional(readOnly = true)
     public OrderResponseDTO findHistoricalOrder(UUID id) {
 

@@ -170,7 +170,7 @@ public class UserServiceImpl implements UserService {
                         .orElseThrow(
                                 () ->
                                         new UnsupportedOperationException(
-                                                "Acceso denegado: Identidad inexistente."));
+                                                "Acceso denegado: El usuario no existe en la base de datos. Por favor, cierre la sesión y vuelva a iniciarla."));
 
         // Validamos de forma estricta: coincidencia de email y rol de administrador
         if (!user.getEmail().equalsIgnoreCase(email.trim())

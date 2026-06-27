@@ -101,7 +101,7 @@ export const adminController = {
                         await productsController.init(mainContent);
                         break;
                     case "orders":
-                        await ordersController.init();
+                        await ordersController.init(mainContent);
                         break;
                 }
             } catch (error) {

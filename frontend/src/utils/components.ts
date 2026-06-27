@@ -1,5 +1,6 @@
 import { UserRole } from "@interfaces/Enums";
 import { cartService } from "@services/cart.service";
+import { userService } from "@services/user.service";
 import { logout } from "@utils/authGuard";
 import { PATHS } from "@utils/paths";
 import { storage } from "@utils/storage";
@@ -216,4 +217,108 @@ export const initFavicon = (): void => {
 
     link.type = "image/svg+xml";
     link.href = faviconUri;
+};
+
+/**
+ * Componente para renderizar el formulario de perfil de usuario.
+ */
+export const profileComponent = {
+    /**
+     * Renderiza e inicializa el formulario de perfil en el contenedor provisto.
+     */
+    async render(targetContainer: HTMLElement): Promise<void> {
+        // 1. Recuperamos el usuario activo desde el storage local
+        const currentUser = storage.getUser();
+        if (!currentUser) {
+            targetContainer.innerHTML = `<div class="text-center error-text"><p>No se encontró una sesión activa de usuario.</p></div>`;
+            return;
+        }
+
+        // 2. Inyectamos la estructura del formulario reutilizando tus clases semánticas
+        targetContainer.innerHTML = `
+            <div class="admin-container">
+                <div class="admin-header-row">
+                    <div>
+                        <h2>Mi Perfil de Usuario</h2>
+                        <p class="form-help">Visualizá y modificá tus datos personales de contacto</p>
+                    </div>
+                </div>
+
+                <div class="form-container profile-card">
+                    <form id="profile-form" novalidate>
+
+                        <div class="form-group">
+                            <label for="profile-email">Dirección de Email (Inmutable)</label>
+                            <input type="email" id="profile-email" value="${currentUser.email}" disabled class="input-disabled">
+                        </div>
+
+                        <div class="form-group-grid">
+                            <div class="form-group">
+                                <label for="profile-firstname">Nombre</label>
+                                <input type="text" id="profile-firstname" value="${currentUser.firstName}" required placeholder="Tu nombre">
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-lastname">Apellido</label>
+                                <input type="text" id="profile-lastname" value="${currentUser.lastName}" required placeholder="Tu apellido">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profile-phone">Teléfono de Contacto</label>
+                            <input type="tel" id="profile-phone" value="${currentUser.phone || ""}" placeholder="Ej: 2644111222">
+                        </div>
+
+                        <div class="form-actions-profile">
+                            <button type="submit" class="btn btn--tertiary btn-block" id="btn-profile-submit">
+                                Actualizar Mis Datos
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+
+        // 3. Enlazamos los eventos del formulario
+        const form = targetContainer.querySelector<HTMLFormElement>("#profile-form")!;
+        form.addEventListener("submit", async (e: Event) => {
+            e.preventDefault();
+
+            const inputFirstName = targetContainer.querySelector<HTMLInputElement>("#profile-firstname")!;
+            const inputLastName = targetContainer.querySelector<HTMLInputElement>("#profile-lastname")!;
+            const inputPhone = targetContainer.querySelector<HTMLInputElement>("#profile-phone")!;
+
+            const firstName = inputFirstName.value.trim();
+            const lastName = inputLastName.value.trim();
+            const phone = inputPhone.value.trim();
+
+            if (!firstName || !lastName) {
+                alert("Por favor, completá los campos obligatorios (Nombre y Apellido).");
+                return;
+            }
+
+            try {
+                // Ejecutamos el PATCH parcial directo a tu controlador de Spring Boot
+                const updatedUser = await userService.partialUpdate(currentUser.id, {
+                    firstName,
+                    lastName,
+                    phone,
+                    userRole: currentUser.userRole, // Mantenemos el rol original obligatorio
+                });
+
+                // Sincronizamos la memoria local con los nuevos datos devueltos por el servidor
+                storage.setUser(updatedUser);
+
+                alert("¡Perfil actualizado con éxito en la base de datos!");
+
+                // Forzamos un refresco parcial del encabezado para pintar el nuevo nombre si cambió
+                const headerContainer = document.querySelector<HTMLElement>("#header");
+                if (headerContainer) {
+                    renderHeader("#header");
+                }
+            } catch (error: any) {
+                console.error("Error al guardar perfil de usuario:", error);
+                alert(error.response?.data?.message || "No se pudieron guardar las modificaciones.");
+            }
+        });
+    },
 };

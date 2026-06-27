@@ -2,7 +2,9 @@ package ar.edu.tup.programacion3.SGP.controller;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
 
+import ar.edu.tup.programacion3.SGP.model.enums.OrderStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -67,6 +69,18 @@ public class OrderController {
 			@PathVariable UUID id, @Validated(OnUpdate.class) @RequestBody OrderRequestDTO dto) {
 
 		return service.partialUpdate(dto, id);
+	}
+
+	@PatchMapping("/{id}/status")
+	@AdminRequired
+	public OrderResponseDTO updateOrderStatus(
+			@PathVariable UUID id,
+			@RequestBody Map<String, String> body) {
+
+		String statusStr = body.get("status");
+		OrderStatus newStatus = OrderStatus.valueOf(statusStr);
+
+		return service.updateStatus(id, newStatus);
 	}
 
 	@DeleteMapping("/{id}")

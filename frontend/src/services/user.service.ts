@@ -206,4 +206,21 @@ export const userService = {
 
         return mapToDomain(response.data);
     },
+
+    /**
+     * Aplica una actualización parcial a un usuario en el backend (PATCH).
+     * @param id ID del usuario a modificar.
+     * @param changes Objeto parcial con las modificaciones del perfil.
+     */
+    async partialUpdate(id: string, changes: Partial<IUser>): Promise<IUser> {
+        const dto = {
+            firstName: changes.firstName,
+            lastName: changes.lastName,
+            phone: changes.phone,
+            userRole: changes.userRole,
+        };
+
+        const response = await api.patch<UserResponseDTO>(`/users/${id}`, dto);
+        return mapToDomain(response.data);
+    },
 };

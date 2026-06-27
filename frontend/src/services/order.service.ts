@@ -59,7 +59,7 @@ const mapToDomain = (dto: OrderResponseDTO): IOrder => ({
     orderDetails: (dto.orderDetails || []).map((detail: any) => ({
         id: detail.id,
         deleted: detail.isDeleted || detail.deleted || false,
-        createdAt: detail.date || dto.date,
+        createdAt: detail.date || dto.createdAt,
         quantity: detail.quantity,
         subtotal: detail.subtotal || detail.quantity * (detail.product?.price || 0),
         product: detail.product,

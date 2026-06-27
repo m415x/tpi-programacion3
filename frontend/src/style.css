@@ -1586,3 +1586,102 @@ button:disabled {
 .sortable-header:active {
   background-color: #e0e0e0;
 }
+
+.error-text {
+  color: #b71c1c;
+  font-weight: bold;
+}
+
+.empty-result {
+  color: var(--color-primary);
+  font-weight: bold;
+  padding: 2rem;
+}
+
+/* DISTRIBUCIÓN DEL MODAL ADMINISTRATIVO */
+.order-summary-layout-admin {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.admin-patch-status-box {
+  background-color: var(--bg-secondary, #f8f9fa);
+  padding: 1.2rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #eee);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.admin-patch-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.admin-patch-row .form-select-filter {
+  flex-grow: 1;
+}
+
+/* Soporte responsive si el monitor se achica */
+@media (max-width: 768px) {
+  .order-summary-layout-admin {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-patch-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* CLASES ESTRUCTURALES PARA VISTA PERFIL */
+.profile-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: var(--font-family);
+}
+
+.profile-card {
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: var(--bg-secondary, #f8f9fa);
+  padding: 2rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #eee);
+}
+
+.input-disabled {
+  background-color: #e9ecef !important;
+  cursor: not-allowed;
+  color: #6c757d;
+}
+
+.form-group-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-actions-profile {
+  margin-top: 2rem;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* Adaptación fluida para smartphones */
+@media (max-width: 480px) {
+  .form-group-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

@@ -229,7 +229,7 @@ const initCheckoutModalEvents = (): void => {
                 return;
             }
 
-            // 🚀 PASO 1: Creamos el cascarón de la orden en el Backend (Sin orderDetails)
+            // Creamos el cascarón de la orden en el Backend (Sin orderDetails)
             const createdOrder = await orderService.create({
                 date: new Date().toISOString().split("T")[0] || "",
                 orderStatus: OrderStatus.PENDING,
@@ -241,7 +241,7 @@ const initCheckoutModalEvents = (): void => {
                 customerNotes: checkout.inputNotes.value.trim() || "Sin observaciones adicionales.",
             });
 
-            // 🚀 PASO 2: Iteramos el carrito y agregamos los ítems uno por uno al sub-recurso
+            // Iteramos el carrito y agregamos los ítems uno por uno al sub-recurso
             for (const item of rawItems) {
                 await orderService.addItemToOrder(createdOrder.id, item.id, item.qty);
             }

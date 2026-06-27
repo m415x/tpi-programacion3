@@ -272,7 +272,7 @@ export const clientOrdersController = {
             console.error("Error al recuperar el historial de compras:", error);
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center" style="color: #b71c1c; font-weight: bold;">
+                    <td colspan="6" class="text-center error-text">
                         ❌ Error de comunicación con el servidor: ${error.message || "Status no resuelto"}
                     </td>
                 </tr>`;

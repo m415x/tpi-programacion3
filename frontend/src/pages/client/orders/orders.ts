@@ -32,7 +32,7 @@ const initClientOrdersPage = async (): Promise<void> => {
         if (mainContent) {
             mainContent.innerHTML = `
                 <div class="admin-container">
-                    <p class="empty-result text-center" style="color: var(--color-primary); font-weight: bold; padding: 2rem;">
+                    <p class="empty-result text-center">
                         ⚠️ No se pudo conectar con el servicio de gestión de pedidos históricos.
                         Por favor, verifique que el servidor backend de Spring Boot esté en ejecución.
                     </p>
