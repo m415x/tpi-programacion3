@@ -1,6 +1,8 @@
 import type { IProduct } from "@interfaces/Product.interface";
+import { UserRole } from "@interfaces/Enums";
 import { cartService } from "@services/cart.service";
 import { PATHS } from "@utils/paths";
+import { storage } from "@utils/storage";
 import { BRAND_NAME } from "@utils/constants";
 
 /**
@@ -143,11 +145,22 @@ export const updateBaseAvailabilityUI = (
     const badge = container.querySelector<HTMLElement>(selectors.badge);
     const btnAdd = container.querySelector<HTMLButtonElement>(selectors.button);
 
+    // Validamos las insignias de stock de forma normal
     if (badge) {
         badge.classList.toggle("stock-badge--out-of-stock", !isAvailable);
     }
 
     if (btnAdd) {
+        // Si el usuario es ADMIN, ocultamos el botón por completo
+        const currentRole = storage.getRole();
+
+        if (currentRole === UserRole.ADMIN) {
+            btnAdd.style.display = "none"; // El botón desaparece de la vista del Administrador
+            return; // Cortamos el flujo para este elemento
+        }
+
+        // Flujo normal para Clientes
+        btnAdd.style.display = ""; // Nos aseguramos de restablecer la visibilidad si estaba oculta
         btnAdd.disabled = !isAvailable;
         btnAdd.textContent = isAvailable ? "Agregar al carrito" : "No disponible";
     }
@@ -163,4 +176,60 @@ export const setPageTitle = (pageName: string): void => {
     if (titleElement) {
         titleElement.innerText = `${BRAND_NAME} - ${pageName}`;
     }
+};
+
+/**
+ * Traductor amigable de Enums de pago para la UI.
+ * @param method El método de pago a traducir.
+ */
+export const translatePaymentMethod = (method: string): string => {
+    const translations: Record<string, string> = {
+        CASH: "Efectivo",
+        CARD: "Tarjeta",
+        TRANSFER: "Transferencia",
+    };
+
+    return translations[method] || method;
+};
+
+/**
+ * Traductor amigable de Estados de órdenes para la UI.
+ * @param status El estado de la orden a traducir.
+ */
+export const translateStatusOrder = (status: string): string => {
+    const translations: Record<string, string> = {
+        PENDING: "PENDIENTE",
+        CONFIRMED: "CONFIRMADO",
+        COMPLETED: "COMPLETADO",
+        CANCELLED: "CANCELADO",
+    };
+
+    return translations[status] || status;
+};
+
+/**
+ * Retorna un mensaje descriptivo para el cliente basado en el estado del pedido.
+ * @param status El estado actual del pedido.
+ */
+export const getOrderStatusMessage = (status: string): string => {
+    const messages: Record<string, string> = {
+        PENDING: `<i class="fa-solid fa-hourglass sidebar__icon"></i>
+            <strong>Tu pedido está siendo procesado.</strong>
+            <br>Te notificamos cuando esté listo para entregar.
+            `,
+        CONFIRMED: `<i class="fa-solid fa-magnifying-glass sidebar__icon"></i>
+            <strong>Tu pedido ha sido confirmado y se encuentra en preparación.</strong>
+            <br>Te notificamos cuando esté listo para entregar.
+            `,
+        COMPLETED: `<i class="fa-solid fa-circle-check sidebar__icon"></i>
+            <strong>Tu pedido ha sido completado y entregado exitosamente.</strong>
+            <br>Gracias por tu compra!
+            `,
+        CANCELLED: `<i class="fa-solid fa-circle-xmark sidebar__icon"></i>
+            <strong>Tu pedido ha sido cancelado.</strong>
+            <br>Si tienes dudas, contáctanos.
+            `,
+    };
+
+    return messages[status] || "Estado del pedido en revisión.";
 };

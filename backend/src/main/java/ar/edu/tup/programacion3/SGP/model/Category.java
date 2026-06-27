@@ -30,6 +30,10 @@ public class Category extends Base {
     @ValidLongText
     private String description;
 
+	@Column(name = "image", length = 200)
+	@ValidLongText(message = "La image")
+	private String image;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     @Setter(AccessLevel.NONE)

@@ -69,8 +69,8 @@ export const productService = {
      * @returns Promesa con la lista de productos procesados por el backend
      */
     async getAll(criteria?: ProductFilterCriteria): Promise<IProduct[]> {
-        // Inicializamos un objeto de parámetros limpio
-        const queryParams: Record<string, any> = {};
+        // Declaramos una estructura de parámetros de URL segura y tipada
+        const queryParams: Record<string, string | number | boolean> = {};
 
         // Mapeo quirúrgico basado en las reglas de tu backend
         if (criteria) {

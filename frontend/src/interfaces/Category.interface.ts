@@ -7,4 +7,5 @@ export interface ICategory {
     createdAt: string;
     name: string;
     description: string;
+    image: string;
 }

@@ -1,6 +1,22 @@
 import type { IOrder } from "@interfaces/Order.interface";
 import type { OrderStatus, PaymentMethod } from "@interfaces/Enums";
 import api from "@services/api";
+import { storage } from "@utils/storage";
+
+/**
+ * DTO que define la estructura exacta que el backend de Spring Boot
+ * espera recibir para persistir un nuevo pedido en la base de datos.
+ */
+interface OrderRequestDTO {
+    date: string;
+    orderStatus: OrderStatus;
+    total: number;
+    paymentMethod: PaymentMethod;
+    userId: string;
+    customerPhone: string;
+    shippingAddress: string;
+    customerNotes: string;
+}
 
 /**
  * DTO que refleja la estructura exacta que devuelve el backend de Spring Boot,
@@ -9,19 +25,14 @@ import api from "@services/api";
 interface OrderResponseDTO {
     id: string;
     createdAt: string;
-    isDeleted: boolean;
-    totalPrice: number;
-    status: OrderStatus;
+    orderStatus: OrderStatus;
+    total: number;
     paymentMethod: PaymentMethod;
+    userId: string;
     customerPhone: string | null;
     shippingAddress: string | null;
     customerNotes: string | null;
-    user: {
-        id: string;
-        firstName: string;
-        lastName: string;
-        email: string;
-    } | null;
+    orderDetails: any[];
 }
 
 /**
@@ -31,21 +42,29 @@ interface OrderResponseDTO {
 const mapToDomain = (dto: OrderResponseDTO): IOrder => ({
     id: dto.id,
     createdAt: dto.createdAt,
-    isDeleted: dto.isDeleted,
-    totalPrice: dto.totalPrice,
-    status: dto.status,
+    isDeleted: false,
+    totalPrice: dto.total,
+    status: dto.orderStatus,
     paymentMethod: dto.paymentMethod,
     customerPhone: dto.customerPhone || "No provisto",
     shippingAddress: dto.shippingAddress || "Retiro en sucursal",
     customerNotes: dto.customerNotes || "Sin observaciones.",
-    // Armamos un nombre unificado amigable si existe el objeto user
-    user: dto.user
+    user: dto.userId
         ? {
-              id: dto.user.id,
-              name: `${dto.user.firstName} ${dto.user.lastName}`,
-              email: dto.user.email,
+              id: dto.userId,
+              name: "Cliente Activo",
+              email: "",
           }
         : null,
+    orderDetails: (dto.orderDetails || []).map((detail: any) => ({
+        id: detail.id,
+        deleted: detail.isDeleted || detail.deleted || false,
+        createdAt: detail.date || dto.date,
+        quantity: detail.quantity,
+        subtotal: detail.subtotal || detail.quantity * (detail.product?.price || 0),
+        product: detail.product,
+        orderId: dto.id,
+    })),
 });
 
 /**
@@ -59,6 +78,7 @@ export const orderService = {
     async getAll(): Promise<IOrder[]> {
         // Realiza la petición perimetral (Axios inyectará los headers X-User-Id mediante el interceptor)
         const response = await api.get<OrderResponseDTO[]>("/orders");
+
         return response.data.map(mapToDomain);
     },
 
@@ -68,7 +88,35 @@ export const orderService = {
      */
     async getById(id: string): Promise<IOrder> {
         const response = await api.get<OrderResponseDTO>(`/orders/${id}`);
+
         return mapToDomain(response.data);
+    },
+
+    /**
+     * Envía un nuevo pedido al backend para su persistencia transaccional.
+     * @param orderPayload Estructura de datos completa recolectada del Checkout
+     * @returns Promesa con el objeto IOrder de dominio devuelto y confirmado por la base de datos.
+     */
+    async create(orderPayload: OrderRequestDTO): Promise<IOrder> {
+        // Ejecuta el POST enviando el DTO completo alineado a los mapeadores de Java
+        const response = await api.post<OrderResponseDTO>("/orders", orderPayload);
+
+        return mapToDomain(response.data);
+    },
+
+    /**
+     * Agrega un ítem a una orden existente
+     * @param orderId ID de la orden a la que seagregará el ítem.
+     * @param productId ID del producto a agregar.
+     * @param qty Cantidad del producto a agregar.
+     */
+    async addItemToOrder(orderId: string, productId: string, qty: number): Promise<void> {
+        await api.post(`/orders/${orderId}/items`, null, {
+            params: {
+                productId: productId,
+                qty: qty,
+            },
+        });
     },
 
     /**
@@ -80,6 +128,7 @@ export const orderService = {
     async updateStatus(id: string, status: OrderStatus): Promise<IOrder> {
         // Le pegamos al endpoint parcial del backend enviando el nuevo estado en el body
         const response = await api.patch<OrderResponseDTO>(`/orders/${id}/status`, { status });
+
         return mapToDomain(response.data);
     },
 };

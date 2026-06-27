@@ -2,6 +2,7 @@ import { dashboardController } from "@pages/admin/dashboard/dashboard.controller
 import { categoriesController } from "@pages/admin/categories/categories.controller";
 import { productsController } from "@pages/admin/products/products.controller";
 import { ordersController } from "@pages/admin/orders/orders.controller";
+import { PATHS } from "@utils/paths";
 
 export const adminController = {
     /**
@@ -47,7 +48,7 @@ export const adminController = {
             </ul>
 
             <div class="sidebar__footer">
-                <a href="/" class="link sidebar__exit-link">
+                <a href="${PATHS.STORE.HOME}" class="link sidebar__exit-link">
                     <i class="fa-solid fa-store sidebar__icon"></i>
                     <span>Ver Tienda</span>
                 </a>

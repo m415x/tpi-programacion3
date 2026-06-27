@@ -6,6 +6,16 @@ import { categoryService } from "@services/category.service";
 // Estado local encapsulado del módulo
 let categoriesMap: Map<string, string> = new Map();
 let isEditingMode: boolean = false;
+let currentProductsList: IProduct[] = [];
+
+// Rastreador de dirección de ordenamiento por columna para productos
+let productSortDirections: Record<string, "ASC" | "DESC"> = {
+    name: "ASC",
+    category: "ASC",
+    price: "ASC",
+    stock: "ASC",
+    availability: "ASC",
+};
 
 // Helpers para obtener referencias diferidas del DOM tras la inyección dinámica
 const getElements = () => ({
@@ -45,12 +55,12 @@ export const productsController = {
                 <tr>
                   <th>ID (UUID)</th>
                   <th>Imagen</th>
-                  <th>Nombre</th>
-                  <th>Categoría</th>
+                  <th class="sortable-header" data-sort="name">Nombre</th>
+                  <th class="sortable-header" data-sort="category">Categoría</th>
                   <th>Descripción</th>
-                  <th>Precio</th>
-                  <th>Stock</th>
-                  <th>Disponible</th>
+                  <th class="sortable-header" data-sort="price">Precio</th>
+                  <th class="sortable-header" data-sort="stock">Stock</th>
+                  <th class="sortable-header" data-sort="availability">Disponible</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -116,6 +126,83 @@ export const productsController = {
         // Orquestamos la carga de datos paralela y el enlazado de eventos
         await this.showProducts();
         this.initProductEvents();
+
+        // Escuchador maestro para ordenar columnas al hacer clic en el <thead>
+        const tableHeader = targetContainer.querySelector("thead");
+        tableHeader?.addEventListener("click", (e: Event) => {
+            const th = (e.target as HTMLElement).closest(".sortable-header");
+            if (!th) return;
+
+            const sortBy = th.getAttribute("data-sort")!;
+            this.sortProductsBy(sortBy);
+        });
+
+        // Interceptamos el ID de reabastecimiento proveniente del Dashboard
+        const shortcutProductId = sessionStorage.getItem("edit_product_id_shortcut");
+        if (shortcutProductId) {
+            // Consumimos el ID para limpiar el estado de la sesión instantáneamente
+            sessionStorage.removeItem("edit_product_id_shortcut");
+
+            // Buscamos el producto en la lista o llamamos a tu método para abrir el modal
+            const productToEdit = currentProductsList.find((p) => p.id === shortcutProductId);
+            if (productToEdit) {
+                // Llamás a tu función existente que abre el modal de edición pasándole el producto
+                this.fillFormForEdit(productToEdit);
+            }
+        }
+    },
+
+    /**
+     * Re-dibuja el HTML de las filas basándose en el estado actual de currentProductsList
+     */
+    renderTableRows(): void {
+        const dom = getElements();
+        dom.tableBody.innerHTML = "";
+
+        if (currentProductsList.length === 0) {
+            dom.tableBody.innerHTML =
+                '<tr><td colspan="9" class="text-center">No hay productos en el sistema.</td></tr>';
+            return;
+        }
+
+        currentProductsList.forEach((product) => {
+            const tr = document.createElement("tr");
+            const categoryName = categoriesMap.get(product.categoryId || "") || "Sin Categoría";
+            const availabilityBadge = product.isAvailable
+                ? `<span class="badge badge--success-soft">Sí</span>`
+                : `<span class="badge badge--muted-soft">No</span>`;
+
+            tr.innerHTML = `
+                <td class="uuid-cell" title="${product.id}">${product.id.substring(0, 8)}...</td>
+                <td><img src="${product.imageUrl}" class="table-img" alt="${product.name}"></td>
+                <td class="fw-bold">${product.name}</td>
+                <td><span class="badge badge--info">${categoryName}</span></td>
+                <td class="desc-cell">${product.description}</td>
+                <td class="price-cell">$${product.price.toFixed(2)}</td>
+                <td>
+                    <span class="stock-indicator ${product.stock <= 3 ? "stock-low" : "stock-ok"}">
+                        ${product.stock} u.
+                    </span>
+                </td>
+                <td class="text-center">${availabilityBadge}</td>
+                <td>
+                    <div class="actions-wrapper">
+                        <button class="btn btn--action btn-secondary">Editar</button>
+                        <button class="btn btn--action btn-quaternary">Eliminar</button>
+                    </div>
+                </td>
+            `;
+
+            tr.querySelector(".btn-secondary")?.addEventListener("click", (e: Event) => {
+                e.preventDefault();
+                this.fillFormForEdit(product);
+            });
+            tr.querySelector(".btn-quaternary")?.addEventListener("click", () =>
+                this.fireDeleteProcess(product.id, product.name),
+            );
+
+            dom.tableBody.appendChild(tr);
+        });
     },
 
     /**
@@ -147,60 +234,45 @@ export const productsController = {
      * Limpia y redibuja la tabla mostrando TODOS los productos (disponibles o no).
      */
     async refreshTable(): Promise<void> {
-        const dom = getElements();
-        dom.tableBody.innerHTML = '<tr><td colspan="9" class="text-center">Cargando catálogo...</td></tr>';
+        currentProductsList = await productService.getAll();
+        this.renderTableRows();
+    },
 
-        // Traemos todo el universo de productos desde Spring Boot sin filtros de exclusión
-        const products = await productService.getAll();
-        dom.tableBody.innerHTML = "";
+    /**
+     * Algoritmo de ordenamiento mutador en memoria.
+     */
+    sortProductsBy(field: string): void {
+        const direction = productSortDirections[field];
 
-        if (products.length === 0) {
-            dom.tableBody.innerHTML =
-                '<tr><td colspan="9" class="text-center">No hay productos en el sistema.</td></tr>';
-            return;
-        }
+        currentProductsList.sort((a, b) => {
+            let valA: any = a[field as keyof IProduct];
+            let valB: any = b[field as keyof IProduct];
 
-        products.forEach((product) => {
-            const tr: HTMLTableRowElement = document.createElement("tr");
-            const categoryName: string = categoriesMap.get(product.categoryId || "") || "Sin Categoría";
+            // Caso especial: ordenar por el texto de la categoría, no por el UUID h2
+            if (field === "category") {
+                valA = categoriesMap.get(a.categoryId || "") || "";
+                valB = categoriesMap.get(b.categoryId || "") || "";
+            }
 
-            // 🚀 CONTROL RIGUROSO DE VISUALIZACIÓN DE DISPONIBILIDAD
-            // Si es false, se renderiza un badge gris con la palabra "No", sin ocultar la fila
-            const availabilityBadge = product.isAvailable
-                ? `<span class="badge" style="background-color: #e8f5e9; color: #2e7d32; font-weight: bold;">Sí</span>`
-                : `<span class="badge" style="background-color: #efeef0; color: #757575; font-weight: bold;">No</span>`;
+            if (field === "availability") {
+                valA = a.isAvailable ? 1 : 0; // Convertimos true a 1 y false a 0 para restar/comparar
+                valB = b.isAvailable ? 1 : 0;
+            }
 
-            tr.innerHTML = `
-                <td class="uuid-cell" title="${product.id}">${product.id.substring(0, 8)}...</td>
-                <td><img src="${product.imageUrl}" class="table-img" alt="${product.name}"></td>
-                <td class="fw-bold">${product.name}</td>
-                <td><span class="badge badge--info">${categoryName}</span></td>
-                <td class="desc-cell">${product.description}</td>
-                <td class="price-cell">$${product.price.toFixed(2)}</td>
-                <td>
-                    <span class="stock-indicator ${product.stock <= 3 ? "stock-low" : "stock-ok"}">
-                        ${product.stock} u.
-                    </span>
-                </td>
-                <td class="text-center">${availabilityBadge}</td> <td>
-                    <div class="actions-wrapper">
-                        <button class="btn--action btn-secondary">Editar</button>
-                        <button class="btn--action btn-quaternary">Eliminar</button>
-                    </div>
-                </td>
-            `;
+            // Normalización para strings
+            if (typeof valA === "string") valA = valA.toLowerCase();
+            if (typeof valB === "string") valB = valB.toLowerCase();
 
-            tr.querySelector(".btn-secondary")?.addEventListener("click", (e: Event): void => {
-                e.preventDefault();
-                this.fillFormForEdit(product);
-            });
-            tr.querySelector(".btn-quaternary")?.addEventListener(
-                "click",
-                (): Promise<void> => this.fireDeleteProcess(product.id, product.name),
-            );
-
-            dom.tableBody.appendChild(tr);
+            if (valA < valB) return direction === "ASC" ? -1 : 1;
+            if (valA > valB) return direction === "ASC" ? 1 : -1;
+            return 0;
         });
+
+        // Invertimos el sentido para el próximo clic
+        productSortDirections[field] = direction === "ASC" ? "DESC" : "ASC";
+
+        // Volvemos a pintar las filas ordenadas
+        this.renderTableRows();
     },
 
     /**
@@ -220,7 +292,7 @@ export const productsController = {
         dom.inputStock.value = product.stock.toString();
         dom.inputDescripcion.value = product.description;
 
-        // 🚀 CORRECCIÓN: Seteamos el estado booleano usando .checked para chequear el campo
+        // Seteamos el estado booleano usando .checked para chequear el campo
         dom.inputDisponible.checked = product.isAvailable;
 
         const urlParts = product.imageUrl.split("/");

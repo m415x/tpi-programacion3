@@ -9,10 +9,11 @@ export interface IOrder {
     createdAt: string;
     isDeleted: boolean;
     totalPrice: number;
-    status: any;
-    paymentMethod: string;
+    status: OrderStatus;
+    paymentMethod: PaymentMethod;
     customerPhone: string;
     shippingAddress: string;
     customerNotes: string;
     user: { id: string; name: string; email: string } | null;
+    orderDetails: IOrderDetail[];
 }

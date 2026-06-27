@@ -238,6 +238,52 @@ button:disabled {
   background-color: color-mix(in srgb, var(--color-secondary), transparent 20%);
 }
 
+/* Modificadores de Badges de Disponibilidad*/
+.badge--success-soft {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.badge--muted-soft {
+  background-color: #efeef0;
+  color: #757575;
+  font-weight: bold;
+}
+
+
+/* STATUS ORDER BADGE */
+.badge-status {
+  display: inline-block;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.badge-status--pending {
+  background-color: #ffe0b2;
+  /* Naranja suave */
+  color: #e65100;
+}
+
+.badge-status--preparing {
+  background-color: #b3e5fc;
+  /* Azul suave */
+  color: #01579b;
+}
+
+.badge-status--delivered {
+  background-color: #c8e6c9;
+  /* Verde suave */
+  color: #1b5e20;
+}
+
+.badge-status--cancelled {
+  background-color: #ffcdd2;
+  /* Rojo suave */
+  color: #b71c1c;
+}
+
+
 /* CART NOTICE */
 .cart-notice {
   display: flex;
@@ -1165,10 +1211,19 @@ button:disabled {
 }
 
 .dashboard-panel {
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
   padding: 1.75rem;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  gap: 1.5rem;
+}
+
+/* Mensaje de stock óptimo en el Dashboard */
+.dashboard-stock-optimal {
+  color: #2e7d32;
+  font-weight: bold;
 }
 
 /* Tablas Estilo Hoja de Cálculo con Sticky Headers */
@@ -1181,6 +1236,7 @@ button:disabled {
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   position: relative;
+  margin-bottom: 0;
 }
 
 .admin-table {
@@ -1290,6 +1346,8 @@ button:disabled {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   width: 100%;
   max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
   animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1377,4 +1435,154 @@ button:disabled {
 
 .hidden {
   display: none !important;
+}
+
+/* Margen inferior para separar la cabecera del modal */
+.checkout-header-margin {
+  margin-bottom: 0.5rem;
+  border: none;
+}
+
+/* Botón '×' de cierre superior derecho plano */
+.btn-close-modal-x {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: #333333;
+  padding: 0.25rem;
+  font-weight: bold;
+}
+
+.btn-close-modal-x:hover {
+  color: var(--color-primary);
+}
+
+/* Fila de control de totales dentro del Popup */
+.checkout-total-row {
+  border-bottom: none !important;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.checkout-total-row h3 {
+  color: var(--color-primary);
+  font-weight: bold;
+}
+
+/* Ajustes tipográficos para el botón de confirmación */
+.btn-checkout-submit {
+  text-transform: uppercase;
+  font-weight: bold;
+  padding: 0.85rem !important;
+}
+
+/* COMPONENTES DE FILTRADO HISTÓRICO */
+.form-group-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.form-label-inline {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #555);
+}
+
+.form-select-filter {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: 6px;
+  background-color: #fff;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--color-text, #333);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.form-select-filter:focus {
+  outline: none;
+  border-color: var(--color-primary, #ff5722);
+}
+
+/* ESTILOS DEL MODAL DE DETALLE DE PEDIDO */
+.order-info-container {
+  margin-bottom: 1.5rem;
+}
+
+.order-details-summary {
+  background-color: var(--bg-secondary, #f8f9fa);
+  padding: 0.8rem 0.8rem 0.2rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.order-details-title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--color-primary);
+}
+
+.order-details-summary p {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.order-payment-method {
+  margin-top: 1rem !important;
+  padding-top: 0.8rem;
+  border-top: 1px dashed #ccc;
+}
+
+.order-summary-container {
+  margin-top: 1.5rem;
+}
+
+.order-totals-wrapper {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.order-totals-wrapper .cart__summary-detail {
+  width: 100%;
+  max-width: 300px;
+  background-color: #fff;
+  padding: 1rem;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+.order-status-message {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #fff8e1;
+  /* Color suave de alerta/pendiente */
+  border-left: 4px solid #ffb300;
+  border-radius: 4px;
+}
+
+.order-status-message p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+/* RESALTE Y NAVEGACIÓN EN TABLAS */
+.sortable-header {
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.sortable-header:hover {
+  background-color: #f0f0f0;
+  color: var(--color-primary);
+}
+
+.sortable-header:active {
+  background-color: #e0e0e0;
 }

@@ -1,6 +1,8 @@
 import type { ICartItem } from "@interfaces/ICartItem";
 import type { IProduct } from "@interfaces/Product.interface";
+import { OrderStatus, PaymentMethod } from "@interfaces/Enums";
 import { cartService } from "@services/cart.service";
+import { orderService } from "@services/order.service";
 import { productService } from "@services/product.service";
 import { updateCartBadge } from "@utils/components";
 import { navigate } from "@utils/navigate";
@@ -8,12 +10,30 @@ import { PATHS } from "@utils/paths";
 import { storage } from "@utils/storage";
 import { formattedPriceHTML, wrapWithDetailLink } from "@utils/uiUtils";
 
+// Estado local del acumulador para transferir el monto exacto al modal popup
+let currentTotalAmount: number = 0;
+
+// Selector diferido para capturar los nodos del Modal Checkout tras la inyección
+const getCheckoutElements = () => ({
+    modalOverlay: document.querySelector<HTMLDivElement>("#checkout-modal-overlay")!,
+    checkoutForm: document.querySelector<HTMLFormElement>("#checkout-form")!,
+    btnCloseModal: document.querySelector<HTMLButtonElement>("#btn-close-checkout")!,
+    modalTotalLabel: document.querySelector<HTMLElement>("#modal-total-amount")!,
+    inputPhone: document.querySelector<HTMLInputElement>("#checkout-phone")!,
+    inputAddress: document.querySelector<HTMLTextAreaElement>("#checkout-address")!,
+    selectPayment: document.querySelector<HTMLSelectElement>("#checkout-payment")!,
+    inputNotes: document.querySelector<HTMLTextAreaElement>("#checkout-notes")!,
+});
+
 /**
  * Función para cargar los productos del carrito en el contenedor principal
  */
 export const showCart = async (): Promise<void> => {
     const cartProductContainer = document.querySelector<HTMLElement>("#cart-product-container");
     if (!cartProductContainer) return;
+
+    // Aseguramos que la estructura del Modal Popup de Checkout esté presente en el DOM
+    ensureCheckoutModalDOM();
 
     // Creamos un fragmento para optimizar la inserción de múltiples elementos en el DOM
     const fragment: DocumentFragment = document.createDocumentFragment();
@@ -37,7 +57,6 @@ export const showCart = async (): Promise<void> => {
             article.dataset.price = prod.price.toString();
 
             const linkedName = wrapWithDetailLink(prod.id, `<h3 class="cart__product-title">${prod.name}</h3>`);
-
             const unitPrice: string = formattedPriceHTML(prod.price);
 
             article.innerHTML = `
@@ -118,6 +137,129 @@ export const showCart = async (): Promise<void> => {
 
     // Actualizamos el badge del carrito
     updateCartBadge();
+};
+
+/**
+ * Inyecta el esqueleto HTML del popup de checkout si no existe en el documento actual.
+ */
+const ensureCheckoutModalDOM = (): void => {
+    if (document.querySelector("#checkout-modal-overlay")) return;
+
+    const modalDiv = document.createElement("div");
+    modalDiv.id = "checkout-modal-overlay";
+    modalDiv.className = "admin-modal-overlay hidden"; // Reutiliza tus clases de layout de modales
+    modalDiv.innerHTML = `
+        <div class="form-container admin-modal-content">
+            <div class="admin-header-row checkout-header-margin">
+                <h2>Completar Pedido</h2>
+                <button type="button" id="btn-close-checkout" class="btn-close-modal-x">×</button>
+            </div>
+            <form id="checkout-form" novalidate>
+                <div class="form-group">
+                    <label for="checkout-phone">Teléfono</label>
+                    <input type="text" id="checkout-phone" required placeholder="Ej: +54 9 264 123-4567">
+                </div>
+
+                <div class="form-group">
+                    <label for="checkout-address">Dirección de Entrega</label>
+                    <textarea id="checkout-address" required placeholder="Calle, número, piso, depto..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="checkout-payment">Método de Pago</label>
+                    <select id="checkout-payment" required>
+                        <option value="">Seleccione un método</option>
+                        <option value="${PaymentMethod.CASH}">Efectivo</option>
+                        <option value="${PaymentMethod.CARD}">Tarjeta</option>
+                        <option value="${PaymentMethod.TRANSFER}">Transferencia Bancaria</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="checkout-notes">Notas adicionales (opcional)</label>
+                    <textarea id="checkout-notes" placeholder="Instrucciones especiales, timbre, etc."></textarea>
+                </div>
+
+                <div class="admin-header-row checkout-total-row">
+                    <h3>Total a pagar:</h3>
+                    <h3 id="modal-total-amount" class="price">$-</h3>
+                </div>
+
+                <button type="submit" class="btn btn--tertiary btn--full btn-checkout-submit">Confirmar Pedido</button>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modalDiv);
+    initCheckoutModalEvents();
+};
+
+/**
+ * Inicializa los eventos del Modal Popup de Finalización de Compra.
+ */
+const initCheckoutModalEvents = (): void => {
+    const checkout = getCheckoutElements();
+
+    // Evento de Cierre (Botón X)
+    checkout.btnCloseModal.addEventListener("click", () => {
+        checkout.modalOverlay.classList.add("hidden");
+    });
+
+    // Cierre defensivo por click exterior
+    checkout.modalOverlay.addEventListener("click", (e) => {
+        if (e.target === checkout.modalOverlay) {
+            checkout.modalOverlay.classList.add("hidden");
+        }
+    });
+
+    // Envío del Formulario (Submit) contra Spring Boot
+    // Envío del Formulario (Submit) contra Spring Boot en DOS PASOS
+    checkout.checkoutForm.addEventListener("submit", async (e: Event): Promise<void> => {
+        e.preventDefault();
+
+        if (!checkout.inputPhone.value.trim() || !checkout.inputAddress.value.trim() || !checkout.selectPayment.value) {
+            alert("Por favor, completá todos los campos obligatorios del envío.");
+            return;
+        }
+
+        try {
+            // Obtenemos los ítems crudos del storage de sesión
+            const rawItems: ICartItem[] = storage.getCartItems();
+            if (rawItems.length === 0) {
+                alert("El carrito se encuentra vacío.");
+                return;
+            }
+
+            // 🚀 PASO 1: Creamos el cascarón de la orden en el Backend (Sin orderDetails)
+            const createdOrder = await orderService.create({
+                date: new Date().toISOString().split("T")[0] || "",
+                orderStatus: OrderStatus.PENDING,
+                total: currentTotalAmount, // Java lo ignora y lo pisa con ZERO, pero cumple el contrato
+                paymentMethod: checkout.selectPayment.value as PaymentMethod,
+                userId: storage.getUser()?.id || "",
+                customerPhone: checkout.inputPhone.value.trim(),
+                shippingAddress: checkout.inputAddress.value.trim(),
+                customerNotes: checkout.inputNotes.value.trim() || "Sin observaciones adicionales.",
+            });
+
+            // 🚀 PASO 2: Iteramos el carrito y agregamos los ítems uno por uno al sub-recurso
+            for (const item of rawItems) {
+                await orderService.addItemToOrder(createdOrder.id, item.id, item.qty);
+            }
+
+            alert("¡Pedido generado exitosamente! Podrás seguir su estado desde 'Mis Pedidos'.");
+
+            // Limpieza del ecosistema local tras la compra
+            storage.clearCart();
+            checkout.checkoutForm.reset();
+            checkout.modalOverlay.classList.add("hidden");
+
+            // Redirigimos al cliente a su historial
+            navigate(PATHS.CLIENT.ORDERS);
+        } catch (error: any) {
+            console.error("Error al procesar el checkout:", error);
+            alert(error.response?.data?.message || "Error perimetral de red al procesar tu orden.");
+        }
+    });
 };
 
 /**
@@ -268,8 +410,32 @@ export const initCartEvents = (): void => {
 
     // Evento del botón "Checkout"
     if (btnCheckout) {
-        btnCheckout.addEventListener("click", (): void => {
-            alert("Checkout Próximamente");
+        btnCheckout.addEventListener("click", async (): Promise<void> => {
+            // 1. Buscamos los ítems actuales en el storage para validar que no esté vacío
+            const cartItems = storage.getCartItems();
+            if (cartItems.length === 0) {
+                alert("Agregá productos al carrito antes de proceder.");
+                return;
+            }
+
+            // 2. Recalculamos el total real en caliente para asegurar sincronización absoluta
+            const activeProducts = await productService.getAll();
+            const productsInCart = cartService.getCartItems(activeProducts);
+
+            const subtotal = getSubtotal(productsInCart);
+            const shippingCost = subtotal > 0 ? 500 : 0;
+
+            // Actualizamos la variable global para el submit del formulario
+            currentTotalAmount = subtotal + shippingCost;
+
+            // 3. Capturamos los elementos del Modal Checkout usando los selectores dinámicos
+            const checkout = getCheckoutElements();
+
+            // 3. Inyectamos el total calculado al centavo en el tag del popup
+            checkout.modalTotalLabel.innerHTML = formattedPriceHTML(currentTotalAmount);
+
+            // 4. Removemos la clase utilitaria que creamos en el CSS para hacerlo emerger
+            checkout.modalOverlay.classList.remove("hidden");
         });
     }
 };

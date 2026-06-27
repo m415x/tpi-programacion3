@@ -81,13 +81,13 @@ public class SGPApp {
                 // ==========================================
                 CategoryResponseDTO catComida =
                         categoryService.save(
-                                new CategoryRequestDTO("Comida Rápida", "Hamburguesas y lomos"));
+                                new CategoryRequestDTO("Comida Rápida", "Hamburguesas y lomos", "hamburguesa1.jpg"));
 
                 CategoryResponseDTO catBebidas =
-                        categoryService.save(new CategoryRequestDTO("Bebidas", "Gaseosas y aguas"));
+                        categoryService.save(new CategoryRequestDTO("Bebidas", "Gaseosas y aguas", "coca.jpg"));
 
                 CategoryResponseDTO catPostres =
-                        categoryService.save(new CategoryRequestDTO("Postres", "Helados y tortas"));
+                        categoryService.save(new CategoryRequestDTO("Postres", "Helados y tortas", "flan.jpg"));
 
                 // ==========================================
                 // c) Instanciar 10 Productos y asignarles categorías

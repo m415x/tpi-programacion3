@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="/src/style.css">
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+
+  <body class="layout layout--no-sidebar">
+    <header id="header"></header>
+
+    <main class="main">
+      <section class="main__header main__header--no-sidebar">
+        <h2>Mis Pedidos</h2>
+        <p class="form-help">Historial de órdenes de compra realizadas</p>
+
+        <div class="form-group-filter">
+          <label for="filter-order-status" class="form-label-inline">Filtrar por estado:</label>
+          <select id="filter-order-status" class="form-select-filter">
+            <option value="ALL">TODOS LOS PEDIDOS</option>
+            <option value="PENDING">PENDIENTE</option>
+            <option value="CONFIRMED">CONFIRMADO</option>
+            <option value="COMPLETED">COMPLETADO</option>
+            <option value="CANCELLED">CANCELADO</option>
+          </select>
+        </div>
+      </section>
+
+
+      <section class="main__content main__content--no-sidebar">
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Pedido ID</th>
+                <th>Fecha y hora</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th class="text-center">Detalle</th>
+              </tr>
+            </thead>
+            <tbody id="client-orders-table-body">
+              <tr>
+                <td colspan="6" class="text-center">Cargando tu historial de compras...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <div id="order-items-modal-overlay" class="admin-modal-overlay hidden">
+      <div class="form-container admin-modal-content">
+        <div class="admin-header-row checkout-header-margin">
+          <h2>Detalle del Pedido <span id="detail-modal-order-id" class="uuid-cell"></span></h2>
+          <button type="button" id="btn-close-items-modal" class="btn-close-modal-x">×</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody id="modal-order-items-body">
+            </tbody>
+          </table>
+        </div>
+
+        <div class="admin-header-row checkout-total-row">
+          <h3>Monto Total:</h3>
+          <h3 id="detail-modal-total" class="price">$-</h3>
+        </div>
+      </div>
+    </div>
+
+    <footer id="footer"></footer>
+
+    <script type="module" src="/src/pages/client/orders/orders.ts"></script>
+  </body>
+
+</html>

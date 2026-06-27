@@ -3,6 +3,11 @@ import { categoryService } from "@services/category.service";
 
 // Estado local encapsulado del módulo de categorías
 let isEditingMode: boolean = false;
+let currentCategoriesList: ICategory[] = [];
+
+let categorySortDirections: Record<string, "ASC" | "DESC"> = {
+    name: "ASC",
+};
 
 // Helpers para obtener referencias diferidas del DOM tras la inyección en la SPA
 const getElements = () => ({
@@ -16,6 +21,7 @@ const getElements = () => ({
     inputId: document.querySelector<HTMLInputElement>("#category-id")!,
     inputNombre: document.querySelector<HTMLInputElement>("#category-name")!,
     inputDescripcion: document.querySelector<HTMLTextAreaElement>("#category-description")!,
+    inputImagen: document.querySelector<HTMLInputElement>("#category-image")!,
 });
 
 export const categoriesController = {
@@ -35,7 +41,8 @@ export const categoriesController = {
               <thead>
                 <tr>
                   <th>ID (UUID)</th>
-                  <th>Nombre de la Categoría</th>
+                  <th>Imagen</th>
+                  <th class="sortable-header" data-sort="name">Nombre</th>
                   <th>Descripción / Detalles</th>
                   <th>Acciones</th>
                 </tr>
@@ -62,6 +69,11 @@ export const categoriesController = {
                   <textarea id="category-description" required placeholder="Breve descripción del grupo de menú..."></textarea>
                 </div>
 
+                <div class="form-group">
+                  <label for="category-image">Nombre del archivo de imagen</label>
+                  <input type="text" id="category-image" required placeholder="Ej: hamburguesas.jpg">
+                </div>
+
                 <div class="form-actions">
                   <button type="submit" class="btn btn--tertiary" id="btn-submit">Guardar Categoría</button>
                   <button type="button" class="btn btn--secondary" id="btn-cancel">Cancelar</button>
@@ -76,61 +88,86 @@ export const categoriesController = {
         // Renderizamos las filas dinámicas y enlazamos los listeners de la UI
         await this.refreshTable();
         this.initCategoryEvents();
+
+        // Escuchador de ordenamiento para categorías
+        const tableHeader = targetContainer.querySelector("thead");
+        tableHeader?.addEventListener("click", (e: Event) => {
+            const th = (e.target as HTMLElement).closest(".sortable-header");
+            if (!th) return;
+
+            const sortBy = th.getAttribute("data-sort")!;
+            this.sortCategoriesBy(sortBy);
+        });
+    },
+
+    /**
+     * Renderiza las filas de la tabla de categorías
+     */
+    renderTableRows(): void {
+        const dom = getElements();
+        dom.tableBody.innerHTML = "";
+
+        if (currentCategoriesList.length === 0) {
+            dom.tableBody.innerHTML =
+                '<tr><td colspan="5" class="text-center">No hay categorías cargadas en el sistema.</td></tr>';
+            return;
+        }
+
+        currentCategoriesList.forEach((category: ICategory) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="uuid-cell" title="${category.id}">${category.id.substring(0, 8)}...</td>
+                <td><img src="${category.image}" class="table-img" alt="${category.name}"></td>
+                <td class="fw-bold">${category.name}</td>
+                <td class="desc-cell">${category.description || "Sin descripción asociada."}</td>
+                <td>
+                    <div class="actions-wrapper">
+                        <button class="btn btn--action btn-secondary">Editar</button>
+                        <button class="btn btn--action btn-quaternary">Eliminar</button>
+                    </div>
+                </td>
+            `;
+
+            tr.querySelector(".btn-secondary")?.addEventListener("click", (e: Event) => {
+                e.preventDefault();
+                this.fillFormForEdit(category);
+            });
+            tr.querySelector(".btn-quaternary")?.addEventListener("click", () =>
+                this.fireDeleteProcess(category.id, category.name),
+            );
+
+            dom.tableBody.appendChild(tr);
+        });
     },
 
     /**
      * Limpia y redibuja la tabla con datos frescos consumiendo tu servicio de Spring Boot.
      */
     async refreshTable(): Promise<void> {
-        const dom = getElements();
-        dom.tableBody.innerHTML = '<tr><td colspan="5" class="text-center">Cargando categorías...</td></tr>';
+        currentCategoriesList = await categoryService.getAll();
+        this.renderTableRows();
+    },
 
-        try {
-            const categories = await categoryService.getAll();
-            dom.tableBody.innerHTML = "";
+    /**
+     * Ordenador dinámico de categorías
+     */
+    sortCategoriesBy(field: string): void {
+        const direction = categorySortDirections[field];
 
-            if (categories.length === 0) {
-                dom.tableBody.innerHTML =
-                    '<tr><td colspan="5" class="text-center">No hay categorías cargadas en el sistema.</td></tr>';
-                return;
-            }
+        currentCategoriesList.sort((a, b) => {
+            let valA = a[field as keyof ICategory] || "";
+            let valB = b[field as keyof ICategory] || "";
 
-            categories.forEach((category: ICategory) => {
-                const tr: HTMLTableRowElement = document.createElement("tr");
+            if (typeof valA === "string") valA = valA.toLowerCase();
+            if (typeof valB === "string") valB = valB.toLowerCase();
 
-                // Formateamos la fecha de creación ISO de forma amigable (DD/MM/AAAA)
-                const createdDate = category.createdAt ? new Date(category.createdAt).toLocaleDateString() : "N/A";
+            if (valA < valB) return direction === "ASC" ? -1 : 1;
+            if (valA > valB) return direction === "ASC" ? 1 : -1;
+            return 0;
+        });
 
-                tr.innerHTML = `
-                    <td class="uuid-cell" title="${category.id}">${category.id.substring(0, 8)}...</td>
-                    <td class="fw-bold">${category.name}</td>
-                    <td class="desc-cell">${category.description || "Sin descripción asociada."}</td>
-                    <td>
-                        <div class="actions-wrapper">
-                            <button class="btn btn--action btn-secondary">Editar</button>
-                            <button class="btn btn--action btn-quaternary">Eliminar</button>
-                        </div>
-                    </td>
-                `;
-
-                // Escuchadores de eventos para los botones de acción usando preventDefault preventivo
-                tr.querySelector(".btn-secondary")?.addEventListener("click", (e: Event): void => {
-                    e.preventDefault();
-                    this.fillFormForEdit(category);
-                });
-
-                tr.querySelector(".btn-quaternary")?.addEventListener(
-                    "click",
-                    (): Promise<void> => this.fireDeleteProcess(category.id, category.name),
-                );
-
-                dom.tableBody.appendChild(tr);
-            });
-        } catch (error) {
-            console.error("Error al refrescar la grilla de categorías:", error);
-            dom.tableBody.innerHTML =
-                '<tr><td colspan="5" class="text-center error-text">Error de comunicación con el backend relacional.</td></tr>';
-        }
+        categorySortDirections[field] = direction === "ASC" ? "DESC" : "ASC";
+        this.renderTableRows();
     },
 
     /**
@@ -147,6 +184,13 @@ export const categoriesController = {
         dom.inputId.value = category.id;
         dom.inputNombre.value = category.name;
         dom.inputDescripcion.value = category.description || "";
+
+        // Extraemos el nombre de archivo plano
+        if (category.image) {
+            dom.inputImagen.value = category.image.replace("/img/categories/", "");
+        } else {
+            dom.inputImagen.value = "";
+        }
 
         // Quitamos la clase hidden para que emerja el popup flotante
         dom.modalContainer.classList.remove("hidden");
@@ -189,24 +233,30 @@ export const categoriesController = {
                 return;
             }
 
+            // Capturamos el nombre de archivo plano o aplicamos un fallback si viene vacío
+            const imageFile = dom.inputImagen?.value.trim() || "default-food.jpg";
+
             try {
                 if (isEditingMode) {
-                    // Flujo PUT: Pasamos el objeto completo mapeado a la firma del servicio
+                    // Flujo PUT: Pasamos el objeto de dominio extendido con la propiedad imageFileName
                     await categoryService.update({
                         id: dom.inputId.value,
                         name: dom.inputNombre.value.trim(),
                         description: dom.inputDescripcion.value.trim(),
                         isDeleted: false,
                         createdAt: new Date().toISOString(),
+                        image: dom.inputImagen.value.trim(),
+                        imageFileName: imageFile,
                     });
                     alert("Categoría modificada con éxito.");
                 } else {
-                    // Flujo POST: Creación de nueva categoría
+                    // Flujo POST: Creación omitiendo id e img, intersecando imageFileName
                     await categoryService.create({
                         name: dom.inputNombre.value.trim(),
                         description: dom.inputDescripcion.value.trim(),
                         isDeleted: false,
                         createdAt: new Date().toISOString(),
+                        imageFileName: imageFile,
                     });
                     alert("Nueva categoría almacenada en la base de datos.");
                 }
@@ -229,7 +279,6 @@ export const categoriesController = {
             }
         });
     },
-
     /**
      * Orquesta el borrado lógico a través del método DELETE de tu API REST.
      */

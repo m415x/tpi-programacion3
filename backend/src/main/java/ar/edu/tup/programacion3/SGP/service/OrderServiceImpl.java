@@ -221,7 +221,7 @@ public class OrderServiceImpl implements OrderService {
 
         return new OrderResponseDTO(
                 dto.id(),
-                dto.date(),
+                dto.createdAt(),
                 dto.orderStatus(),
                 dto.total(),
                 dto.paymentMethod(),

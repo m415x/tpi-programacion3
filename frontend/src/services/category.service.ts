@@ -11,11 +11,13 @@ interface CategoryResponseDTO {
     createdAt: string;
     name: string;
     description: string;
+    image: string;
 }
 
 interface CategoryRequestDTO {
     name: string;
     description: string;
+    image: string;
 }
 
 /**
@@ -30,6 +32,7 @@ const mapToDomain = (dto: CategoryResponseDTO): ICategory => ({
     createdAt: dto.createdAt,
     name: dto.name,
     description: dto.description,
+    image: dto.image ? `/img/categories/${dto.image}` : "/img/categories/default-food.jpg",
 });
 
 /**
@@ -68,10 +71,11 @@ export const categoryService = {
      * @param category Objeto con los datos del categoría a crear, excluyendo el ID.
      * @returns Promesa con la categoría creada, mapeada a la interfaz ICategory del frontend.
      */
-    async create(category: Omit<ICategory, "id">): Promise<ICategory> {
+    async create(category: Omit<ICategory, "id" | "image"> & { imageFileName: string }): Promise<ICategory> {
         const dto: CategoryRequestDTO = {
             name: category.name,
             description: category.description,
+            image: category.imageFileName,
         };
 
         const response = await api.post<CategoryResponseDTO>("/categories", dto);
@@ -85,10 +89,11 @@ export const categoryService = {
      * @param category Objeto categoría completo del dominio, incluyendo el ID de la categoría a modificar.
      * @returns Promesa con la categoría actualizada, mapeada a la interfaz ICategory del frontend.
      */
-    async update(category: ICategory): Promise<ICategory> {
+    async update(category: ICategory & { imageFileName: string }): Promise<ICategory> {
         const dto: CategoryRequestDTO = {
             name: category.name,
             description: category.description,
+            image: category.imageFileName,
         };
 
         const response = await api.put<CategoryResponseDTO>(`/categories/${category.id}`, dto);
@@ -103,12 +108,12 @@ export const categoryService = {
      * @param changes Objeto parcial con las propiedades del dominio que se desean alterar.
      * @returns Promesa con la categoría actualizada, mapeada a la interfaz ICategory del frontend.
      */
-    async partialUpdate(id: string, changes: Partial<ICategory>): Promise<ICategory> {
-        // Inicializamos un objeto de payload vacío
+    async partialUpdate(id: string, changes: Partial<ICategory & { imageFileName: string }>): Promise<ICategory> {
         const dto: Partial<CategoryRequestDTO> = {};
 
         if (changes.name !== undefined) dto.name = changes.name;
         if (changes.description !== undefined) dto.description = changes.description;
+        if (changes.imageFileName !== undefined) dto.image = changes.imageFileName;
 
         const response = await api.patch<CategoryResponseDTO>(`/categories/${id}`, dto);
 

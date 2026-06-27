@@ -112,7 +112,7 @@ export const ordersController = {
                 <td><strong>#${order.id.slice(-6)}</strong></td>
                 <td>${order.user?.name || "Cliente Invitado"}</td>
                 <td>$${order.totalPrice.toFixed(2)}</td>
-                <td><span class="badge badge-${order.status.toLowerCase()}">${order.status}</span></td>
+                <td><span class="badge-status badge-${order.status.toLowerCase()}">${order.status}</span></td>
                 <td>${new Date(order.createdAt).toLocaleDateString()}</td>
                 <td>
                     <button class="btn btn-sm btn-primary btn-view-order" data-id="${order.id}">
