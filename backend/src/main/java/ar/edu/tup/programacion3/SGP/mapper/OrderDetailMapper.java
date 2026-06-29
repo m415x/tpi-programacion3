@@ -20,6 +20,6 @@ public interface OrderDetailMapper {
 
 	// Para las salidas (GET, respuestas de POST/PUT/PATCH)
     @Mapping(target = "orderId", source = "orderId")
-    @Mapping(target = "product.categoryId", source = "categoryId")
+    @Mapping(target = "product.category.id", source = "categoryId")
     OrderDetailResponseDTO toDto(OrderDetail detail, UUID orderId, UUID categoryId);
 }

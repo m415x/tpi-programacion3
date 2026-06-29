@@ -67,42 +67,18 @@ export const userService = {
         return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password);
     },
 
-    /**
-     * Encripta la contraseña usando SHA-256.
-     * @param password La contraseña a encriptar.
-     * @returns Una promesa que resuelve con el hash hexadecimal.
-     */
-    async encryptPassword(password: string): Promise<string> {
-        // Encriptamos la contraseña
-        const encoder: TextEncoder = new TextEncoder();
-
-        // Convertimos la contraseña a un Uint8Array para el hashing
-        const data: Uint8Array = encoder.encode(password);
-
-        // Generamos el hash puro en un buffer aislado
-        const buffer: ArrayBuffer = await crypto.subtle.digest("SHA-256", data as BufferSource);
-
-        // Transformamos el buffer a un array de bytes limpio
-        const bytes = new Uint8Array(buffer);
-
-        // Convertimos el buffer a un string hexadecimal
-        return Array.from(bytes)
-            .map((b: number): string => b.toString(16).padStart(2, "0"))
-            .join("");
-    },
-
     // --- BLOQUE DE COMUNICACIÓN HTTP CON SPRING BOOT (API) ---
     /**
      * Valida las credenciales contra la base de datos de Spring Boot.
      * @param email Email ingresado por el usuario
-     * @param passwordHash Contraseña ya encriptada en SHA-256 en el Front
+     * @param rawPassword Contraseña en texto plano ingresada en el input
      */
-    async login(email: string, passwordHash: string): Promise<boolean> {
+    async login(email: string, rawPassword: string): Promise<boolean> {
         try {
             // Buscamos al usuario en el backend por su email
             const response: { data: UserResponseDTO } = await api.post<UserResponseDTO>("/users/login", {
                 email: email.trim(),
-                password: passwordHash, // Enviamos el hash para que el backend lo compare con su base de datos
+                password: rawPassword, // Enviamos el hash para que el backend lo compare con su base de datos
             });
 
             // Si tu backend devuelve un array, sacamos el primero
@@ -128,7 +104,7 @@ export const userService = {
      * @returns Promesa que resuelve con el usuario registrado
      */
     async register(
-        newUser: Omit<IUser, "id" | "createdAt" | "isDeleted" | "password"> & { passwordHash: string },
+        newUser: Omit<IUser, "id" | "createdAt" | "isDeleted" | "password"> & { rawPassword: string },
     ): Promise<IUser> {
         const dto = {
             isDeleted: false, // Por defecto, el nuevo usuario no está eliminado
@@ -136,12 +112,33 @@ export const userService = {
             lastName: newUser.lastName,
             email: newUser.email,
             phone: newUser.phone,
-            password: newUser.passwordHash, // Viaja el string hash seguro de 64 caracteres
+            password: newUser.rawPassword, // Viaja el texto plano de forma directa
             userRole: newUser.userRole || "CLIENT", // Por defecto, el nuevo usuario es CLIENT
         };
 
         // Spring Boot se encarga de validar la unicidad del email y el autoincrement del ID
         const response: { data: UserResponseDTO } = await api.post<UserResponseDTO>("/users", dto);
+
+        return mapToDomain(response.data);
+    },
+
+    /**
+     * Recupera el perfil del usuario actualmente logueado, la API deduce el usuario por las cabeceras perimetrales.
+     */
+    async getProfile(): Promise<IUser> {
+        const response = await api.get<UserResponseDTO>("/users/profile");
+
+        return mapToDomain(response.data);
+    },
+
+    /**
+     * Actualiza de forma parcial los datos del perfil del usuario logueado. Se envía mediante PATCH a /users/profile
+     * sin exponer IDs en la URL.
+     */
+    async updateProfile(
+        profileChanges: Partial<Omit<IUser, "id" | "createdAt" | "isDeleted" | "userRole">>
+    ): Promise<IUser> {
+        const response = await api.patch<UserResponseDTO>("/users/profile", profileChanges);
 
         return mapToDomain(response.data);
     },

@@ -11,4 +11,6 @@ public record ProductResponseDTO(
         Integer stock,
         String image,
         Boolean available,
-        UUID categoryId) {}
+        CategoryNestedDTO category) {
+	public record CategoryNestedDTO(UUID id, String name, String description, String image) {}
+}

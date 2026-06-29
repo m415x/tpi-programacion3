@@ -21,6 +21,8 @@ public interface ProductService {
 	public void deleteById(UUID id);
 
     // Métodos personalizados
+    public List<ProductResponseDTO> findByCategoryId(UUID categoryId);
+
     public List<ProductResponseDTO> getProductsByAvailability(Boolean available);
 
     public List<ProductResponseDTO> findProductsByName(String name);

@@ -11,13 +11,13 @@ import java.util.List;
 import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/products")
-@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class ProductController {
 
@@ -25,56 +25,51 @@ public class ProductController {
 
     @PostMapping
     @AdminRequired
-    public ProductResponseDTO saveProduct(
+    public ResponseEntity<ProductResponseDTO> saveProduct(
             @Validated(OnCreate.class) @RequestBody ProductRequestDTO dto) {
 
-        return service.save(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.save(dto));
     }
 
     @GetMapping("/{id}")
-    public ProductResponseDTO findProduct(@PathVariable UUID id) {
+    public ResponseEntity<ProductResponseDTO> findProduct(@PathVariable UUID id) {
 
-        return service.findById(id);
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @GetMapping
-    public List<ProductResponseDTO> findProducts(
+    public ResponseEntity<List<ProductResponseDTO>> findProducts(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Boolean available,
             @RequestParam(required = false) Integer lowStock) {
 
         if (name != null && !name.trim().isEmpty()) {
-
-			return service.findProductsByName(name);
+            return ResponseEntity.ok(service.findProductsByName(name));
         }
-
         if (available != null) {
-
-			return service.getProductsByAvailability(available);
+            return ResponseEntity.ok(service.getProductsByAvailability(available));
         }
-
         if (lowStock != null && lowStock > 0) {
-
-			return service.getLowStockProducts(lowStock);
+            return ResponseEntity.ok(service.getLowStockProducts(lowStock));
         }
 
-        return service.findAll();
+        return ResponseEntity.ok(service.findAll());
     }
 
     @PutMapping("/{id}")
     @AdminRequired
-    public ProductResponseDTO updateProduct(
+    public ResponseEntity<ProductResponseDTO> updateProduct(
             @PathVariable UUID id, @Valid @RequestBody ProductRequestDTO dto) {
 
-        return service.update(dto, id);
+        return ResponseEntity.ok(service.update(dto, id));
     }
 
     @PatchMapping("/{id}")
     @AdminRequired
-    public ProductResponseDTO partialUpdateProduct(
+    public ResponseEntity<ProductResponseDTO> partialUpdateProduct(
             @PathVariable UUID id, @Validated(OnUpdate.class) @RequestBody ProductRequestDTO dto) {
 
-        return service.partialUpdate(dto, id);
+        return ResponseEntity.ok(service.partialUpdate(dto, id));
     }
 
     @DeleteMapping("/{id}")
@@ -85,18 +80,26 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+	@GetMapping("/category/{categoryId}")
+	public ResponseEntity<List<ProductResponseDTO>> getProductsByCategory(@PathVariable UUID categoryId) {
+
+		List<ProductResponseDTO> products = service.findByCategoryId(categoryId);
+
+		return ResponseEntity.ok(products);
+	}
+
     // ENDPOINTS HISTÓRICOS (Separados para proteger el flujo principal)
     @GetMapping("/history")
     @AdminRequired
-    public List<ProductResponseDTO> getHistoricalProducts() {
+    public ResponseEntity<List<ProductResponseDTO>> getHistoricalProducts() {
 
-		return service.getHistoricalProducts();
+        return ResponseEntity.ok(service.getHistoricalProducts());
     }
 
     @GetMapping("/{id}/history")
     @AdminRequired
-    public ProductResponseDTO findHistoricalProduct(@PathVariable UUID id) {
+    public ResponseEntity<ProductResponseDTO> findHistoricalProduct(@PathVariable UUID id) {
 
-		return service.findHistoricalProduct(id);
+        return ResponseEntity.ok(service.findHistoricalProduct(id));
     }
 }

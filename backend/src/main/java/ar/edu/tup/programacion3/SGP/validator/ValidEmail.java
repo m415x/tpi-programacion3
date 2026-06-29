@@ -12,7 +12,7 @@ import java.lang.annotation.*;
 @NotBlank(message = "El email es obligatorio", groups = OnCreate.class)
 @Email(
         regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$",
-        message = "Debe proporcionar un email válido. Por ejemplo, usuario@email.com",
+		message = "error de formato de email",
         groups = {OnCreate.class, OnUpdate.class})
 @Size(
         min = 6,

@@ -63,7 +63,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 		Category category = repository.findByIdOrThrow(id);
 
-		mapper.updateCategoryFromEdit(dto, category);
+		mapper.partialUpdateCategoryFromEdit(dto, category);
 		category = repository.save(category);
 
 		return mapper.toDto(category);
@@ -74,16 +74,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void deleteById(UUID id) {
 
         Category category = repository.findByIdOrThrow(id);
-
         category.setDeleted(true);
-
-        if (category.getProducts() != null) {
-            category.getProducts()
-                    .forEach(
-                            product -> {
-                                product.setDeleted(true);
-                            });
-        }
 
         repository.save(category);
     }

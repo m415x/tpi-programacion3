@@ -5,9 +5,9 @@ import java.util.UUID;
 import java.util.Map;
 
 import ar.edu.tup.programacion3.SGP.model.enums.OrderStatus;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -30,57 +30,56 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/orders")
-@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class OrderController {
 
 	private final OrderService service;
 
 	@PostMapping
-	public OrderResponseDTO saveOrder(
+	public ResponseEntity<OrderResponseDTO> saveOrder(
 			@Validated(OnCreate.class) @RequestBody OrderRequestDTO dto) {
 
-		return service.save(dto);
+		return ResponseEntity.status(HttpStatus.CREATED).body(service.save(dto));
 	}
 
 	@GetMapping("/{id}")
-	public OrderResponseDTO findOrder(@PathVariable UUID id) {
+	public ResponseEntity<OrderResponseDTO> findOrder(@PathVariable UUID id) {
 
-		return service.findById(id);
+		return ResponseEntity.ok(service.findById(id));
 	}
 
 	@GetMapping
-	public List<OrderResponseDTO> findOrders() {
+	public ResponseEntity<List<OrderResponseDTO> > findOrders() {
 
-		return service.findAll();
+		return ResponseEntity.ok(service.findAll());
 	}
 
 	@PutMapping("/{id}")
 	@AdminRequired
-	public OrderResponseDTO updateOrder(
+	public ResponseEntity<OrderResponseDTO> updateOrder(
 			@PathVariable UUID id, @Valid @RequestBody OrderRequestDTO dto) {
 
-		return service.update(dto, id);
+		return ResponseEntity.ok(service.update(dto, id));
 	}
 
 	@PatchMapping("/{id}")
 	@AdminRequired
-	public OrderResponseDTO partialUpdateOrder(
+	public ResponseEntity<OrderResponseDTO> partialUpdateOrder(
 			@PathVariable UUID id, @Validated(OnUpdate.class) @RequestBody OrderRequestDTO dto) {
 
-		return service.partialUpdate(dto, id);
+		return ResponseEntity.ok(service.partialUpdate(dto, id));
 	}
 
 	@PatchMapping("/{id}/status")
 	@AdminRequired
-	public OrderResponseDTO updateOrderStatus(
+	public ResponseEntity<OrderResponseDTO> updateOrderStatus(
 			@PathVariable UUID id,
 			@RequestBody Map<String, String> body) {
 
 		String statusStr = body.get("status");
 		OrderStatus newStatus = OrderStatus.valueOf(statusStr);
 
-		return service.updateStatus(id, newStatus);
+		return ResponseEntity.ok(service.updateStatus(id, newStatus));
 	}
 
 	@DeleteMapping("/{id}")
@@ -97,12 +96,12 @@ public class OrderController {
 	 * Añade un nuevo producto al pedido actual de forma controlada.
 	 */
 	@PostMapping("/{id}/items")
-	public OrderResponseDTO addItemToOrder(
+	public ResponseEntity<OrderResponseDTO> addItemToOrder(
 			@PathVariable("id") UUID orderId,
 			@RequestParam UUID productId,
 			@RequestParam Integer qty) {
 
-		return service.addProductToOrder(orderId, qty, productId);
+		return ResponseEntity.ok(service.addProductToOrder(orderId, qty, productId));
 	}
 
 	/**
@@ -110,12 +109,12 @@ public class OrderController {
 	 * Actualiza la cantidad de un ítem existente dentro de la orden.
 	 */
 	@PutMapping("/{id}/items/{productId}")
-	public OrderResponseDTO updateItemQty(
+	public ResponseEntity<OrderResponseDTO> updateItemQty(
 			@PathVariable("id") UUID orderId,
 			@PathVariable UUID productId,
 			@RequestParam("qty") Integer newQty) {
 
-		return service.updateQtyItem(orderId, productId, newQty);
+		return ResponseEntity.ok(service.updateQtyItem(orderId, productId, newQty));
 	}
 
 	/**
@@ -123,23 +122,23 @@ public class OrderController {
 	 * Devuelve la sumatoria total de ítems en el pedido actual.
 	 */
 	@GetMapping("/{id}/items/count")
-	public UUID getItemCount(@PathVariable UUID id) {
+	public ResponseEntity<UUID> getItemCount(@PathVariable UUID id) {
 
-		return service.getQtyItems(id);
+		return ResponseEntity.ok(service.getQtyItems(id));
 	}
 
 	// ENDPOINTS HISTÓRICOS (Separados para proteger el flujo principal)
 	@GetMapping("/history")
 	@AdminRequired
-	public List<OrderResponseDTO> getHistoricalOrders() {
+	public ResponseEntity<List<OrderResponseDTO> > getHistoricalOrders() {
 
-		return service.getHistoricalOrders();
+		return ResponseEntity.ok(service.getHistoricalOrders());
 	}
 
 	@GetMapping("/{id}/history")
 	@AdminRequired
-	public OrderResponseDTO findHistoricalOrder(@PathVariable UUID id) {
+	public ResponseEntity<OrderResponseDTO> findHistoricalOrder(@PathVariable UUID id) {
 
-		return service.findHistoricalOrder(id);
+		return ResponseEntity.ok(service.findHistoricalOrder(id));
 	}
 }

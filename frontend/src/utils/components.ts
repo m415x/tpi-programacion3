@@ -5,6 +5,7 @@ import { logout } from "@utils/authGuard";
 import { PATHS } from "@utils/paths";
 import { storage } from "@utils/storage";
 import { APP_VERSION, BRAND_NAME } from "@utils/constants";
+import type {IUser} from "@interfaces/User.interface";
 
 /**
  * Función para renderizar la card de autenticación (login/register) en el
@@ -228,10 +229,17 @@ export const profileComponent = {
      */
     async render(targetContainer: HTMLElement): Promise<void> {
         // 1. Recuperamos el usuario activo desde el storage local
-        const currentUser = storage.getUser();
+        const currentUser: IUser | null = storage.getUser();
         if (!currentUser) {
             targetContainer.innerHTML = `<div class="text-center error-text"><p>No se encontró una sesión activa de usuario.</p></div>`;
             return;
+        }
+
+        try {
+            // Buscamos los datos reales y frescos del backend
+            storage.setUser(await userService.getProfile()); // Mantenemos el storage al día
+        } catch (error) {
+            console.warn("No se pudo refrescar el perfil desde el servidor, usando datos locales.");
         }
 
         // 2. Inyectamos la estructura del formulario reutilizando tus clases semánticas
@@ -298,11 +306,10 @@ export const profileComponent = {
 
             try {
                 // Ejecutamos el PATCH parcial directo a tu controlador de Spring Boot
-                const updatedUser = await userService.partialUpdate(currentUser.id, {
+                const updatedUser = await userService.updateProfile({
                     firstName,
                     lastName,
-                    phone,
-                    userRole: currentUser.userRole, // Mantenemos el rol original obligatorio
+                    phone
                 });
 
                 // Sincronizamos la memoria local con los nuevos datos devueltos por el servidor

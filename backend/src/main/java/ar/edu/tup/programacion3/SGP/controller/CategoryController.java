@@ -11,13 +11,13 @@ import java.util.List;
 import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/categories")
-@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class CategoryController {
 
@@ -25,43 +25,44 @@ public class CategoryController {
 
     @PostMapping
     @AdminRequired
-    public CategoryResponseDTO saveCategory(
+    public ResponseEntity<CategoryResponseDTO> saveCategory(
             @Validated(OnCreate.class) @RequestBody CategoryRequestDTO dto) {
 
-        return service.save(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.save(dto));
     }
 
     @GetMapping("/{id}")
-    public CategoryResponseDTO findCategory(@PathVariable UUID id) {
+    public ResponseEntity<CategoryResponseDTO> findCategory(@PathVariable UUID id) {
 
-        return service.findById(id);
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @GetMapping
-    public List<CategoryResponseDTO> findCategories(@RequestParam(required = false) String name) {
+    public ResponseEntity<List<CategoryResponseDTO>> findCategories(
+            @RequestParam(required = false) String name) {
 
         if (name != null && !name.trim().isEmpty()) {
 
-			return service.findCategoriesByName(name);
+            return ResponseEntity.ok(service.findCategoriesByName(name));
         }
 
-        return service.findAll();
+        return ResponseEntity.ok(service.findAll());
     }
 
     @PutMapping("/{id}")
     @AdminRequired
-    public CategoryResponseDTO updateCategory(
+    public ResponseEntity<CategoryResponseDTO> updateCategory(
             @PathVariable UUID id, @Valid @RequestBody CategoryRequestDTO dto) {
 
-        return service.update(dto, id);
+        return ResponseEntity.ok(service.update(dto, id));
     }
 
     @PatchMapping("/{id}")
     @AdminRequired
-    public CategoryResponseDTO partialUpdateCategory(
+    public ResponseEntity<CategoryResponseDTO> partialUpdateCategory(
             @PathVariable UUID id, @Validated(OnUpdate.class) @RequestBody CategoryRequestDTO dto) {
 
-        return service.partialUpdate(dto, id);
+        return ResponseEntity.ok(service.partialUpdate(dto, id));
     }
 
     @DeleteMapping("/{id}")
@@ -75,15 +76,15 @@ public class CategoryController {
     // ENDPOINTS HISTÓRICOS (Separados para proteger el flujo principal)
     @GetMapping("/history")
     @AdminRequired
-    public List<CategoryResponseDTO> getHistoricalCategories() {
+    public ResponseEntity<List<CategoryResponseDTO>> getHistoricalCategories() {
 
-		return service.getHistoricalCategories();
+        return ResponseEntity.ok(service.getHistoricalCategories());
     }
 
     @GetMapping("/{id}/history")
     @AdminRequired
-    public CategoryResponseDTO findHistoricalCategory(@PathVariable UUID id) {
+    public ResponseEntity<CategoryResponseDTO> findHistoricalCategory(@PathVariable UUID id) {
 
-       return service.findHistoricalCategory(id);
+        return ResponseEntity.ok(service.findHistoricalCategory(id));
     }
 }

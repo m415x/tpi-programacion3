@@ -21,10 +21,15 @@ public interface CategoryMapper {
 	// Para las entradas de creación (POST)
     Category toEntity(CategoryRequestDTO dto);
 
-	// Para actualización total (PUT) y parcial (PATCH)
-	// Ignora las propiedades nulas para evitar sobrescribir datos existentes con valores null
+	// Mapeador para actualización TOTAL (Pisa campos si se envían vacíos/null intencionalmente)
+	@BeanMapping(
+			nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL,
+			nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+	void updateCategoryFromEdit(CategoryRequestDTO dto, @MappingTarget Category category);
+
+	// Mapeador para actualización PARCIAL (si es null, se ignora y mantiene el original)
 	@BeanMapping(
 			nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
 			nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    void updateCategoryFromEdit(CategoryRequestDTO dto, @MappingTarget Category category);
+	void partialUpdateCategoryFromEdit(CategoryRequestDTO dto, @MappingTarget Category category);
 }

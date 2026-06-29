@@ -34,15 +34,13 @@ export const initRegisterLogic = (): void => {
         }
 
         try {
-            const encryptedPass: string = await userService.encryptPassword(pass);
-
-            // Armamos el payload omitiendo campos generados por el backend, pasando la contraseña hash
+            // Armamos el payload omitiendo campos generados por el backend
             const registerData = {
                 firstName,
                 lastName,
                 email,
                 phone,
-                passwordHash: encryptedPass,
+                rawPassword: pass,
                 userRole: UserRole.CLIENT,
             };
 

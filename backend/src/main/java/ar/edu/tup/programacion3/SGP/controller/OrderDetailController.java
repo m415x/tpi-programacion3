@@ -9,70 +9,72 @@ import java.util.List;
 import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/order-details")
-@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class OrderDetailController {
 
     private final OrderDetailService service;
 
 	@PostMapping
-	public OrderDetailResponseDTO saveOrderDetail(
+	public ResponseEntity<OrderDetailResponseDTO> saveOrderDetail(
 			@Validated(OnCreate.class) @RequestBody OrderDetailRequestDTO dto) {
 
-		return service.save(dto);
+		return ResponseEntity.status(HttpStatus.CREATED).body(service.save(dto));
 	}
 
 	@PutMapping("/{id}")
 	@AdminRequired
-	public OrderDetailResponseDTO updateOrderDetail(
+	public ResponseEntity<OrderDetailResponseDTO> updateOrderDetail(
 			@PathVariable UUID id,
 			@Validated @RequestBody OrderDetailRequestDTO dto) {
 
-		return service.update(dto, id);
+		return ResponseEntity.ok(service.update(dto, id));
 	}
 
 
 	@PatchMapping("/{id}")
 	@AdminRequired
-	public OrderDetailResponseDTO partialUpdateOrderDetail(@PathVariable UUID id, @RequestBody OrderDetailRequestDTO dto) {
+	public ResponseEntity<OrderDetailResponseDTO> partialUpdateOrderDetail(@PathVariable UUID id, @RequestBody OrderDetailRequestDTO dto) {
 
-		return service.partialUpdate(dto, id);
+		return ResponseEntity.ok(service.partialUpdate(dto, id));
 	}
 
 	@DeleteMapping("/{id}")
 	@AdminRequired
-	public void deleteOrderDetail(@PathVariable UUID id) {
-
+	public ResponseEntity<Void> deleteOrderDetail(@PathVariable UUID id) {
 		service.deleteById(id);
+
+		return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping("/{id}")
-	public OrderDetailResponseDTO findOrderDetail(@PathVariable UUID id) {
+	public ResponseEntity<OrderDetailResponseDTO> findOrderDetail(@PathVariable UUID id) {
 
-		return service.findById(id);
+		return ResponseEntity.ok(service.findById(id));
 	}
 
 	@GetMapping
 	@AdminRequired
-	public List<OrderDetailResponseDTO> findAllOrderDetails() {
-		return service.findAll();
+	public ResponseEntity<List<OrderDetailResponseDTO>> findAllOrderDetails() {
+		return ResponseEntity.ok(service.findAll());
 	}
 
 	// ENDPOINTS HISTÓRICOS (Separados para proteger el flujo principal)
 	@GetMapping("/history")
 	@AdminRequired
-	public List<OrderDetailResponseDTO> getHistoricalOrderDetails() {
-		return service.getHistoricalOrderDetails();
+	public ResponseEntity<List<OrderDetailResponseDTO>> getHistoricalOrderDetails() {
+		return ResponseEntity.ok(service.getHistoricalOrderDetails());
 	}
 
 	@GetMapping("/{id}/history")
 	@AdminRequired
-	public OrderDetailResponseDTO findHistoricalOrderDetail(@PathVariable UUID id) {
-		return service.findHistoricalOrderDetail(id);
+	public ResponseEntity<OrderDetailResponseDTO> findHistoricalOrderDetail(@PathVariable UUID id) {
+		return ResponseEntity.ok(service.findHistoricalOrderDetail(id));
 	}
 }

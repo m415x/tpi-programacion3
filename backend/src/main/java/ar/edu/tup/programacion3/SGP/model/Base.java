@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @MappedSuperclass
@@ -29,14 +31,16 @@ public abstract class Base {
 	protected Boolean deleted = false;
 
 	@Column(name = "created_at", nullable = false, updatable = false)
-	@ValidNotNull(message = "La date y hora de creación")
-	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+	@CreationTimestamp
 	protected LocalDateTime createdAt;
 
-	@PrePersist
-	protected void onCreate() {
-		this.createdAt = LocalDateTime.now();
-	}
+	@Column(name = "updated_at", nullable = false)
+	@UpdateTimestamp
+	private LocalDateTime updatedAt;
+
+	@Column(name = "version", nullable = false)
+	@Version
+	private Long version;
 
 	@Override
 	public boolean equals(Object o) {

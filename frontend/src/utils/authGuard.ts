@@ -1,4 +1,5 @@
 import { UserRole } from "@interfaces/Enums";
+import { userService } from "@services/user.service";
 import { navigateClear } from "@utils/navigate";
 import { PATHS } from "@utils/paths";
 import { storage } from "@utils/storage";
@@ -8,13 +9,25 @@ import { storage } from "@utils/storage";
  * carga de página. Redirige al usuario si no tiene permisos para acceder a la
  * ruta actual.
  */
-export const checkAuth = (): void => {
+export const checkAuth = async (): Promise<void> => {
     // Ruta actual del navegador
     const path: string = window.location.pathname;
 
     // Determinar si la ruta es de autenticación o la página de inicio
     const isAuthPage: boolean = path.includes("/auth/");
     const isLandingPage: boolean = path === "/" || path.endsWith("index.html");
+
+    if (storage.isAuthenticated()) {
+        try {
+            // Rehidratamos y validamos la sesión actual contra el nuevo endpoint seguro /profile
+            storage.setUser(await userService.getProfile());
+        } catch (error) {
+            console.error("Sesión inválida o cuenta inexistente en el servidor.");
+            storage.clear(); // Deslogueo automático si fue borrado lógicamente
+            navigateClear(PATHS.AUTH.LOGIN);
+            return;
+        }
+    }
 
     // Obtener el rol del usuario (si está autenticado)
     const role: UserRole | null = storage.getRole();
@@ -35,7 +48,7 @@ export const checkAuth = (): void => {
     // 3. Verificar permisos según el rol y la ruta
     if (path.includes("/admin/") && role !== UserRole.ADMIN) {
         // Si un cliente intenta entrar a /admin/ -> a su zona
-        navigateClear(PATHS.CLIENT.HOME);
+        navigateClear(PATHS.CLIENT.PROFILE);
         return;
     }
     if (path.includes("/client/") && role !== UserRole.CLIENT) {

@@ -119,7 +119,7 @@ export const categoriesController = {
                 <td class="uuid-cell" title="${category.id}">${category.id.substring(0, 8)}...</td>
                 <td><img src="${category.image}" class="table-img" alt="${category.name}"></td>
                 <td class="fw-bold">${category.name}</td>
-                <td class="desc-cell">${category.description || "Sin descripción asociada."}</td>
+                <td class="desc-cell">${category.description || ""}</td>
                 <td>
                     <div class="actions-wrapper">
                         <button class="btn btn--action btn-secondary">Editar</button>
@@ -228,13 +228,17 @@ export const categoriesController = {
         dom.categoryForm.addEventListener("submit", async (e: Event): Promise<void> => {
             e.preventDefault();
 
-            if (!dom.inputNombre.value.trim() || !dom.inputDescripcion.value.trim()) {
-                alert("Por favor, completá todos los campos obligatorios.");
+            if (!dom.inputNombre.value.trim()) {
+                alert("Por favor, ingresá el nombre de la categoría (campo obligatorio).");
                 return;
             }
 
             // Capturamos el nombre de archivo plano o aplicamos un fallback si viene vacío
             const imageFile = dom.inputImagen?.value.trim() || "default-food.jpg";
+
+            // Enviamos la descripción limpia; si está vacía, se manda un string vacío o null según tu backend
+            const descripcionValue =
+                dom.inputDescripcion.value.trim() === "" ? null : dom.inputDescripcion.value.trim();
 
             try {
                 if (isEditingMode) {
@@ -242,7 +246,7 @@ export const categoriesController = {
                     await categoryService.update({
                         id: dom.inputId.value,
                         name: dom.inputNombre.value.trim(),
-                        description: dom.inputDescripcion.value.trim(),
+                        description: descripcionValue,
                         isDeleted: false,
                         createdAt: new Date().toISOString(),
                         image: dom.inputImagen.value.trim(),
@@ -253,7 +257,7 @@ export const categoriesController = {
                     // Flujo POST: Creación omitiendo id e img, intersecando imageFileName
                     await categoryService.create({
                         name: dom.inputNombre.value.trim(),
-                        description: dom.inputDescripcion.value.trim(),
+                        description: descripcionValue,
                         isDeleted: false,
                         createdAt: new Date().toISOString(),
                         imageFileName: imageFile,

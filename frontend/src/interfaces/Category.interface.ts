@@ -6,6 +6,6 @@ export interface ICategory {
     isDeleted: boolean;
     createdAt: string;
     name: string;
-    description: string;
+    description: string | null;
     image: string;
 }

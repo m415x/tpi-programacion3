@@ -265,13 +265,13 @@ button:disabled {
   color: #e65100;
 }
 
-.badge-status--preparing {
+.badge-status--confirmed {
   background-color: #b3e5fc;
   /* Azul suave */
   color: #01579b;
 }
 
-.badge-status--delivered {
+.badge-status--completed {
   background-color: #c8e6c9;
   /* Verde suave */
   color: #1b5e20;

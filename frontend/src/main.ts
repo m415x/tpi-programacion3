@@ -9,4 +9,6 @@ import { initFavicon } from "@utils/components";
 initFavicon();
 
 // Verificar si el usuario ya está autenticado para redirigirlo a la página
-checkAuth();
+checkAuth().catch((err) => {
+    console.error("Error crítico en el inicializador de guardias de la app:", err);
+});

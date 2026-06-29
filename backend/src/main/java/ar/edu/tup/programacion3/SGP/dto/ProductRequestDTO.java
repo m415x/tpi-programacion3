@@ -10,5 +10,5 @@ public record ProductRequestDTO(
         @ValidLongText String description,
         @ValidQty Integer stock,
         @ValidLongText String image,
-        @ValidNotNull Boolean available,
+        Boolean available,
         UUID categoryId) {}

@@ -2,6 +2,8 @@ package ar.edu.tup.programacion3.SGP.service;
 
 import ar.edu.tup.programacion3.SGP.dto.UserRequestDTO;
 import ar.edu.tup.programacion3.SGP.dto.UserResponseDTO;
+import ar.edu.tup.programacion3.SGP.exception.BusinessException;
+import ar.edu.tup.programacion3.SGP.infrastructure.CustomPasswordEncoder;
 import ar.edu.tup.programacion3.SGP.model.User;
 import ar.edu.tup.programacion3.SGP.mapper.UserMapper;
 import ar.edu.tup.programacion3.SGP.model.enums.UserRole;
@@ -20,12 +22,23 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
     private final UserMapper mapper;
+	private final CustomPasswordEncoder encoder;
 
     @Override
     @Transactional
     public UserResponseDTO save(UserRequestDTO dto) {
 
+	    if (repository.findByEmailIgnoreCase(dto.email().trim()).isPresent()) {
+		    throw new BusinessException("Ya existe un usuario con el email: " + dto.email().trim());
+	    }
+
         User user = mapper.toEntity(dto);
+
+	    if (dto.password() != null && !dto.password().isBlank()) {
+		    String encryptedPassword = encoder.encode(dto.password());
+		    user.setPassword(encryptedPassword);
+	    }
+
         user = repository.save(user);
 
         return mapper.toDto(user);
@@ -51,37 +64,34 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponseDTO update(UserRequestDTO dto, UUID id) {
 
-        User user = repository.findByIdOrThrow(id);
+		User user = repository.findByIdOrThrow(id);
+	    this.validateEmailUniqueness(dto.email(), user, id);
+	    mapper.updateUserFromEdit(dto, user);
 
-        mapper.updateUserFromEdit(dto, user);
-        user = repository.save(user);
-
-        return mapper.toDto(user);
+	    return this.processPasswordAndSave(dto.password(), user);
     }
 
-    @Override
-    @Transactional
-    public UserResponseDTO partialUpdate(UserRequestDTO dto, UUID id) {
+	@Override
+	@Transactional
+	public UserResponseDTO partialUpdate(UserRequestDTO dto, UUID id) {
 
-        User user = repository.findByIdOrThrow(id);
+		User user = repository.findByIdOrThrow(id);
 
-        mapper.updateUserFromEdit(dto, user);
-        user = repository.save(user);
+		if (dto.email() != null) {
+			this.validateEmailUniqueness(dto.email(), user, id);
+		}
 
-        return mapper.toDto(user);
-    }
+		mapper.updateUserFromEdit(dto, user);
+
+		return this.processPasswordAndSave(dto.password(), user);
+	}
 
     @Override
     @Transactional
     public void deleteById(UUID id) {
 
         User user = repository.findByIdOrThrow(id);
-
         user.setDeleted(true);
-
-        if (user.getOrders() != null) {
-            user.getOrders().forEach(order -> order.setDeleted(true));
-        }
 
         repository.save(user);
     }
@@ -114,17 +124,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
-    public boolean verifyCredentials(String email, String encryptedPasswordFromFront) {
-        // Buscamos la entidad de dominio real (la que tiene el password, no el DTO)
+    @Transactional(readOnly = true)
+    public boolean verifyCredentials(String email, String rawPassword) {
+        // Buscamos la entidad de dominio real
         User userEntity = repository.findByEmailIgnoreCase(email).orElse(null);
 
         if (userEntity == null) {
             return false;
         }
 
-        // Comparamos los dos hashes SHA-256. Al ser strings idénticos, calza perfecto.
-        return userEntity.getPassword().equals(encryptedPasswordFromFront);
+        // Usamos matches para comparar el texto plano con el hash BCrypt
+	    return encoder.matches(rawPassword, userEntity.getPassword());
     }
 
     @Override
@@ -179,4 +189,23 @@ public class UserServiceImpl implements UserService {
                     "Acceso denegado: Credenciales administrativas inválidas.");
         }
     }
+
+	private void validateEmailUniqueness(String email, User currentUser, UUID id) {
+		if (email != null && !email.trim().equalsIgnoreCase(currentUser.getEmail())) {
+			boolean emailInUseByOther = repository.findByEmailIgnoreCase(email.trim())
+					.stream()
+					.anyMatch(otherUser -> !otherUser.getId().equals(id));
+
+			if (emailInUseByOther) {
+				throw new BusinessException("El email ya se encuentra registrado por otro usuario.");
+			}
+		}
+	}
+
+	private UserResponseDTO processPasswordAndSave(String rawPassword, User user) {
+		if (rawPassword != null && !rawPassword.isBlank()) {
+			user.setPassword(encoder.encode(rawPassword));
+		}
+		return mapper.toDto(repository.save(user));
+	}
 }

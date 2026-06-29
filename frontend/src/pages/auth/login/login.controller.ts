@@ -26,11 +26,8 @@ export const initLoginLogic = (): void => {
         }
 
         try {
-            // Encriptación SHA-256 local
-            const encryptedPass: string = await userService.encryptPassword(pass);
-
             // Intento de Login asíncrono contra Spring Boot
-            const loginSuccess: boolean = await userService.login(email, encryptedPass);
+            const loginSuccess: boolean = await userService.login(email, pass);
 
             if (loginSuccess) {
                 // Evaluamos el rol real persistido en la sesión

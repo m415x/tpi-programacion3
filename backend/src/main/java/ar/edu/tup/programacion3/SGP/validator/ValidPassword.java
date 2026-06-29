@@ -12,13 +12,12 @@ import java.lang.annotation.*;
 @NotBlank(message = "La contraseña es obligatoria", groups = OnCreate.class)
 @Size(
 		min = 60,
-		max = 64,
-		message = "La contraseña encriptada debe tener entre 60 y 64 caracteres",
+		max = 60,
+		message = "La contraseña encriptada con BCrypt debe tener exactamente 60 caracteres",
 		groups = {OnCreate.class, OnUpdate.class})
 @Pattern(
-		// Expresión regular para Hexadecimal puro de 64 caracteres (SHA-256)
-		regexp = "^[a-f0-9]{64}$",
-		message = "La contraseña provista no posee un formato de encriptación SHA-256 válido",
+		regexp = "^\\$2[ayb]\\$\\d{2}\\$[./A-Za-z0-9]{53}$",
+		message = "La contraseña provista no posee un formato de encriptación BCrypt válido",
 		groups = {OnCreate.class, OnUpdate.class})
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
