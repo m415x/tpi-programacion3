@@ -5,16 +5,18 @@ import api from "@services/api";
  * DTOs específicos para la comunicación con el backend, adaptados a la estructura que el servidor espera y
  * devuelve, manteniendo una capa de transformación limpia hacia la interfaz ICategory del Frontend.
  */
-interface CategoryResponseDTO {
-    id: string;
-    deleted: boolean;
-    createdAt: string;
+interface CategoryRequestDTO {
     name: string;
     description: string;
     image: string;
 }
 
-interface CategoryRequestDTO {
+interface CategoryResponseDTO {
+    id: string;
+    deleted: boolean;
+    createdAt: string;
+    updatedAt?: string;
+    version?: number;
     name: string;
     description: string;
     image: string;
@@ -30,6 +32,8 @@ const mapToDomain = (dto: CategoryResponseDTO): ICategory => ({
     id: dto.id,
     isDeleted: dto.deleted,
     createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+    version: dto.version,
     name: dto.name,
     description: dto.description,
     image: dto.image ? `/img/categories/${dto.image}` : "/img/categories/default-food.jpg",
@@ -74,7 +78,7 @@ export const categoryService = {
     async create(category: Omit<ICategory, "id" | "image"> & { imageFileName: string }): Promise<ICategory> {
         const dto: CategoryRequestDTO = {
             name: category.name,
-            description: category.description,
+            description: category.description || "",
             image: category.imageFileName,
         };
 
@@ -92,7 +96,7 @@ export const categoryService = {
     async update(category: ICategory & { imageFileName: string }): Promise<ICategory> {
         const dto: CategoryRequestDTO = {
             name: category.name,
-            description: category.description,
+            description: category.description || "",
             image: category.imageFileName,
         };
 
@@ -112,7 +116,7 @@ export const categoryService = {
         const dto: Partial<CategoryRequestDTO> = {};
 
         if (changes.name !== undefined) dto.name = changes.name;
-        if (changes.description !== undefined) dto.description = changes.description;
+        if (changes.description !== undefined) dto.description = changes.description || "";
         if (changes.imageFileName !== undefined) dto.image = changes.imageFileName;
 
         const response = await api.patch<CategoryResponseDTO>(`/categories/${id}`, dto);

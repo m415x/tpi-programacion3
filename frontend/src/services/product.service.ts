@@ -5,19 +5,6 @@ import api from "@services/api";
  * DTOs específicos para la comunicación con el backend, adaptados a la estructura que el servidor espera y
  * devuelve, manteniendo una capa de transformación limpia hacia la interfaz IProduct del Frontend.
  */
-interface ProductResponseDTO {
-    id: string;
-    deleted: boolean;
-    createdAt: string;
-    name: string;
-    price: number;
-    description: string;
-    stock: number;
-    image: string;
-    available: boolean;
-    categoryId: string | null;
-}
-
 interface ProductRequestDTO {
     name: string;
     price: number;
@@ -28,6 +15,28 @@ interface ProductRequestDTO {
     categoryId: string;
 }
 
+interface CategoryNestedDTO {
+    id: string;
+    name: string;
+    description: string;
+    image: string | null;
+}
+
+interface ProductResponseDTO {
+    id: string;
+    deleted: boolean;
+    createdAt: string;
+    updatedAt?: string;
+    version?: number;
+    name: string;
+    price: number;
+    description: string;
+    stock: number;
+    image: string;
+    available: boolean;
+    category: CategoryNestedDTO | null;
+}
+
 /**
  * Estructura opcional para los filtros de búsqueda que soporta el backend
  */
@@ -35,6 +44,8 @@ export interface ProductFilterCriteria {
     name?: string;
     available?: boolean;
     lowStock?: number;
+    categoryId?: string;
+    sort?: string;
 }
 
 /**
@@ -47,13 +58,15 @@ const mapToDomain = (dto: ProductResponseDTO): IProduct => ({
     id: dto.id,
     isDeleted: dto.deleted,
     createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+    version: dto.version,
     name: dto.name,
     price: dto.price,
     description: dto.description,
     stock: dto.stock,
     imageUrl: dto.image ? `/img/products/${dto.image}` : "/img/products/default-food.jpg",
     isAvailable: dto.available,
-    categoryId: dto.categoryId,
+    categoryId: dto.category ? dto.category.id : null,
 });
 
 /**
@@ -84,6 +97,12 @@ export const productService = {
 
             if (criteria.lowStock !== undefined && criteria.lowStock > 0) {
                 queryParams.lowStock = criteria.lowStock;
+            }
+            if (criteria.categoryId && criteria.categoryId !== "all") {
+                queryParams.categoryId = criteria.categoryId;
+            }
+            if (criteria.sort) {
+                queryParams.sort = criteria.sort;
             }
         }
 

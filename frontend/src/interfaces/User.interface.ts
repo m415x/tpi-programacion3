@@ -7,6 +7,8 @@ export interface IUser {
     id: string;
     isDeleted: boolean;
     createdAt: string;
+    updatedAt?: string | undefined;
+    version?: number | undefined;
     firstName: string;
     lastName: string;
     email: string;

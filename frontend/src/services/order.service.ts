@@ -1,7 +1,6 @@
 import type { IOrder } from "@interfaces/Order.interface";
 import type { OrderStatus, PaymentMethod } from "@interfaces/Enums";
 import api from "@services/api";
-import { storage } from "@utils/storage";
 
 /**
  * DTO que define la estructura exacta que el backend de Spring Boot
@@ -16,6 +15,7 @@ interface OrderRequestDTO {
     customerPhone: string;
     shippingAddress: string;
     customerNotes: string;
+    orderDetail: any[];
 }
 
 /**
@@ -25,6 +25,8 @@ interface OrderRequestDTO {
 interface OrderResponseDTO {
     id: string;
     createdAt: string;
+    updatedAt?: string;
+    version?: number;
     orderStatus: OrderStatus;
     total: number;
     paymentMethod: PaymentMethod;
@@ -41,8 +43,10 @@ interface OrderResponseDTO {
  */
 const mapToDomain = (dto: OrderResponseDTO): IOrder => ({
     id: dto.id,
-    createdAt: dto.createdAt,
     isDeleted: false,
+    createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+    version: dto.version,
     totalPrice: dto.total,
     status: dto.orderStatus,
     paymentMethod: dto.paymentMethod,
@@ -78,6 +82,17 @@ export const orderService = {
     async getAll(): Promise<IOrder[]> {
         // Realiza la petición perimetral (Axios inyectará los headers X-User-Id mediante el interceptor)
         const response = await api.get<OrderResponseDTO[]>("/orders");
+
+        return response.data.map(mapToDomain);
+    },
+
+    /**
+     * Trae exclusivamente las comandas pertenecientes al cliente logueado actualmente.
+     * @returns Promesa con la lista de órdenes procesadas y mapeadas al dominio.
+     */
+    async getMyOrders(): Promise<IOrder[]> {
+        // Tu interceptor de Axios se encarga de inyectar las credenciales en los headers automáticamente.
+        const response = await api.get<OrderResponseDTO[]>("/orders/my-orders");
 
         return response.data.map(mapToDomain);
     },
@@ -128,6 +143,15 @@ export const orderService = {
     async updateStatus(id: string, status: OrderStatus): Promise<IOrder> {
         // Le pegamos al endpoint parcial del backend enviando el nuevo estado en el body
         const response = await api.patch<OrderResponseDTO>(`/orders/${id}/status`, { status });
+
+        return mapToDomain(response.data);
+    },
+
+    /**
+     * Envía la petición al backend para cancelar un pedido pendiente.
+     */
+    async cancel(id: string): Promise<IOrder> {
+        const response = await api.patch<OrderResponseDTO>(`/orders/${id}/cancel`);
 
         return mapToDomain(response.data);
     },

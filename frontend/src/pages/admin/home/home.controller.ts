@@ -2,6 +2,7 @@ import { dashboardController } from "@pages/admin/dashboard/dashboard.controller
 import { categoriesController } from "@pages/admin/categories/categories.controller";
 import { productsController } from "@pages/admin/products/products.controller";
 import { ordersController } from "@pages/admin/orders/orders.controller";
+import { usersController } from "@pages/admin/users/users.controller";
 import { PATHS } from "@utils/paths";
 
 export const adminController = {
@@ -45,6 +46,12 @@ export const adminController = {
                         <span>Pedidos</span>
                     </a>
                 </li>
+                <li>
+                    <a href="#" class="link" data-option="users">
+                        <i class="fa-solid fa-users sidebar__icon"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </li>
             </ul>
 
             <div class="sidebar__footer">
@@ -59,8 +66,9 @@ export const adminController = {
         const categories = container.querySelector<HTMLLinkElement>("[data-option='categories']");
         const products = container.querySelector<HTMLLinkElement>("[data-option='products']");
         const orders = container.querySelector<HTMLLinkElement>("[data-option='orders']");
+        const users = container.querySelector<HTMLLinkElement>("[data-option='users']");
         const optionList = container.querySelector<HTMLUListElement>("#control-option-list");
-        if (!dashboard || !categories || !products || !orders || !optionList) return;
+        if (!dashboard || !categories || !products || !orders || !users || !optionList) return;
 
         /**
          * Delegación de eventos centralizada para evitar agregar múltiples listeners individuales
@@ -102,6 +110,9 @@ export const adminController = {
                         break;
                     case "orders":
                         await ordersController.init(mainContent);
+                        break;
+                    case "users":
+                        await usersController.init(mainContent);
                         break;
                 }
             } catch (error) {

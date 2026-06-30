@@ -9,8 +9,10 @@ import { storage } from "@utils/storage";
  */
 interface UserResponseDTO {
     id: string;
-    createdAt: string;
     isDeleted: boolean;
+    createdAt: string;
+    updatedAt?: string;
+    version?: number;
     firstName: string;
     lastName: string;
     email: string;
@@ -29,6 +31,8 @@ const mapToDomain = (dto: UserResponseDTO): IUser => ({
     id: dto.id,
     isDeleted: dto.isDeleted,
     createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+    version: dto.version,
     firstName: dto.firstName,
     lastName: dto.lastName,
     email: dto.email,
@@ -136,7 +140,7 @@ export const userService = {
      * sin exponer IDs en la URL.
      */
     async updateProfile(
-        profileChanges: Partial<Omit<IUser, "id" | "createdAt" | "isDeleted" | "userRole">>
+        profileChanges: Partial<Omit<IUser, "id" | "createdAt" | "isDeleted" | "userRole">>,
     ): Promise<IUser> {
         const response = await api.patch<UserResponseDTO>("/users/profile", profileChanges);
 
@@ -219,5 +223,12 @@ export const userService = {
 
         const response = await api.patch<UserResponseDTO>(`/users/${id}`, dto);
         return mapToDomain(response.data);
+    },
+
+    /**
+     * Elimina un usuario del sistema de forma lógica o física por su ID
+     */
+    async delete(id: string): Promise<void> {
+        await api.delete(`/users/${id}`);
     },
 };

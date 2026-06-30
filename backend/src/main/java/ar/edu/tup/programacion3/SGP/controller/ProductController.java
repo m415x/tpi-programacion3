@@ -41,19 +41,15 @@ public class ProductController {
     public ResponseEntity<List<ProductResponseDTO>> findProducts(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Boolean available,
-            @RequestParam(required = false) Integer lowStock) {
+            @RequestParam(required = false) Integer lowStock,
+            @RequestParam(required = false) UUID categoryId,
+            @RequestParam(required = false) String sort) {
 
-        if (name != null && !name.trim().isEmpty()) {
-            return ResponseEntity.ok(service.findProductsByName(name));
-        }
-        if (available != null) {
-            return ResponseEntity.ok(service.getProductsByAvailability(available));
-        }
-        if (lowStock != null && lowStock > 0) {
-            return ResponseEntity.ok(service.getLowStockProducts(lowStock));
-        }
+	    if (lowStock != null && lowStock > 0) {
+		    return ResponseEntity.ok(service.getLowStockProducts(lowStock));
+	    }
 
-        return ResponseEntity.ok(service.findAll());
+        return ResponseEntity.ok(service.findProductsAdvanced(name, categoryId, available, sort));
     }
 
     @PutMapping("/{id}")

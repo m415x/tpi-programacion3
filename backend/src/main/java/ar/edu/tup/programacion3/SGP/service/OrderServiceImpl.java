@@ -34,12 +34,40 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponseDTO save(OrderRequestDTO dto) {
 
+		if (dto.orderDetail() == null || dto.orderDetail().isEmpty()) {
+			throw new IllegalArgumentException("Se requiere al menos un detalle de pedido.");
+		}
+
         User user = userRepository.findByIdOrThrow(dto.userId());
         Order order = mapper.toEntity(dto);
 
 		order.setDate(LocalDate.now());
+		order.setOrderStatus(dto.orderStatus());
 		order.setTotal(BigDecimal.ZERO);
+		order.setPaymentMethod(dto.paymentMethod());
 		order.setDeleted(false);
+
+		for (OrderRequestDTO.ItemInnerRequestDTO itemDto : dto.orderDetail()) {
+			if (itemDto.quantity() == null || itemDto.quantity() < 1) {
+				throw new IllegalArgumentException("La quantity de cada detalle debe ser mayor o igual a 1.");
+			}
+
+			Product product = productRepository.findByIdOrThrow(itemDto.productId());
+
+			if (product.getAvailable() == null || !product.getAvailable()) {
+				throw new IllegalStateException("El producto '" + product.getName() + "' no está disponible para la venta.");
+			}
+
+			if (product.getStock() < itemDto.quantity()) {
+				throw new IllegalStateException("Stock insuficiente para '" + product.getName() +
+						"'. Disponible: " + product.getStock() + ", Solicitado: " + itemDto.quantity());
+			}
+
+			product.setStock(product.getStock() - itemDto.quantity());
+			productRepository.save(product);
+
+			order.addOrderDetail(itemDto.quantity(), product);
+		}
 
         user.addOrder(order);
         Order savedOrder = orderRepository.saveAndFlush(order);
@@ -75,62 +103,29 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
-    @Override
-    @Transactional
-    public OrderResponseDTO update(OrderRequestDTO dto, UUID id) {
+	@Override
+	@Transactional
+	public OrderResponseDTO update(OrderRequestDTO dto, UUID id) {
 
-        Order order = orderRepository.findByIdOrThrow(id);
+		Order order = orderRepository.findByIdOrThrow(id);
+		UUID userId = orderRepository.findUserIdByOrderId(id).orElse(null);
 
-	    UUID oldUserId = orderRepository.findUserIdByOrderId(id).orElse(null);
-	    UUID newUserId = dto.userId();
+		if (dto.orderStatus() != null) {
+			order.setOrderStatus(dto.orderStatus()); // Escenario 1 y 3
+		}
+		if (dto.paymentMethod() != null) {
+			order.setPaymentMethod(dto.paymentMethod()); // Escenario 2
+		}
+		order = orderRepository.saveAndFlush(order);
 
-	    if (newUserId != null && !newUserId.equals(oldUserId)) {
-
-		    if (oldUserId != null) {
-
-			    Order finalOrder = order;
-			    userRepository.findById(oldUserId)
-					    .ifPresent(oldUser -> oldUser.getOrders().remove(finalOrder));
-		    }
-
-		    User newUser = userRepository.findByIdOrThrow(newUserId);
-		    newUser.addOrder(order);
-	    }
-
-        mapper.updateOrderFromEdit(dto, order);
-        order = orderRepository.saveAndFlush(order);
-	    UUID finalUserId = (newUserId != null) ? newUserId : oldUserId;
-
-	    return unifyUserId(mapper.toDto(order), finalUserId);
-    }
+		return unifyUserId(mapper.toDto(order), userId);
+	}
 
 	@Override
 	@Transactional
 	public OrderResponseDTO partialUpdate(OrderRequestDTO dto, UUID id) {
 
-		Order order = orderRepository.findByIdOrThrow(id);
-
-		UUID oldUserId = orderRepository.findUserIdByOrderId(id).orElse(null);
-		UUID newUserId = dto.userId();
-
-		if (newUserId != null && !newUserId.equals(oldUserId)) {
-
-			if (oldUserId != null) {
-
-				Order finalOrder = order;
-				userRepository.findById(oldUserId)
-						.ifPresent(oldUser -> oldUser.getOrders().remove(finalOrder));
-			}
-
-			User newUser = userRepository.findByIdOrThrow(newUserId);
-			newUser.addOrder(order);
-		}
-
-		mapper.updateOrderFromEdit(dto, order);
-		order = orderRepository.saveAndFlush(order);
-		UUID finalUserId = (newUserId != null) ? newUserId : oldUserId;
-
-		return unifyUserId(mapper.toDto(order), finalUserId);
+		return this.update(dto, id);
 	}
 
     @Override
@@ -138,12 +133,7 @@ public class OrderServiceImpl implements OrderService {
     public void deleteById(UUID id) {
 
         Order order = orderRepository.findByIdOrThrow(id);
-
         order.setDeleted(true);
-
-        if (order.getOrderDetails() != null) {
-            order.getOrderDetails().forEach(detail -> detail.setDeleted(true));
-        }
 
         orderRepository.saveAndFlush(order);
     }
@@ -202,6 +192,57 @@ public class OrderServiceImpl implements OrderService {
 		UUID userId = orderRepository.findUserIdByOrderId(id).orElse(null);
 
 		return unifyUserId(mapper.toDto(updatedOrder), userId);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<OrderResponseDTO> findByUserId(UUID userId) {
+
+		userRepository.findByIdOrThrow(userId);
+
+		return orderRepository.findAll().stream()
+				.filter(order -> {
+					UUID actualOwnerId = orderRepository.findUserIdByOrderId(order.getId()).orElse(null);
+
+					return userId.equals(actualOwnerId);
+				})
+				.map(order -> unifyUserId(mapper.toDto(order), userId))
+				.toList();
+	}
+
+	@Override
+	@Transactional
+	public OrderResponseDTO cancelOrder(UUID id) {
+
+		Order order = orderRepository.findByIdOrThrow(id);
+
+		if (!OrderStatus.PENDING.equals(order.getOrderStatus())) {
+			throw new IllegalArgumentException(
+					"No se puede cancelar el pedido porque ya se encuentra en estado: " + order.getOrderStatus()
+			);
+		}
+
+		if (order.getOrderDetails() != null) {
+			order.getOrderDetails().forEach(detail -> {
+				Product product = detail.getProduct();
+				if (product != null) {
+
+					int restoredStock = product.getStock() + detail.getQuantity();
+					product.setStock(restoredStock);
+
+					if (restoredStock > 0) {
+						product.setAvailable(true);
+					}
+					productRepository.save(product);
+				}
+			});
+		}
+
+		order.setOrderStatus(OrderStatus.CANCELLED);
+		order = orderRepository.saveAndFlush(order);
+		UUID userId = orderRepository.findUserIdByOrderId(id).orElse(null);
+
+		return unifyUserId(mapper.toDto(order), userId);
 	}
 
 	@Override

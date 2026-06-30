@@ -6,6 +6,7 @@ import ar.edu.tup.programacion3.SGP.validator.ValidNotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public record OrderRequestDTO(
@@ -13,7 +14,13 @@ public record OrderRequestDTO(
         @ValidNotNull OrderStatus orderStatus,
         BigDecimal total,
         @ValidNotNull PaymentMethod paymentMethod,
-        UUID userId,
+        @ValidNotNull UUID userId,
         String customerPhone,
         String shippingAddress,
-        String customerNotes) {}
+        String customerNotes,
+        List<ItemInnerRequestDTO> orderDetail) {
+	public record ItemInnerRequestDTO(
+			@ValidNotNull UUID productId,
+			Integer quantity
+	) {}
+}

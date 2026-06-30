@@ -15,11 +15,13 @@ console.log('Iniciando el ecosistema de Food Store...\n');
 console.log('Arrancando servidor Spring Boot con Gradle (Puerto 8008)...');
 
 // En Windows ejecutamos "gradlew.bat" directamente sin el "./"
-const backendCommand = process.platform === 'win32' ? 'gradlew.bat' : './gradlew';
+const isWin = process.platform === 'win32';
+const backendCommand = isWin ? 'cmd.exe' : './gradlew';
+const backendArgs = isWin ? ['/c', 'gradlew.bat', 'bootRun'] : ['bootRun'];
 
-const backendProcess = spawn(backendCommand, ['bootRun'], {
+const backendProcess = spawn(backendCommand, backendArgs, {
     cwd: BACKEND_DIR,
-    shell: true,
+    shell: false,
     stdio: 'inherit'
 });
 
@@ -47,7 +49,7 @@ function checkBackendReady(url, callback) {
 
 // 3. ESPERAR ACTIVAMENTE AL BACKEND ANTES DE ABRIR EL NAVEGADOR
 console.log('\nEsperando que Spring Boot termine de compilar e iniciar...');
-checkBackendReady('http://localhost:8008', () => {
+checkBackendReady('http://localhost:8008/products', () => {
     const url = 'http://localhost:5173';
     console.log(`\n¡Servidor Spring Boot Detectado Activo! Abriendo navegador en ${url}...`);
 

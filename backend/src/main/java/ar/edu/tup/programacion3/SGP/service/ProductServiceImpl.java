@@ -11,7 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 import java.util.UUID;
 
 @Service
@@ -29,12 +31,12 @@ public class ProductServiceImpl implements ProductService {
         Category category = categoryRepository.findByIdOrThrow(dto.categoryId());
         Product product = mapper.toEntity(dto);
 
-	    if (product.getAvailable() == null) {
-		    product.setAvailable(true);
-	    }
+        if (product.getAvailable() == null) {
+            product.setAvailable(true);
+        }
 
         Product savedProduct = productRepository.save(product);
-	    category.getProducts().add(savedProduct);
+        category.getProducts().add(savedProduct);
         categoryRepository.save(category);
 
         return mapper.toDto(savedProduct, category);
@@ -46,9 +48,11 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = productRepository.findByIdOrThrow(id);
 
-	    Category category = productRepository.findCategoryIdByProductId(id)
-			    .flatMap(categoryRepository::findById)
-			    .orElse(null);
+        Category category =
+                productRepository
+                        .findCategoryIdByProductId(id)
+                        .flatMap(categoryRepository::findById)
+                        .orElse(null);
 
         return mapper.toDto(product, category);
     }
@@ -60,10 +64,12 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findAll().stream()
                 .map(
                         product -> {
-	                        Category category = productRepository.findCategoryIdByProductId(product.getId())
-			                        .flatMap(categoryRepository::findById)
-			                        .orElse(null);
-	                        return mapper.toDto(product, category);
+                            Category category =
+                                    productRepository
+                                            .findCategoryIdByProductId(product.getId())
+                                            .flatMap(categoryRepository::findById)
+                                            .orElse(null);
+                            return mapper.toDto(product, category);
                         })
                 .toList();
     }
@@ -76,26 +82,29 @@ public class ProductServiceImpl implements ProductService {
 
         UUID oldCategoryId = productRepository.findCategoryIdByProductId(id).orElse(null);
         UUID newCategoryId = dto.categoryId();
-	    Category finalCategory = null;
+        Category finalCategory = null;
 
         if (newCategoryId != null && !newCategoryId.equals(oldCategoryId)) {
 
             if (oldCategoryId != null) {
 
-	            Product finalProduct = product;
-	            categoryRepository
+                Product finalProduct = product;
+                categoryRepository
                         .findById(oldCategoryId)
                         .ifPresent(oldCategory -> oldCategory.getProducts().remove(finalProduct));
             }
 
             Category newCategory = categoryRepository.findByIdOrThrow(newCategoryId);
             newCategory.addProduct(product);
-	        finalCategory = newCategory;
+            finalCategory = newCategory;
 
         } else {
-	        UUID IdToBeAssigned = (newCategoryId != null) ? newCategoryId : oldCategoryId;
+            UUID IdToBeAssigned = (newCategoryId != null) ? newCategoryId : oldCategoryId;
 
-	        finalCategory = (IdToBeAssigned != null) ? categoryRepository.findByIdOrThrow(IdToBeAssigned) : null;
+            finalCategory =
+                    (IdToBeAssigned != null)
+                            ? categoryRepository.findByIdOrThrow(IdToBeAssigned)
+                            : null;
         }
 
         mapper.updateProductFromEdit(dto, product);
@@ -104,12 +113,12 @@ public class ProductServiceImpl implements ProductService {
         return mapper.toDto(product, finalCategory);
     }
 
-	@Override
-	@Transactional
-	public ProductResponseDTO partialUpdate(ProductRequestDTO dto, UUID id) {
+    @Override
+    @Transactional
+    public ProductResponseDTO partialUpdate(ProductRequestDTO dto, UUID id) {
 
-		return this.update(dto, id);
-	}
+        return this.update(dto, id);
+    }
 
     @Override
     @Transactional
@@ -125,18 +134,16 @@ public class ProductServiceImpl implements ProductService {
         productRepository.saveAndFlush(product);
     }
 
-	@Override
-	@Transactional(readOnly = true)
-	public List<ProductResponseDTO> findByCategoryId(UUID categoryId) {
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponseDTO> findByCategoryId(UUID categoryId) {
 
-		Category category = categoryRepository.findByIdOrThrow(categoryId);
+        Category category = categoryRepository.findByIdOrThrow(categoryId);
 
-		List<Product> products = productRepository.findByCategoryId(categoryId);
+        List<Product> products = productRepository.findByCategoryId(categoryId);
 
-		return products.stream()
-				.map(product -> mapper.toDto(product, category))
-				.toList();
-	}
+        return products.stream().map(product -> mapper.toDto(product, category)).toList();
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -150,25 +157,75 @@ public class ProductServiceImpl implements ProductService {
         return products.stream()
                 .map(
                         product -> {
-	                        Category category = productRepository.findCategoryIdByProductId(product.getId())
-			                        .flatMap(categoryRepository::findById)
-			                        .orElse(null);
-	                        return mapper.toDto(product, category);
+                            Category category =
+                                    productRepository
+                                            .findCategoryIdByProductId(product.getId())
+                                            .flatMap(categoryRepository::findById)
+                                            .orElse(null);
+                            return mapper.toDto(product, category);
                         })
                 .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductResponseDTO> findProductsByName(String name) {
+    public List<ProductResponseDTO> findProductsAdvanced(
+            String name, UUID categoryId, Boolean available, String sort) {
 
-        return productRepository.findByNameContainingIgnoreCase(name).stream()
+        List<Product> products;
+        if (categoryId != null) {
+            products = productRepository.findByCategoryId(categoryId);
+        } else {
+            products = productRepository.findAll();
+        }
+
+        Stream<Product> productStream = products.stream();
+        if (name != null && !name.trim().isEmpty()) {
+            productStream =
+                    productStream.filter(
+                            p -> p.getName().toLowerCase().contains(name.toLowerCase()));
+        }
+        if (available != null) {
+            productStream = productStream.filter(p -> p.getAvailable().equals(available));
+        }
+
+        if (sort != null && !sort.trim().isEmpty()) {
+            switch (sort) {
+                case "name_asc" ->
+                        productStream =
+                                productStream.sorted(
+                                        Comparator.comparing(
+                                                Product::getName, String.CASE_INSENSITIVE_ORDER));
+                case "name_desc" ->
+                        productStream =
+                                productStream.sorted(
+                                        Comparator.comparing(
+                                                        Product::getName,
+                                                        String.CASE_INSENSITIVE_ORDER)
+                                                .reversed());
+                case "price_asc" ->
+                        productStream =
+                                productStream.sorted(Comparator.comparing(Product::getPrice));
+                case "price_desc" ->
+                        productStream =
+                                productStream.sorted(
+                                        Comparator.comparing(Product::getPrice).reversed());
+                default -> {
+                    /* Si mandan cualquier otra cosa, no altera el orden por defecto */
+                }
+            }
+        }
+
+        return productStream
                 .map(
                         product -> {
-	                        Category category = productRepository.findCategoryIdByProductId(product.getId())
-			                        .flatMap(categoryRepository::findById)
-			                        .orElse(null);
-	                        return mapper.toDto(product, category);
+                            Category category =
+                                    productRepository
+                                            .findCategoryIdByProductId(product.getId())
+                                            .flatMap(categoryRepository::findById)
+                                            .orElse(null);
+
+                            return mapper.toDto(product, category);
                         })
                 .toList();
     }
@@ -180,10 +237,12 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findByStockLessThan(limit).stream()
                 .map(
                         product -> {
-	                        Category category = productRepository.findCategoryIdByProductId(product.getId())
-			                        .flatMap(categoryRepository::findById)
-			                        .orElse(null);
-	                        return mapper.toDto(product, category);
+                            Category category =
+                                    productRepository
+                                            .findCategoryIdByProductId(product.getId())
+                                            .flatMap(categoryRepository::findById)
+                                            .orElse(null);
+                            return mapper.toDto(product, category);
                         })
                 .toList();
     }
@@ -193,9 +252,11 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDTO findHistoricalProduct(UUID id) {
 
         Product deletedProduct = productRepository.findDeletedByIdOrThrow(id);
-	    Category category = productRepository.findCategoryIdByProductId(id)
-			    .flatMap(categoryRepository::findById)
-			    .orElse(null);
+        Category category =
+                productRepository
+                        .findCategoryIdByProductId(id)
+                        .flatMap(categoryRepository::findById)
+                        .orElse(null);
 
         return mapper.toDto(deletedProduct, category);
     }

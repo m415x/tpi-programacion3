@@ -6,8 +6,10 @@ import type { IOrderDetail } from "@interfaces/OrderDetail.interface";
  */
 export interface IOrder {
     id: string;
-    createdAt: string;
     isDeleted: boolean;
+    createdAt: string;
+    updatedAt?: string | undefined;
+    version?: number | undefined;
     totalPrice: number;
     status: OrderStatus;
     paymentMethod: PaymentMethod;

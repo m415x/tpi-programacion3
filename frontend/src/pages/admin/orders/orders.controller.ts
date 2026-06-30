@@ -208,7 +208,7 @@ export const ordersController = {
             const qtyProducts = order.orderDetails?.reduce((acc, current) => acc + current.quantity, 0) || 0;
 
             const date = new Date(order.createdAt);
-            const formattedDate = `${date.toLocaleDateString()} - ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}hs`;
+            const formattedDate = `${date.toLocaleDateString()} - ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} hs`;
 
             // Buscamos el usuario por su userId plano devuelto por Java
             const customerData = usersMap.get(order.user?.id || "");

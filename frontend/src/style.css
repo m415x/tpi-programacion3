@@ -1678,6 +1678,11 @@ button:disabled {
   width: 100%;
 }
 
+.margin-top {
+  margin-top: 1rem;
+  width: 100%;
+}
+
 /* Adaptación fluida para smartphones */
 @media (max-width: 480px) {
   .form-group-grid {

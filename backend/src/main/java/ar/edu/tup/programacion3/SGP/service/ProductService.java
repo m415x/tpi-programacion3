@@ -25,7 +25,7 @@ public interface ProductService {
 
     public List<ProductResponseDTO> getProductsByAvailability(Boolean available);
 
-    public List<ProductResponseDTO> findProductsByName(String name);
+	public List<ProductResponseDTO> findProductsAdvanced(String name, UUID categoryId, Boolean available, String sort);
 
     public List<ProductResponseDTO> getLowStockProducts(int limit);
 

@@ -27,11 +27,15 @@ public interface OrderService {
 
     public UUID getQtyItems(UUID orderId);
 
-	OrderResponseDTO updateStatus(UUID id, OrderStatus newStatus);
+	public OrderResponseDTO updateStatus(UUID id, OrderStatus newStatus);
 
-    OrderResponseDTO findHistoricalOrder(UUID id);
+    public OrderResponseDTO findHistoricalOrder(UUID id);
 
-    List<OrderResponseDTO> getHistoricalOrders();
+    public List<OrderResponseDTO> getHistoricalOrders();
+
+	public List<OrderResponseDTO> findByUserId(UUID userId);
+
+	public OrderResponseDTO cancelOrder(UUID id);
 
     // Método helper para reconstruir el Record de salida con su userId correspondiente
     public OrderResponseDTO unifyUserId(OrderResponseDTO dto, UUID userId);

@@ -26,8 +26,10 @@ export const homeController = {
         const productQty = document.querySelector<HTMLParagraphElement>("#product-qty");
         if (!productQty) return;
 
-        const searchTerm = productContainer.dataset.searchTerm || "";
-        const selectedCategory = productContainer.dataset.categoryId || "all";
+        // Recuperamos los tres filtros reactivos guardados en el DOM
+        const searchTerm: string = productContainer.dataset.searchTerm || "";
+        const selectedCategory: string = productContainer.dataset.categoryId || "all";
+        const sortOrder: string = productContainer.dataset.sortOrder || "name_asc";
 
         // Limpiamos el contenedor antes de mostrar los productos para evitar duplicados
         productContainer.innerHTML = "";
@@ -35,62 +37,72 @@ export const homeController = {
         // Creamos un fragmento para optimizar la inserción de múltiples elementos en el DOM
         const fragment: DocumentFragment = document.createDocumentFragment();
 
-        // Traemos los datos asíncronos en paralelo para máxima velocidad
-        const [allProducts, categories] = await Promise.all([
-            productService.getAll({ name: searchTerm }),
-            categoryService.getAll(),
-        ]);
+        try {
+            // Armamos los parámetros de consulta combinados para el Backend
+            const queryParams: any = {
+                name: searchTerm,
+                sort: sortOrder,
+                available: true,
+            };
 
-        // Aplicamos el filtro de categoría sobre los productos ya filtrados por nombre desde el backend
-        let activeProducts = productService.applyFilters(allProducts, {
-            searchTerm: "",
-            categoryId: selectedCategory,
-        });
-
-        // Creamos un mapa indexado por ID para buscar en tiempo de ejecución O(1)
-        const categoryMap = new Map<string, string>(
-            categories.map((cat: { id: string; name: string }) => [cat.id, cat.name]),
-        );
-
-        // Actualizamos el texto de cantidad de productos encontrados
-        if (productQty) {
-            if (activeProducts.length === 0) {
-                productQty.textContent = "";
-            } else if (activeProducts.length === 1) {
-                productQty.textContent = `${activeProducts.length} producto`;
-            } else if (productQty) {
-                productQty.textContent = `${activeProducts.length} productos`;
+            // Si hay una categoría seleccionada y no es "all", se la pasamos al backend
+            if (selectedCategory !== "all") {
+                queryParams.categoryId = selectedCategory;
             }
-        }
 
-        if (activeProducts.length > 0) {
-            activeProducts.forEach((prod: IProduct): void => {
-                // Creamos los nodos uno por uno
-                const article: HTMLElement = document.createElement("article");
-                article.classList.add("card", "product__card");
-                article.dataset.id = prod.id.toString();
+            // Traemos los datos asíncronos en paralelo para máxima velocidad
+            const [activeProducts, categories] = await Promise.all([
+                productService.getAll(queryParams),
+                categoryService.getAll(),
+            ]);
 
-                // Formateamos el precio
-                const unitPrice: string = formattedPriceHTML(prod.price);
+            // Creamos un mapa indexado por ID para buscar en tiempo de ejecución O(1)
+            const categoryMap = new Map<string, string>(
+                categories.map((cat: { id: string; name: string }) => [cat.id, cat.name]),
+            );
 
-                // Buscamos el nombre usando el ID único del backend
-                const categoryName: string = prod.categoryId
-                    ? categoryMap.get(prod.categoryId) || "Sin categoría"
-                    : "Sin categoría";
+            // Actualizamos el texto de cantidad de productos encontrados
+            if (productQty) {
+                if (activeProducts.length === 0) {
+                    productQty.textContent = "";
+                } else if (activeProducts.length === 1) {
+                    productQty.textContent = `${activeProducts.length} producto`;
+                } else if (productQty) {
+                    productQty.textContent = `${activeProducts.length} productos`;
+                }
+            }
 
-                // Obtenemos el estado de disponibilidad para mostrar en la card
-                const { isAvailable } = getItemAvailability(prod);
+            if (activeProducts.length > 0) {
+                activeProducts.forEach((prod: IProduct): void => {
+                    // Creamos los nodos uno por uno
+                    const article: HTMLElement = document.createElement("article");
+                    article.classList.add("card", "product__card");
+                    article.dataset.id = prod.id.toString();
 
-                // Creamos el HTML del producto, incluyendo la imagen con carga asíncrona y los enlaces a detalle
-                const linkedImg: string = wrapWithDetailLink(
-                    prod.id,
-                    `<img class="product__img" src="${prod.imageUrl}" id="img-product-${prod.id}" alt="${prod.name}">`,
-                );
+                    // Formateamos el precio
+                    const unitPrice: string = formattedPriceHTML(prod.price);
 
-                // El nombre del producto también se envuelve en un enlace a detalle
-                const linkedName: string = wrapWithDetailLink(prod.id, `<h3 class="product__name">${prod.name}</h3>`);
+                    // Buscamos el nombre usando el ID único del backend
+                    const categoryName: string = prod.categoryId
+                        ? categoryMap.get(prod.categoryId) || "Sin categoría"
+                        : "Sin categoría";
 
-                article.innerHTML = `
+                    // Obtenemos el estado de disponibilidad para mostrar en la card
+                    const { isAvailable } = getItemAvailability(prod);
+
+                    // Creamos el HTML del producto, incluyendo la imagen con carga asíncrona y los enlaces a detalle
+                    const linkedImg: string = wrapWithDetailLink(
+                        prod.id,
+                        `<img class="product__img" src="${prod.imageUrl}" id="img-product-${prod.id}" alt="${prod.name}">`,
+                    );
+
+                    // El nombre del producto también se envuelve en un enlace a detalle
+                    const linkedName: string = wrapWithDetailLink(
+                        prod.id,
+                        `<h3 class="product__name">${prod.name}</h3>`,
+                    );
+
+                    article.innerHTML = `
                 ${linkedImg}
                 <p class="product__stock stock-badge"></p>
                 <div class="product__content">
@@ -106,48 +118,51 @@ export const homeController = {
                 </div>
                 `;
 
-                // Agregamos la card al fragmento en lugar de al DOM directamente para mejorar el rendimiento
-                fragment.appendChild(article);
+                    // Agregamos la card al fragmento en lugar de al DOM directamente para mejorar el rendimiento
+                    fragment.appendChild(article);
 
-                // Sincronizamos el estado inicial de la card
-                homeController.updateProductCardUI(article, isAvailable);
+                    // Sincronizamos el estado inicial de la card
+                    homeController.updateProductCardUI(article, isAvailable);
 
-                const btnAdd = article.querySelector<HTMLButtonElement>(".btn--add-product");
-                if (!btnAdd) return;
+                    const btnAdd = article.querySelector<HTMLButtonElement>(".btn--add-product");
+                    if (!btnAdd) return;
 
-                btnAdd.addEventListener("click", async (): Promise<void> => {
-                    const wasUpdated: boolean = await storage.updateCartItem(prod.id);
+                    btnAdd.addEventListener("click", async (): Promise<void> => {
+                        const wasUpdated: boolean = await storage.updateCartItem(prod.id);
 
-                    if (wasUpdated) {
-                        const status = getItemAvailability(prod);
+                        if (wasUpdated) {
+                            const status = getItemAvailability(prod);
 
-                        homeController.updateProductCardUI(article, status.isAvailable);
+                            homeController.updateProductCardUI(article, status.isAvailable);
 
-                        // Actualizamos el badge del carrito
-                        updateCartBadge();
+                            // Actualizamos el badge del carrito
+                            updateCartBadge();
 
-                        // Mostrar el aviso debajo de la searchBar
-                        const searchBar = document.querySelector<HTMLElement>(".search-bar");
-                        if (searchBar) {
-                            showCartNotice(searchBar, 1, prod.name, "after");
+                            // Mostrar el aviso debajo de la searchBar
+                            const searchBar = document.querySelector<HTMLElement>(".search-bar");
+                            if (searchBar) {
+                                showCartNotice(searchBar, 1, prod.name, "after");
+                            }
+
+                            if (!status.isAvailable) {
+                                alert("¡Has añadido la última unidad!");
+                            }
                         }
-
-                        if (!status.isAvailable) {
-                            alert("¡Has añadido la última unidad!");
-                        }
-                    }
+                    });
                 });
-            });
 
-            // Una vez que hemos creado todas las cards en el fragmento, lo agregamos
-            // al contenedor de productos en el DOM de una sola vez
-            productContainer.appendChild(fragment);
-        } else {
-            const emptyResult: HTMLElement = document.createElement("p");
+                // Una vez que hemos creado todas las cards en el fragmento, lo agregamos
+                // al contenedor de productos en el DOM de una sola vez
+                productContainer.appendChild(fragment);
+            } else {
+                const emptyResult: HTMLElement = document.createElement("p");
 
-            emptyResult.classList.add("empty-result");
-            emptyResult.textContent = "No se encontraron productos";
-            productContainer?.appendChild(emptyResult);
+                emptyResult.classList.add("empty-result");
+                emptyResult.textContent = "No se encontraron productos";
+                productContainer?.appendChild(emptyResult);
+            }
+        } catch (error) {
+            console.error("Error al cargar el catálogo de productos combinados:", error);
         }
     },
 
@@ -175,7 +190,8 @@ export const homeController = {
     showSearchBar(categories: ICategory[]): void {
         const inputSearch = document.querySelector<HTMLInputElement>("#input-search");
         const selectCategories = document.querySelector<HTMLSelectElement>("#select-categories");
-        if (!inputSearch || !selectCategories) return;
+        const selectSort = document.querySelector<HTMLSelectElement>("#select-sort");
+        if (!inputSearch || !selectCategories || !selectSort) return;
 
         // Variable para manejar el debounce de la búsqueda (tipado correcto en entorno web)
         let debounceTimer: number;
@@ -187,6 +203,7 @@ export const homeController = {
         const handleFilters = (): void => {
             const searchTerm: string = inputSearch.value || "";
             const categoryId: string = selectCategories.value || "all";
+            const sortOrder: string = selectSort ? selectSort.value : "name_asc";
 
             // Guardamos los filtros en el objeto dataset del contenedor o en una ventana de estado
             // para que 'showProducts' sepa qué criterios aplicar al invocar productService.getAll()
@@ -194,7 +211,11 @@ export const homeController = {
             if (productContainer) {
                 productContainer.dataset.searchTerm = searchTerm;
                 productContainer.dataset.categoryId = categoryId;
+                productContainer.dataset.sortOrder = sortOrder;
             }
+
+            // Sincronizamos los estilos del sidebar para reflejar el cambio del dropdown
+            homeController.syncCategorySelection(categoryId);
 
             // Volvemos a invocar la renderización principal.
             homeController.showProducts();
@@ -221,6 +242,11 @@ export const homeController = {
 
         // Evento de escucha para el cambio de categoría instantáneo
         selectCategories.addEventListener("change", (): void => handleFilters());
+
+        // Listener del select de ordenamiento
+        if (selectSort) {
+            selectSort.addEventListener("change", (): void => handleFilters());
+        }
     },
 
     /**
@@ -291,10 +317,12 @@ export const homeController = {
         const handleCategoryClick = (categoryId: string): void => {
             const productContainer = document.querySelector<HTMLElement>("#product-container");
             const selectCategories = document.querySelector<HTMLSelectElement>("#select-categories");
+            const selectSort = document.querySelector<HTMLSelectElement>("#select-sort");
 
             // 1. Persistimos el filtro en el dataset para que lo lea 'showProducts'
             if (productContainer) {
                 productContainer.dataset.categoryId = categoryId;
+                productContainer.dataset.sortOrder = selectSort ? selectSort.value : "name_asc";
             }
 
             // 2. Sincronizamos el select de la searchbar (si existe en la UI) para evitar desfaces visuales

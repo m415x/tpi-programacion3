@@ -47,7 +47,7 @@ export const clientOrdersController = {
         // Vinculamos cierres y escapes del modal
         this.bindModalEvents(document.body as HTMLElement);
 
-        // NUEVO: Vinculamos el evento del dropdown de filtrado dinámico
+        // Vinculamos el evento del dropdown de filtrado dinámico
         const filterSelect = container.querySelector<HTMLSelectElement>("#filter-order-status");
         if (filterSelect) {
             filterSelect.addEventListener("change", () => {
@@ -117,12 +117,11 @@ export const clientOrdersController = {
 
             // Parseamos la fecha y hora
             const date = new Date(order.createdAt);
-            const dateStr = date.toLocaleDateString();
-            const timeStr = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            const formattedDate = `${date.toLocaleDateString()} - ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} hs`;
 
             tr.innerHTML = `
                 <td><strong class="uuid-cell" title="${order.id}">#${order.id.slice(-6).toUpperCase()}</strong></td>
-                <td>${dateStr} - ${timeStr} hs</td>
+                <td>${formattedDate}</td>
                 <td>${totalProducts} u</td>
                 <td class="price price-cell">${formattedPriceHTML(order.totalPrice)}</td>
                 <td><span class="badge-status ${statusClass}">${translateStatusOrder(order.status)}</span></td>
@@ -203,7 +202,7 @@ export const clientOrdersController = {
 
         const oldTotalRow = modalOverlay.querySelector(".checkout-total-row");
         if (oldTotalRow) {
-            oldTotalRow.classList.add("hidden"); // Ocultamos con clase en vez de style
+            oldTotalRow.classList.add("hidden");
         }
 
         let summaryContainer = modalOverlay.querySelector<HTMLDivElement>("#dynamic-order-summary");
@@ -241,11 +240,61 @@ export const clientOrdersController = {
             </div>
 
             <div class="order-status-message">
-                <p><strong>${getOrderStatusMessage(order.status)}</p>
+                <p><strong>${getOrderStatusMessage(order.status)}</strong></p>
             </div>
+
+            <div id="modal-actions-container" class="modal__actions-panel"></div>
         `;
 
+        const cancelBtnContainer = summaryContainer.querySelector<HTMLDivElement>("#modal-actions-container");
+
+        if (cancelBtnContainer) {
+            if (order.status === "PENDING") {
+                cancelBtnContainer.innerHTML = `
+                    <button id="btn-cancel-order" class="btn btn--danger btn--full margin-top">
+                        <i class="fa-solid fa-ban"></i> Cancelar Pedido
+                    </button>
+                `;
+
+                cancelBtnContainer.querySelector("#btn-cancel-order")?.addEventListener("click", () => {
+                    // Invocamos al nuevo método del controlador pasándole el ID y los nodos necesarios para limpiar
+                    this.handleCancelOrder(order.id, modalOverlay, modalItemsBody, container);
+                });
+            } else {
+                cancelBtnContainer.innerHTML = "";
+            }
+        }
+
         modalOverlay.classList.remove("hidden");
+    },
+
+    /**
+     * Envía la cancelación al backend y re-renderiza la grilla de forma síncrona
+     */
+    async handleCancelOrder(
+        orderId: string,
+        modalOverlay: HTMLDivElement,
+        tableBody: HTMLTableSectionElement,
+        container: HTMLElement,
+    ): Promise<void> {
+        const confirmar = confirm("¿Estás seguro de que deseas cancelar este pedido? Se restaurará el stock.");
+        if (!confirmar) return;
+
+        try {
+            // 1. Llamamos a tu servicio mapeado contra el PATCH/PUT de Java
+            await orderService.cancel(orderId);
+
+            alert("El pedido fue cancelado correctamente.");
+
+            // 2. Cerramos defensivamente el modal agregando la clase oculta
+            modalOverlay.classList.add("hidden");
+
+            // 3. Volvemos a invocar tu rutina centralizada para sincronizar vistas por rol
+            await this.refreshOrders(tableBody, container);
+        } catch (error: any) {
+            console.error("Fallo estratégico en cancelación:", error);
+            alert(error.response?.data?.message || "No se pudo cancelar el pedido en este momento.");
+        }
     },
 
     /**
@@ -253,20 +302,28 @@ export const clientOrdersController = {
      */
     async refreshOrders(tableBody: HTMLTableSectionElement, container: HTMLElement): Promise<void> {
         try {
-            const currentUserId = storage.getUser()?.id;
-            if (!currentUserId) {
+            const currentUser = storage.getUser();
+            if (!currentUser) {
                 dom.tableBody.innerHTML = `<tr><td colspan="6" class="text-center error-text">Error: No se detectó sesión activa.</td></tr>`;
                 return;
             }
 
-            // Traemos las órdenes del backend
-            const allOrders: IOrder[] = await orderService.getAll();
+            let orders: IOrder[] = [];
 
-            // Llenamos el caché maestro y el array de renderizado
-            allCustomerOrdersCache = allOrders.filter((order) => order.user?.id === currentUserId);
+            if (currentUser.userRole === "ADMIN") {
+                // El administrador consulta la auditoría global de la cocina (Endpoint: /orders)
+                orders = await orderService.getAll();
+                allCustomerOrdersCache = [...orders];
+            } else {
+                // El cliente consulta exclusivamente su historial aislado (Endpoint: /orders/my-orders)
+                orders = await orderService.getMyOrders();
+                allCustomerOrdersCache = [...orders];
+            }
+
+            // Poblamos el array de renderizado reactivo en memoria
             customerOrders = [...allCustomerOrdersCache];
 
-            // Renderizamos pasándole el nodo real
+            // Renderizamos pasándole el nodo real a la tabla
             this.renderTable(tableBody, container);
         } catch (error: any) {
             console.error("Error al recuperar el historial de compras:", error);

@@ -229,8 +229,14 @@ const initCheckoutModalEvents = (): void => {
                 return;
             }
 
-            // Creamos el cascarón de la orden en el Backend (Sin orderDetails)
-            const createdOrder = await orderService.create({
+            // Transformamos los ítems del Front al formato exacto que espera el DTO de Java
+            const orderDetailMapped = rawItems.map((item) => ({
+                productId: item.id,
+                quantity: item.qty,
+            }));
+
+            // Enviamos la orden completa con su detalle incluido en un solo viaje por red
+            await orderService.create({
                 date: new Date().toISOString().split("T")[0] || "",
                 orderStatus: OrderStatus.PENDING,
                 total: currentTotalAmount, // Java lo ignora y lo pisa con ZERO, pero cumple el contrato
@@ -239,12 +245,8 @@ const initCheckoutModalEvents = (): void => {
                 customerPhone: checkout.inputPhone.value.trim(),
                 shippingAddress: checkout.inputAddress.value.trim(),
                 customerNotes: checkout.inputNotes.value.trim() || "Sin observaciones adicionales.",
+                orderDetail: orderDetailMapped,
             });
-
-            // Iteramos el carrito y agregamos los ítems uno por uno al sub-recurso
-            for (const item of rawItems) {
-                await orderService.addItemToOrder(createdOrder.id, item.id, item.qty);
-            }
 
             alert("¡Pedido generado exitosamente! Podrás seguir su estado desde 'Mis Pedidos'.");
 
