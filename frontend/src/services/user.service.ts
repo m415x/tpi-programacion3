@@ -68,7 +68,7 @@ export const userService = {
      * @returns true si la contraseña cumple con los requisitos de fortaleza.
      */
     validatePasswordStrength(password: string): boolean {
-        return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password);
+        return password.length >= 6 && /[A-Z]/.test(password) && /[0-9]/.test(password);
     },
 
     // --- BLOQUE DE COMUNICACIÓN HTTP CON SPRING BOOT (API) ---
@@ -108,7 +108,9 @@ export const userService = {
      * @returns Promesa que resuelve con el usuario registrado
      */
     async register(
-        newUser: Omit<IUser, "id" | "createdAt" | "isDeleted" | "password"> & { rawPassword: string },
+        newUser: Omit<IUser, "id" | "createdAt" | "updatedAt" | "version" | "isDeleted" | "password"> & {
+            rawPassword: string;
+        },
     ): Promise<IUser> {
         const dto = {
             isDeleted: false, // Por defecto, el nuevo usuario no está eliminado
@@ -117,7 +119,7 @@ export const userService = {
             email: newUser.email,
             phone: newUser.phone,
             password: newUser.rawPassword, // Viaja el texto plano de forma directa
-            userRole: newUser.userRole || "CLIENT", // Por defecto, el nuevo usuario es CLIENT
+            userRole: "CLIENT",
         };
 
         // Spring Boot se encarga de validar la unicidad del email y el autoincrement del ID
@@ -140,7 +142,7 @@ export const userService = {
      * sin exponer IDs en la URL.
      */
     async updateProfile(
-        profileChanges: Partial<Omit<IUser, "id" | "createdAt" | "isDeleted" | "userRole">>,
+        profileChanges: Partial<Omit<IUser, "id" | "createdAt" | "updatedAt" | "version" | "isDeleted" | "userRole">>,
     ): Promise<IUser> {
         const response = await api.patch<UserResponseDTO>("/users/profile", profileChanges);
 

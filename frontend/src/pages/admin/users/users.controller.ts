@@ -22,7 +22,6 @@ export const usersController = {
                             <th>ID (UUID)</th>
                             <th>Nombre Completo</th>
                             <th>Email / Usuario</th>
-                            <th>Rol de Acceso</th>
                             <th>Fecha de Registro</th>
                             <th class="text-center">Acciones</th>
                         </tr>
@@ -88,7 +87,6 @@ export const usersController = {
                 <td class="uuid-cell" title="${user.id}">${user.id.slice(0, 8)}...</td>
                 <td class="fw-bold">${user.lastName}, ${user.firstName}</td>
                 <td>${user.email}</td>
-                <td><span class="badge badge--success-soft">${user.userRole}</span></td>
                 <td>${dateStr}</td>
                 <td>
                     <div class="actions-wrapper">

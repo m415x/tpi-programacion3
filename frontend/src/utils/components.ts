@@ -5,7 +5,7 @@ import { logout } from "@utils/authGuard";
 import { PATHS } from "@utils/paths";
 import { storage } from "@utils/storage";
 import { APP_VERSION, BRAND_NAME } from "@utils/constants";
-import type {IUser} from "@interfaces/User.interface";
+import type { IUser } from "@interfaces/User.interface";
 
 /**
  * Función para renderizar la card de autenticación (login/register) en el
@@ -51,7 +51,7 @@ export const renderAuthCard = (containerSelector: string, isRegister: boolean): 
 
             <label for="pass">Contraseña</label>
             <input type="password" name="pass" id="pass" autocomplete="off"
-                placeholder="Mínimo 8 caracteres" required>
+                placeholder="Mínimo 6 caracteres" required>
 
             <button class="btn btn--primary" type="submit">${btnText}</button>
         </form>
@@ -255,11 +255,6 @@ export const profileComponent = {
                 <div class="form-container profile-card">
                     <form id="profile-form" novalidate>
 
-                        <div class="form-group">
-                            <label for="profile-email">Dirección de Email (Inmutable)</label>
-                            <input type="email" id="profile-email" value="${currentUser.email}" disabled class="input-disabled">
-                        </div>
-
                         <div class="form-group-grid">
                             <div class="form-group">
                                 <label for="profile-firstname">Nombre</label>
@@ -274,6 +269,17 @@ export const profileComponent = {
                         <div class="form-group">
                             <label for="profile-phone">Teléfono de Contacto</label>
                             <input type="tel" id="profile-phone" value="${currentUser.phone || ""}" placeholder="Ej: 2644111222">
+                        </div>
+
+                        <div class="form-group-grid">
+                            <div class="form-group">
+                                <label for="profile-email">Dirección de Email</label>
+                                <input type="email" id="profile-email" value="${currentUser.email}" required placeholder="Tu email">
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-password">Contraseña</label>
+                                <input type="password" id="profile-password" value="" placeholder="Tu nueva contraseña">
+                            </div>
                         </div>
 
                         <div class="form-actions-profile">
@@ -294,28 +300,60 @@ export const profileComponent = {
             const inputFirstName = targetContainer.querySelector<HTMLInputElement>("#profile-firstname")!;
             const inputLastName = targetContainer.querySelector<HTMLInputElement>("#profile-lastname")!;
             const inputPhone = targetContainer.querySelector<HTMLInputElement>("#profile-phone")!;
+            const inputEmail = targetContainer.querySelector<HTMLInputElement>("#profile-email")!;
+            const inputPass = targetContainer.querySelector<HTMLInputElement>("#profile-password")!;
 
             const firstName = inputFirstName.value.trim();
             const lastName = inputLastName.value.trim();
             const phone = inputPhone.value.trim();
+            const email = inputEmail.value.trim();
+            const password = inputPass.value.trim();
 
-            if (!firstName || !lastName) {
-                alert("Por favor, completá los campos obligatorios (Nombre y Apellido).");
+            // Validamos
+
+            if (!firstName || !lastName || !email) {
+                alert("Por favor, completá los campos obligatorios (Nombre, Apellido y Email).");
+                return;
+            }
+
+            if (!userService.validateEmail(email)) {
+                alert("El email ingresado no es válido.");
+                return;
+            }
+
+            if (password && !userService.validatePasswordStrength(password)) {
+                alert("La contraseña debe tener al menos 6 caracteres, una letra mayúscula y un número.");
                 return;
             }
 
             try {
-                // Ejecutamos el PATCH parcial directo a tu controlador de Spring Boot
-                const updatedUser = await userService.updateProfile({
+                // Armamos el payload base con los datos obligatorios de contacto
+                const profilePayload: any = {
                     firstName,
                     lastName,
-                    phone
-                });
+                    phone,
+                    email,
+                };
+
+                // Si escribió algo y pasó el filtro, se la mandamos.
+                // Si lo dejó en blanco, la propiedad no se envía.
+                if (password.length > 0) {
+                    profilePayload.password = password;
+                }
+
+                // Ejecutamos el PATCH enviando el payload dinámico limpio
+                const updatedUser = await userService.updateProfile(profilePayload);
 
                 // Sincronizamos la memoria local con los nuevos datos devueltos por el servidor
                 storage.setUser(updatedUser);
 
                 alert("¡Perfil actualizado con éxito en la base de datos!");
+
+                // Vaciamos el input explícitamente para que no queden los caracteres ocultos
+                inputPass.value = "";
+
+                // Volvemos a disparar el render del perfil para que actualice la UI de manera limpia
+                this.render(targetContainer);
 
                 // Forzamos un refresco parcial del encabezado para pintar el nuevo nombre si cambió
                 const headerContainer = document.querySelector<HTMLElement>("#header");

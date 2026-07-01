@@ -26,18 +26,17 @@ El proyecto se encuentra dividido en dos módulos core perfectamente desacoplado
 
 ### Frontend (Frontera Defensiva)
 
-- **Enfoque Asíncrono de Autoabastecimiento:** Los controladores de la UI (como `productDetail` o `cart`) son 100% autónomos. No arrastran estados globales cableados; consultan de forma directa y asíncrona al backend mediante Axios ante recargas de pantalla (`F5`), garantizando la frescura de los datos.
-- **Criptografía en el Cliente (SHA-256):** Las contraseñas se rompen mediante un algoritmo de hashing unidireccional nativo (`crypto.subtle.digest`) en el navegador. **Las contraseñas nunca viajan en texto plano por la red**. El backend almacena directamente el hash hexadecimal estable de 64 caracteres.
+- **Enfoque Asíncrono de Autoabastecimiento:** Los controladores de la UI (como `productDetail`, `cart` o `profileComponent`) son 100% autónomos. No arrastran estados globales cableados; consultan de forma directa y asíncrona al backend mediante Axios ante recargas de pantalla (`F5`) o navegaciones internas, garantizando la frescura de los datos.
 - **Validación Anticipada de Stock:** El carrito consulta en tiempo real al almacenamiento y al servicio HTTP del servidor antes de permitir un incremento, bloqueando interacciones inválidas mediante alertas atómicas.
+- **Formularios de Edición Inteligentes y Seguros:** El componente de perfil gestiona actualizaciones parciales (`PATCH`). Las contraseñas nunca se exponen ni se rellenan visualmente; el campo inicia vacío y, mediante tipados avanzados con utilidades como `Partial` y `Omit`, la propiedad solo viaja al servidor si el usuario digita un nuevo valor que cumpla con los requisitos mínimos de seguridad.
 
-### Backend (API Core y Persistencia)
+### Backend (API Core, Criptografía y Persistencia)
 
+- **Criptografía Centralizada (Seguridad en el Servidor):** Se delegó la responsabilidad del hashing de contraseñas de manera segura en el backend mediante un componente especializado (`CustomPasswordEncoder`). Las contraseñas viajan seguras por la red en texto plano y se procesan/hashean con algoritmos robustos antes de persistirse en la base de datos, garantizando que los hashes almacenados cumplan con las directivas modernas de resguardo.
+- **Estrategia Antiduplicación en Semilla (`UserLoad`):** El proceso de siembra de datos semilla (`Data Seeding`) se trasladó y unificó en la infraestructura de carga de usuarios (`UserLoad`). El sistema detecta dinámicamente el estado de la base de datos en disco durante el arranque; si ya existen registros históricos o el usuario administrador inicial, la inyección se gestiona de forma idempotente para mitigar excepciones por violación de restricciones de unicidad (SQLState: 23505).
+- **Optimización de Consultas (Caché en RAM):** En los mapeos tabulares se implementó una indexación al vuelo en memoria RAM (`Map<UUID, String>`) para resolver el nombre de las categorías en tiempo constante $O(1)$, mitigando de raíz el problema clásico de rendimiento conocido como _Query N+1_.
+- **Arquitectura de Validación Avanzada:** Implementación de la anotación personalizada `@ValidPassword` coordinada con interfaces de grupo (`OnCreate.class`, `OnUpdate.class`) para verificar reglas de complejidad de contraseñas (longitud mínima, mayúsculas, números) directamente en las solicitudes entrantes antes del persist time de Hibernate.
 - **Inversión de Control (IoC):** Se prescindió del uso manual de utilidades estáticas. Se delegó el ciclo de vida completo de las conexiones, el `EntityManagerFactory` y los contextos transaccionales en el contenedor de Spring Boot.
-- **Estrategia Antiduplicación en Semilla:** El sistema detecta dinámicamente el estado de la base de datos en disco durante el arranque. Si ya existen registros históricos o el usuario administrador inicial, la siembra de datos semilla (`Data Seeding`) se gestiona de forma idempotente para mitigar excepciones por violación de restricciones de unicidad (`SQLState: 23505`).
-- **Optimización de Consultas (Caché en RAM):** En los mapeos tabulares se implementó una indexación al vuelo en 
-  memoria RAM (`Map<UUID, String>`) para resolver el nombre de las categorías en tiempo constante $O(1)$, mitigando de 
-  raíz el problema clásico de rendimiento conocido como _Query N+1_.
-- **Arquitectura de Validación Avanzada:** Implementación de la anotación personalizada `@ValidPassword` coordinada con interfaces de grupo (`OnCreate.class`, `OnUpdate.class`) para verificar que los datos enviados a los endpoints cumplan estrictamente con el patrón hexadecimal `^[a-f0-9]{64}$` antes del _persist time_ de Hibernate.
 
 ---
 
@@ -51,24 +50,25 @@ El proyecto se encuentra dividido en dos módulos core perfectamente desacoplado
 │   │   └── main/
 |   │       ├── java/.../
 │   │       │   ├── config/          # Configuracion de OpenAPI y Swagger
-│   │       │   ├── controller/      # Endpoints REST (Product, Category, User)
+│   │       │   ├── controller/      # Endpoints REST (Product, Category, User, Order)
 │   │       │   ├── dto/             # Objetos de Transferencia de Datos (Records)
-│   │       │   ├── exception/       # Excepciones personalizadas
-│   │       │   ├── mapper/          # Mapeos de Dominio a DTO
+│   │       │   ├── exception/       # Excepciones personalizadas y Global Handler
+│   │       │   ├── infrastructure/  # Semillas de inyección (UserLoad) y codificadores de seguridad
+│   │       │   ├── mapper/          # Mapeos de Dominio a DTO mediante MapStruct
 │   │       │   ├── model/           # Entidades de Dominio de JPA / Hibernate
 │   │       │   ├── repository/      # Repositorios heredados de JpaRepository
-│   │       │   ├── service/         # Lógica de negocio e implementaciones
-│   │       │   ├── validator/       # Anotaciones de validación y regex de hash
+│   │       │   ├── service/         # Lógica de negocio e implementaciones transaccionales
+│   │       │   ├── validator/       # Anotaciones de validación personalizadas para Beans
 │   │       │   └── SGPApp.java      # Clase principal de la aplicación Spring Boot
 |   │       └── resources/
 │   │           └── application.yaml # Configuración de Spring Boot
 │   └── build.gradle                 # Configuración del motor de construcción Gradle
 │
 └── frontend/                        # Código de la Interfaz Gráfica (TypeScript)
-    ├── public/img/products          # Imágenes de productos
+    ├── public/img/                  # Imágenes de productos y categorías
     ├── src/
-    │   ├── interfaces/              # Contratos de tipado de dominio del front
-    │   ├── pages/                   # Controladores y vistas HTML dinámicas (Login, Admin, Store)
+    │   ├── interfaces/              # Contratos de tipado de dominio del front (IUser, IOrder, etc.)
+    │   ├── pages/                   # Controladores y vistas HTML dinámicas (Login, Admin, Store, Profile)
     │   ├── services/                # Capa HTTP (Axios) y mappers de DTO a Dominio
     │   └── utils/                   # Estado de sesión (Storage), Router (Navigate) y UI utils
     ├── package.json                 # Scripts de automatización del ecosistema
@@ -114,7 +114,7 @@ pnpm run dev:all
 
 - El script detectará tu sistema operativo (Windows/Linux/Mac) y lanzará el comando nativo de Gradle (`gradlew.bat bootRun` o `./gradlew bootRun`) en segundo plano dentro de la carpeta `/backend`.
 - En paralelo, levantará el compilador en frío de Vite en el puerto `5173`.
-- Tras 15 segundos (permitiendo a Spring Boot inicializar el contexto de Hibernate y verificar la semilla de datos de categorías, productos y el usuario administrador), **se abrirá una pestaña automática en tu navegador** en `http://localhost:5173/`.
+- Tras unos segundos (permitiendo a Spring Boot inicializar el contexto de Hibernate y ejecutar la siembra de datos de `UserLoad` para categorías, productos y el usuario administrador), **se abrirá una pestaña automática en tu navegador** en `http://localhost:5173/`.
 - **Cierre Limpio:** Al presionar `Ctrl + C` una sola vez en la terminal, el script enviará señales de apagado (`SIGINT`) matando ambos procesos de forma segura sin dejar puertos colgados en memoria.
 
 ---
@@ -123,6 +123,6 @@ pnpm run dev:all
 
 Para probar las pantallas del **Panel de Administración (CRUD de Categorías, Productos y Dashboard de Métricas)** sin necesidad de registrar una cuenta desde cero, la semilla de datos autoinyecta las credenciales del perfil Administrador Principal:
 
-- **Email:** `em@il.com`
-- **Contraseña:** `Passwd123!` _(El sistema procesará el hash SHA-256 `391f6711...` de forma automática en el Login)_
+- **Email:** `admin@admin.com`
+- **Contraseña:** `123456`
 - **Rol asignado:** `ADMIN`
