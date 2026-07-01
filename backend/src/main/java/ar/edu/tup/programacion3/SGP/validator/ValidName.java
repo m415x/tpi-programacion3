@@ -11,8 +11,8 @@ import java.lang.annotation.*;
 @NotBlank(message = "El campo no puede ser nulo o vacío", groups = OnCreate.class)
 @Size(
         min = 2,
-        max = 50,
-        message = "El campo debe tener entre 2 y 50 caracteres",
+        max = 100,
+        message = "El campo debe tener entre 2 y 100 caracteres",
         groups = {OnCreate.class, OnUpdate.class})
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)

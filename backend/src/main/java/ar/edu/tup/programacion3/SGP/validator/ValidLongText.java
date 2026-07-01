@@ -8,8 +8,8 @@ import jakarta.validation.constraints.Size;
 import java.lang.annotation.*;
 
 @Size(
-        max = 200,
-        message = "El campo debe tener como máximo 200 caracteres",
+        max = 500,
+        message = "El campo debe tener como máximo 500 caracteres",
         groups = {OnCreate.class, OnUpdate.class})
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
